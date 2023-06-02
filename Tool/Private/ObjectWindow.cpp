@@ -29,7 +29,7 @@ CObjectWindow* CObjectWindow::Create(const WINDOWDESC& windowDesc)
 void CObjectWindow::Rendering()
 {
 	m_eInspectorMode = IM_DEFAULT;
-	m_pCurSelectName = nullptr;
+	m_pCurSelectName = L"";
 	m_pCurSelectComponent = nullptr;
 
 	if (ImGui::CollapsingHeader("Hierarchy"))
@@ -65,24 +65,24 @@ void CObjectWindow::ShowTree(const list<CComponent*>& compList, _bool root)
 {
 	for (CComponent* obj : compList)
 	{
-		const _tchar* name = obj->GetName();
+		wstring name = obj->GetName();
 
 		/*std::wstring_convert<std::codecvt_utf8_utf16<_tchar>, _tchar> converter;
 		std::string strString = converter.to_bytes(name);*/
-		string strString = CConversion::WToA(name);
+		string strString = CConversion::WstringToString(name);
 		//TreeNode("");
 
 		bool treeRet = TreeNode(strString.c_str());
 		
 		if (treeRet == false) continue;
-		if (name == nullptr) MSG_BOX("이름 null");
+		if (name.data() == nullptr) MSG_BOX("이름 null");
 
 
-
+		m_pCurSelectComponent = obj;
 		CComposite* comp = dynamic_cast<CComposite*>(obj);
 		
 		// 여기 다시 작성해야됨 이름을 게임오브젝트로 넘겨줄 방법을 강구해야되는데 _bool root 까지넘겨준상태임
-		SelectInspectorMode(name, comp);
+		SelectInspectorMode(name);
 
 		if (comp != nullptr)
 		{
@@ -94,10 +94,8 @@ void CObjectWindow::ShowTree(const list<CComponent*>& compList, _bool root)
 	}
 }
 
-void CObjectWindow::SelectInspectorMode(const _tchar* name, CComponent* pComp)
+void CObjectWindow::SelectInspectorMode(const wstring& name)
 {
-	m_pCurSelectName = name;
-	m_pCurSelectComponent = pComp;
 
 	if (name == L"Transform")
 	{
@@ -110,6 +108,14 @@ void CObjectWindow::SelectInspectorMode(const _tchar* name, CComponent* pComp)
 	else if (name == L"Texture")
 	{
 		m_eInspectorMode = IM_TEXTURE;
+	}
+	else if (name == L"VIBuffer")
+	{
+		m_eInspectorMode = IM_VIBUFFER;
+	}
+	else if (name == L"Renderer")
+	{
+		m_eInspectorMode = IM_RENDERER;
 	}
 	else
 	{

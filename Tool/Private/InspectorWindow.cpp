@@ -15,7 +15,7 @@ HRESULT CInspectorWindow::Initialize(const WINDOWDESC& desc)
 
 	for (auto& item : m_PrototypesVec)
 	{
-		string name = CConversion::TcharToString(item.first);
+		string name = CConversion::WstringToString(item.first);
 		m_PrototypesStrVec.push_back(name);
 	}
 	
@@ -48,40 +48,51 @@ void CInspectorWindow::Rendering()
 	}*/
 	
 
-	const _tchar* name = IMGUI->GetCurSelectName();
+	wstring name = IMGUI->GetCurSelectName();
 
 	NewLine();
 
-	if (name != nullptr)
+	if (name.data() != nullptr)
 	{
-		SeparatorText(CConversion::TcharToString(name).c_str());
+		SeparatorText(CConversion::WstringToString(name).c_str());
 	}
-		
-	switch (IMGUI->GetInspectorMode())
+
+	_uint SelectMode = IMGUI->GetInspectorMode();
+	if (SelectMode == IM_GAMEOBJECT)
 	{
-	case IM_GAMEOBJECT:
 		Mode_GameObject();
-		break;
-	case IM_TRANSFORM:
-		Mode_Transform();
-		break;
-	case IM_COLLIDER:
-		Mode_Collider();
-		break;
-	case IM_TEXTURE:
-		Mode_Texture();
-		break;
-	case IM_SHADER:
-		Mode_Shader();
-		break;
-	case IM_ANIMATION:
-		Mode_Animation();
-		break;
-	case IM_DEFAULT:
+	}
+	else if (SelectMode == IM_DEFAULT)
+	{
 		Mode_Default();
-		break;
-	default:
-		break;
+	}
+	else
+	{
+		
+		switch (SelectMode)
+		{
+		case IM_TRANSFORM:
+			Mode_Transform();
+			break;
+		case IM_COLLIDER:
+			Mode_Collider();
+			break;
+		case IM_TEXTURE:
+			Mode_Texture();
+			break;
+		case IM_SHADER:
+			Mode_Shader();
+			break;
+		case IM_ANIMATION:
+			Mode_Animation();
+			break;
+		case IM_RENDERER:
+			Mode_Renderer();
+			break;
+		default:
+			break;
+		}
+		Delete_Button();
 	}
 	
 }
@@ -96,13 +107,6 @@ void CInspectorWindow::Mode_GameObject()
 	{
 		Add_Component_Function();
 	}
-	SameLine();
-	if (ImGui::Button("Delete Component", ImVec2(180, 50)))
-	{
-		Delete_Component_Function();
-	}
-
-	
 }
 
 void CInspectorWindow::Mode_Transform()
@@ -123,6 +127,7 @@ void CInspectorWindow::Mode_Transform()
 
 void CInspectorWindow::Mode_Collider()
 {
+	
 }
 
 void CInspectorWindow::Mode_Texture()
@@ -137,18 +142,25 @@ void CInspectorWindow::Mode_Shader()
 
 void CInspectorWindow::Mode_Animation()
 {
+	
+}
+
+void CInspectorWindow::Mode_Renderer()
+{
 }
 
 void CInspectorWindow::Mode_Default()
 {
+	ImGui::SetNextItemWidth(120);
+	ImGui::InputText("Object Name", searchBuffer, IM_ARRAYSIZE(searchBuffer));
 	if (ImGui::Button("Add GameObject", ImVec2(180, 50)))
 	{
-
+		Add_GameObject_Function();
 	}
 	SameLine();
 	if (ImGui::Button("Delete GameObject", ImVec2(180, 50)))
 	{
-
+		Delete_GameObject_Function();
 	}
 }
 
@@ -199,6 +211,7 @@ void CInspectorWindow::Add_Component_Function()
 	CDummyObject* gameObject = dynamic_cast<CDummyObject*>(IMGUI->GetCurSelectComponent());
 	CComponent** FieldComp = nullptr;
 	void* pArg = nullptr;
+	string name;
 
 	for (auto& str : splitVector)
 	{
@@ -207,6 +220,7 @@ void CInspectorWindow::Add_Component_Function()
 			if (gameObject->m_pRendererCom != nullptr) 
 				return;
 
+			name = str;
 			FieldComp = (CComponent**)&gameObject->m_pRendererCom;
 		}
 		if (str.compare("Transform") == 0)
@@ -214,6 +228,7 @@ void CInspectorWindow::Add_Component_Function()
 			if (gameObject->m_pTransformCom != nullptr) 
 				return;
 
+			name = str;
 			FieldComp = (CComponent**)&gameObject->m_pTransformCom;
 
 			CTransform::TRANSFORMDESC desc = CTransform::TRANSFORMDESC(7.0, XMConvertToRadians(90.0f));
@@ -223,69 +238,93 @@ void CInspectorWindow::Add_Component_Function()
 		{
 			if (gameObject->m_pVIBufferCom != nullptr) 
 				return;
+
+			name = str;
 			FieldComp = (CComponent**)&gameObject->m_pVIBufferCom;
 		}
 		if (str.compare("Shader") == 0)
 		{
 			if (gameObject->m_pShaderCom != nullptr)
 				return;
+
+			name = str;
 			FieldComp = (CComponent**)&gameObject->m_pShaderCom;
 		}
 		if (str.compare("Texture") == 0)
 		{
 			if (gameObject->m_pTextureCom != nullptr)
 				return;
+
+			name = str;
 			FieldComp = (CComponent**)&gameObject->m_pTextureCom;
 		}
 		
 	}
 
 	// Tchar* 변환 다시 처리하기
+
+	wstring componentName = CConversion::StringToWstring(name);
 	gameObject->Add_Component(LEVEL_TOOL, m_PrototypesVec[selectedComponentIndex].first,
-		TEXT("Renderer"), (CComponent**)&FieldComp, gameObject);
-
-	//if (L"Prototype_Component_Renderer" == m_PrototypesVec[selectedComponentIndex].first)
-	//{
-	//	gameObject->Add_Component(LEVEL_TOOL, TEXT("Prototype_Component_Renderer"),
-	//		TEXT("Renderer"), (CComponent**)&gameObject->m_pRendererCom, gameObject);
-	//}
-	//if (L"Prototype_Component_Transform" == m_PrototypesVec[selectedComponentIndex].first)
-	//{
-	//	/* For.Com_Transform */
-	//	
-	//	gameObject->Add_Component(LEVEL_TOOL, TEXT("Prototype_Component_Transform"),
-	//		TEXT("Transform"), (CComponent**)&gameObject->m_pTransformCom, gameObject, &desc);
-	//}
-	//if (L"Prototype_Component_VIBuffer_Terrain" == m_PrototypesVec[selectedComponentIndex].first)
-	//{
-	//	///* For.Com_VIBuffer */
-	//	gameObject->Add_Component(LEVEL_TOOL, TEXT("Prototype_Component_VIBuffer_Terrain"),
-	//		TEXT("VIBuffer"), (CComponent**)&gameObject->m_pVIBufferCom, gameObject);
-	//}
-	//if (L"Prototype_Component_Shader_VtxNorTex" == m_PrototypesVec[selectedComponentIndex].first)
-	//{
-	//	///* For.Com_Shader */
-	//	gameObject->Add_Component(LEVEL_TOOL, TEXT("Prototype_Component_Shader_VtxNorTex"),
-	//		TEXT("Shader"), (CComponent**)&gameObject->m_pShaderCom, gameObject);
-	//}
-	//if (L"Prototype_Component_Texture_Terrain" == m_PrototypesVec[selectedComponentIndex].first)
-	//{
-	//	///* For.Com_Texture */
-	//	gameObject->Add_Component(LEVEL_TOOL, TEXT("Prototype_Component_Texture_Terrain"),
-	//		TEXT("Texture"), (CComponent**)&gameObject->m_pTextureCom, gameObject);
-	//}
-
-	
-
-	
-
-
-	
+		componentName.c_str(), (CComponent**)FieldComp, gameObject, pArg);	
 }
 
 void CInspectorWindow::Delete_Component_Function()
 {
 	if (selectedComponentIndex < 0 || selectedComponentIndex >= m_PrototypesVec.size()) return;
+
+	CComponent* component = IMGUI->GetCurSelectComponent();
+	if (component == nullptr) return;
+	CDummyObject* gameObject = dynamic_cast<CDummyObject*>(component->GetOwner());
+	if (gameObject == nullptr) return;
+	
+	gameObject->Delete_Component(component->GetName().c_str());
+
+	string str = CConversion::WstringToString(component->GetName());
+	CComponent** resultCom = nullptr;
+	if (str.compare("Renderer") == 0)
+	{
+		resultCom = (CComponent**)&gameObject->m_pRendererCom;
+	}
+	if (str.compare("Transform") == 0)
+	{
+		resultCom = (CComponent**)&gameObject->m_pTransformCom;
+	}
+	if (str.compare("VIBuffer") == 0)
+	{
+		resultCom = (CComponent**)&gameObject->m_pVIBufferCom;
+	}
+	if (str.compare("Shader") == 0)
+	{
+		resultCom = (CComponent**)&gameObject->m_pShaderCom;
+	}
+	if (str.compare("Texture") == 0)
+	{
+		resultCom = (CComponent**)&gameObject->m_pTextureCom;
+	}
+	
+	if (resultCom != nullptr && *resultCom != nullptr)
+	{
+		Safe_Release(*resultCom);
+		*resultCom = nullptr;
+	}
+		
+}
+
+void CInspectorWindow::Delete_Button()
+{
+	NewLine();
+	if (ImGui::Button("Delete Component", ImVec2(180, 50)))
+	{
+		Delete_Component_Function();
+	}
+}
+
+void CInspectorWindow::Add_GameObject_Function()
+{
+}
+
+void CInspectorWindow::Delete_GameObject_Function()
+{
 }
 
 

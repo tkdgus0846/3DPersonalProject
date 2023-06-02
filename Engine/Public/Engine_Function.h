@@ -80,12 +80,19 @@ namespace Engine
 	class CConversion
 	{
 	public:
-		static string TcharToString(const wchar_t* uniMsg)
+		static string WstringToString(const wstring& uniMsg)
 		{
 		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t> converter;
 			std::string strString = converter.to_bytes(uniMsg);
 
 			return strString;
+		}
+
+		static wstring StringToWstring(const string& str)
+		{
+			wstring retWstring;
+			retWstring.assign(str.begin(), str.end());
+			return retWstring;
 		}
 
 		static vector<string> SplitStringA(string str, const char* delimeter)

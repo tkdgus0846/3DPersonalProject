@@ -147,7 +147,7 @@ _uint CImGuiManager::GetInspectorMode()
 	return objectWindow->GetInspectorMode();
 }
 
-const _tchar* CImGuiManager::GetCurSelectName()
+wstring CImGuiManager::GetCurSelectName()
 {
 	CObjectWindow* objectWindow = dynamic_cast<CObjectWindow*>(m_WindowsMap[OBJECT_WINDOW_NAME]);
 	if (objectWindow == nullptr) return nullptr;

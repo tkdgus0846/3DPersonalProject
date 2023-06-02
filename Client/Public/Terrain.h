@@ -15,6 +15,8 @@ BEGIN(Client)
 
 class CTerrain final : public CGameObject
 {
+public:
+	enum TEXTURETYPE { TYPE_DIFFUSE, TYPE_MASK, TYPE_END };
 protected:
 	CTerrain(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	CTerrain(const CTerrain& rhs);

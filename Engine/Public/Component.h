@@ -23,8 +23,8 @@ public:
 	virtual void Late_Tick(_double TimeDelta) {}
 	virtual HRESULT Render() { return S_OK; }
 
-	const _tchar* GetName() const { return m_pName; }
-	void SetName(const _tchar* newName) { m_pName = newName; }
+	const wstring GetName() const { return m_pName; }
+	void SetName(const wstring& newName) { m_pName = newName; }
 	CGameObject* GetOwner() const { return m_pOwner; }
 	void SetOwner(CGameObject* pObj)
 	{
@@ -41,7 +41,7 @@ protected:
 
 	_bool							m_isCloned = { false };
 	CGameObject*					m_pOwner = { nullptr };
-	const _tchar*					m_pName = { nullptr };
+	wstring							m_pName = { L"" };
 
 public:
 	virtual CComponent* Clone(void* pArg) PURE;
@@ -66,18 +66,13 @@ public:
 	virtual void Late_Tick(_double TimeDelta);
 
 	list<class CComponent*> Get_ComponentsByList();
-	unordered_map<const _tchar*, CComponent*>* Get_ComponentsByUmap() { return &m_Components; }
-	
+	unordered_map<wstring, CComponent*>* Get_ComponentsByUmap() { return &m_Components; }
 
 protected:
-	ID3D11Device* m_pDevice = { nullptr };
-	ID3D11DeviceContext* m_pContext = { nullptr };
-
-protected:
-	unordered_map<const _tchar*, CComponent*>			m_Components;
+	unordered_map<wstring, CComponent*>			m_Components;
 
 public:
-	HRESULT Add_Component(_uint iLevelIndex, const _tchar * pPrototypeTag, const _tchar * pComponentTag, _Inout_ CComponent * *ppOut, CGameObject* pOwner, void* pArg = nullptr);
+	HRESULT Add_Component(_uint iLevelIndex, const _tchar * pPrototypeTag, const wstring& pComponentTag, _Inout_ CComponent * *ppOut, CGameObject* pOwner, void* pArg = nullptr);
 	HRESULT Delete_Component(const _tchar* pComponentTag);
 
 public:

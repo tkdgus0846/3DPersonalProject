@@ -35,6 +35,7 @@ private:
 
 public: 
 	HRESULT Ready_Prototype_Component_For_Static();
+	HRESULT Ready_Gara();
 	/* 최초 보여 줄 레벨을 결정한다. */
 	HRESULT Open_Level(LEVELID eLevelIndex);
 	

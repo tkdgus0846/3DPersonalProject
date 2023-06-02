@@ -94,7 +94,7 @@ list<CComponent*> CComposite::Get_ComponentsByList()
 	return componentList;
 }
 
-HRESULT CComposite::Add_Component(_uint iLevelIndex, const _tchar* pPrototypeTag, const _tchar* pComponentTag, _Inout_ CComponent** ppOut, CGameObject* pOwner, void* pArg)
+HRESULT CComposite::Add_Component(_uint iLevelIndex, const _tchar* pPrototypeTag, const wstring& pComponentTag, _Inout_ CComponent** ppOut, CGameObject* pOwner, void* pArg)
 {
 	CGameInstance* pGameInstance = CGameInstance::GetInstance();
 	Safe_AddRef(pGameInstance);
