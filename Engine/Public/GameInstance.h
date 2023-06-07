@@ -39,6 +39,14 @@ public: /* For.Input_Device */
 	_byte Get_DIMouseState(CInput_Device::MOUSEKEYSTATE eMouseID);
 	_long Get_DIMouseMove(CInput_Device::MOUSEMOVESTATE eMouseMoveID);
 
+	bool	Key_Pressing(_ubyte ubyKey);
+	bool	Key_Down(_ubyte ubyKey);
+	bool	Key_Up(_ubyte ubyKey);
+
+	bool	Mouse_Down(CInput_Device::MOUSEKEYSTATE eMouseID);
+	bool	Mouse_Pressing(CInput_Device::MOUSEKEYSTATE eMouseID);
+	bool	Mouse_Up(CInput_Device::MOUSEKEYSTATE eMouseID);
+
 public: /* For.Timer_Manager */
 	_double		Get_Timer(const _tchar* pTimerTag);
 	void		Set_Timer(const _tchar* pTimerTag);

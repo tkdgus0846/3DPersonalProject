@@ -10,6 +10,7 @@ CVIBuffer_Terrain::CVIBuffer_Terrain(const CVIBuffer_Terrain & rhs)
 	, m_iNumVerticesX{ rhs.m_iNumVerticesX }
 	, m_iNumVerticesZ{ rhs.m_iNumVerticesZ }
 	, m_fInterval{ rhs.m_fInterval }
+	, m_VerticesPos{ rhs.m_VerticesPos}
 {
 }
 
@@ -96,6 +97,8 @@ HRESULT CVIBuffer_Terrain::Initialize_Prototype(const _tchar* pHeightMap)
 			indexArr[1] = iIndices[1];
 			indexArr[2] = iIndices[2];
 
+			m_VerticesPos.push_back(Triangle(pVertices[iIndices[0]].vPosition, pVertices[iIndices[1]].vPosition, pVertices[iIndices[2]].vPosition));
+
 			Compute_Normal(indexArr, pVertices);
 			
 
@@ -104,8 +107,10 @@ HRESULT CVIBuffer_Terrain::Initialize_Prototype(const _tchar* pHeightMap)
 			pIndices[iNumIndices++] = iIndices[3];
 
 			indexArr[0] = iIndices[0];
-			indexArr[1] = iIndices[1];
-			indexArr[2] = iIndices[2];
+			indexArr[1] = iIndices[2];
+			indexArr[2] = iIndices[3];
+
+			m_VerticesPos.push_back(Triangle(pVertices[iIndices[0]].vPosition, pVertices[iIndices[2]].vPosition, pVertices[iIndices[3]].vPosition));
 
 			Compute_Normal(indexArr, pVertices);
 		}

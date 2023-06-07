@@ -44,7 +44,7 @@ void CCamera_Main::Tick(_double TimeDelta)
 
 	_long		MouseMove = { 0 };
 
-	if (pGameInstance->Get_DIMouseState(CInput_Device::DIMK_RBUTTON))
+	if (pGameInstance->Mouse_Pressing(CInput_Device::DIMK_RBUTTON))
 	{
 		if (MouseMove = pGameInstance->Get_DIMouseMove(CInput_Device::DIMM_X))
 		{

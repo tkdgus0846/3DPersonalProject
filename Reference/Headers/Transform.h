@@ -11,6 +11,8 @@ class ENGINE_DLL CTransform final : public CComponent
 {
 public:
 	enum STATE { STATE_RIGHT, STATE_UP, STATE_LOOK, STATE_POSITION, STATE_END };
+	enum AXIS { AXIS_X, AXIS_Y, AXIS_Z, AXIS_END};
+
 public:
 	typedef struct tagTransformDesc
 	{
@@ -49,12 +51,15 @@ public:
 	void Set_Desc(const TRANSFORMDESC & TransformDesc) {
 		m_TransformDesc = TransformDesc;
 	}
+	_float3 Get_Rotation_XYZ() { return m_Rotation; }
 
 
 public:
 	virtual HRESULT Initialize_Prototype();
 	virtual HRESULT Initialize(void* pArg);
+
 public:
+	void Set_Position(_fvector vPos);
 	void Go_Straight(_double TimeDelta);
 	void Go_Backward(_double TimeDelta);
 	void Go_Left(_double TimeDelta);
@@ -63,7 +68,8 @@ public:
 	void Go_Down(_double TimeDelta);
 	void Chase(_fvector vTargetPosition, _double TimeDelta, _float fMinDistance = 0.1f);
 	void LookAt(_fvector vTargetPosition);
-	void Rotation(_fvector vAxis, _float fRadian);
+	void Rotation(_fvector vAxis, _float fDegree);
+	void Rotation(AXIS eAxis, _float fDegree);
 	void Turn(_fvector vAxis, _double TimeDelta);
 
 	void Scaled(const _float3 & vScale);
@@ -72,8 +78,8 @@ public:
 private:
 	TRANSFORMDESC			m_TransformDesc;
 
-private:
 	_float4x4				m_WorldMatrix;
+	_float3					m_Rotation = { 0.f,0.f,0.f };
 
 public:
 	static CTransform* Create(ID3D11Device * pDevice, ID3D11DeviceContext * pContext);

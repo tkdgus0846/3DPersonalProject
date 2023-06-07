@@ -15,17 +15,7 @@ HRESULT CLevel_Tool::Initialize()
 		return E_FAIL;
 
 	CGameInstance* pGameInstance = CGameInstance::GetInstance();
-	if (FAILED(pGameInstance->Add_GameObject(LEVEL_TOOL, TEXT("Prototype_GameObject_DummyObject"), TEXT("ObjectLayer"), TEXT("EmptyObject"))))
-		return E_FAIL;
-
-	/*CGameInstance* pGameInstance = CGameInstance::GetInstance();
-	if (FAILED(pGameInstance->Add_GameObject(LEVEL_TOOL, TEXT("Prototype_GameObject_Terrain"), TEXT("TerrainLayer"), TEXT("Terrain"))))
-			return E_FAIL;
-
-	if (FAILED(pGameInstance->Add_GameObject(LEVEL_TOOL, TEXT("Prototype_GameObject_Terrain"), TEXT("TerrainLayer"), TEXT("Terrain232323"))))
-		return E_FAIL;
-
-	if (FAILED(pGameInstance->Add_GameObject(LEVEL_TOOL, TEXT("Prototype_GameObject_Terrain"), TEXT("TerrainLayer"), TEXT("Terrain242424242l"))))
+	/*if (FAILED(pGameInstance->Add_GameObject(LEVEL_TOOL, TEXT("Prototype_GameObject_DummyObject"), TEXT("ObjectLayer"), TEXT("EmptyObject"))))
 		return E_FAIL;*/
 
 	if (FAILED(Ready_Layer_Camera(TEXT("Layer_Camera"))))

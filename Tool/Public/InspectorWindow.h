@@ -50,7 +50,9 @@ private:
 	/*디폴트 인스펙터 창*/
 	void			Add_GameObject_Function();
 	void			Delete_GameObject_Function();
-	
+
+	/* 마우스 피킹 */
+	HRESULT			Place_Object();
 
 
 private:
@@ -59,6 +61,16 @@ private:
 	_int			selectedComponentIndex = { -1 };
 	vector<pair<const _tchar*, class CComponent*>> m_PrototypesVec;
 	vector<string>			m_PrototypesStrVec;
-	char searchBuffer[MAX_PATH] = "";
+
+	/* 문자열 입력 버퍼들*/
+	_char m_ComponentSearchBuffer[FILE_NAME_SIZE] = "";
+	_char m_ObjectAddNameBuffer[FILE_NAME_SIZE] = "";
+
+	/* 트랜스폼 관련 변수들*/
+	_float translation[3] = { 0.f, 0.f, 0.f };
+	_float rotation[3] = { 0.f, 0.f, 0.f };
+	_float scale[3] = { 1.f, 1.f, 1.f };
+	_bool m_bPlaceObject = { false };
+	_bool m_bScaleLock = { false };
 };
 

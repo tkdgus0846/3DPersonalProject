@@ -16,6 +16,7 @@
 
 BEGIN(Engine)
 class CComponent;
+class CGameObject;
 END
 
 class CImGuiManager : public CBase 
@@ -38,10 +39,14 @@ public:
 	void				ShowAllWindows();
 	void				HideAllWindows();
 
+	/// 오브젝트 윈도우 hierarchy 새로고침
+	void				ChangeTree();
+
 	/// 인스펙터로 값을 넘기기위한 정보
 	_uint				GetInspectorMode();
 	wstring				GetCurSelectName();
 	CComponent*			GetCurSelectComponent();
+	CGameObject*		Find_GameObject(const wstring& name);
 
 private:
 	virtual void	Free() override;

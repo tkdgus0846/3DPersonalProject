@@ -15,14 +15,16 @@ public:
 	virtual HRESULT Initialize_Prototype(const _tchar* pHeightMap);
 	HRESULT Initialize_Prototype(const _uint & sizeX, const _uint & sizeZ, const _float& fInterval);
 	virtual HRESULT Initialize(void* pArg) override;
-	
+	vector<Triangle>* Get_VerticesPos() { return &m_VerticesPos; }
+
 private:
 	void			Compute_Normal(const _uint* verticesIndex, VTXPOSNORTEX* pVertices);
 
 private:
-	_uint			m_iNumVerticesX = { 0 };
-	_uint			m_iNumVerticesZ = { 0 };
-	_float			m_fInterval = { 1.f };
+	_uint				m_iNumVerticesX = { 0 };
+	_uint				m_iNumVerticesZ = { 0 };
+	_float				m_fInterval = { 1.f };
+	vector<Triangle>	m_VerticesPos;
 
 public:
 	static CVIBuffer_Terrain* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const _tchar* pHeightMap);

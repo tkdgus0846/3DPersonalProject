@@ -2,6 +2,7 @@
 #include "InspectorWindow.h"
 #include "DummyObject.h"
 #include "Transform.h"
+#include "Calculator.h"
 #include "GameInstance.h"
 
 HRESULT CInspectorWindow::Initialize(const WINDOWDESC& desc)
@@ -67,8 +68,7 @@ void CInspectorWindow::Rendering()
 		Mode_Default();
 	}
 	else
-	{
-		
+	{	
 		switch (SelectMode)
 		{
 		case IM_TRANSFORM:
@@ -111,18 +111,73 @@ void CInspectorWindow::Mode_GameObject()
 
 void CInspectorWindow::Mode_Transform()
 {
-	static _float translation[3];
-	static _float rotation[3];
-	static _float scale[3];
+	CComponent* component = IMGUI->GetCurSelectComponent();
+	CTransform* transform = dynamic_cast<CTransform*>(component);
+	if (transform == nullptr) return;
+
+	_vector originTranslation = transform->Get_State(CTransform::STATE_POSITION);
+	_float3 originScale = transform->Get_Scaled();
+	_float3 originRotation = transform->Get_Rotation_XYZ();
+
+	memcpy(translation, &originTranslation, sizeof _float3);
+	memcpy(scale, &originScale, sizeof _float3);
+	memcpy(rotation, &originRotation, sizeof _float3);
+	
+
 	ImGui::Spacing();
 	ImGui::DragFloat3("Translation", translation, 1.f, -99999.f, 99999.f);
 	ImGui::Spacing();
 	ImGui::Spacing();
-	ImGui::DragFloat3("Rotation", rotation, 1.f, -99999.f, 99999.f);
+	if (ImGui::DragFloat3("Rotation", rotation, 1.f, -99999.f, 99999.f))
+	{
+		if (originRotation.x != rotation[0])
+			transform->Rotation(CTransform::AXIS_X, rotation[0]);
+		if (originRotation.y != rotation[1])
+			transform->Rotation(CTransform::AXIS_Y, rotation[1]);
+		if (originRotation.z != rotation[2])
+			transform->Rotation(CTransform::AXIS_Z, rotation[2]);
+	}
 	ImGui::Spacing();
 	ImGui::Spacing();
-	ImGui::DragFloat3("Scale", scale, 1.f, -99999.f, 99999.f);
+	ImGui::DragFloat3("Scale", scale, 0.3f, -99999.f, 99999.f);
+	if (m_bScaleLock == true)
+	{
+		if (originScale.x != scale[0])
+		{
+			scale[1] = scale[0];
+			scale[2] = scale[0];
+		}
+		else if (originScale.y != scale[1])
+		{
+			scale[0] = scale[1];
+			scale[2] = scale[1];
+		}
+		else if (originScale.z != scale[2])
+		{
+			scale[0] = scale[2];
+			scale[1] = scale[2];
+		}
+	}
+	SameLine();
+	if (ImGui::RadioButton("lock", m_bScaleLock))
+	{
+		m_bScaleLock = (m_bScaleLock == false) ? true : false;
+	}
 	ImGui::Spacing();
+
+	transform->Set_Position({ translation[0],translation[1],translation[2],1.f });
+	transform->Scaled(_float3(scale));
+
+	NewLine();
+
+	
+	if (ImGui::RadioButton("Place Object", m_bPlaceObject))
+	{
+		m_bPlaceObject = (m_bPlaceObject == false) ? true:false;
+	}
+
+	Place_Object();
+	
 }
 
 void CInspectorWindow::Mode_Collider()
@@ -147,12 +202,14 @@ void CInspectorWindow::Mode_Animation()
 
 void CInspectorWindow::Mode_Renderer()
 {
+	
 }
 
 void CInspectorWindow::Mode_Default()
 {
 	ImGui::SetNextItemWidth(120);
-	ImGui::InputText("Object Name", searchBuffer, IM_ARRAYSIZE(searchBuffer));
+	ImGui::InputText("Object Name", m_ObjectAddNameBuffer, IM_ARRAYSIZE(m_ObjectAddNameBuffer));
+
 	if (ImGui::Button("Add GameObject", ImVec2(180, 50)))
 	{
 		Add_GameObject_Function();
@@ -168,12 +225,12 @@ void CInspectorWindow::Show_ComponentList()
 {
 	std::vector<int> searchResults;
 
-	ImGui::InputText("Search", searchBuffer, IM_ARRAYSIZE(searchBuffer));
+	ImGui::InputText("Search", m_ComponentSearchBuffer, IM_ARRAYSIZE(m_ComponentSearchBuffer));
 	ImGui::BeginChild("ScrollRegion", ImVec2(0, 200), true, ImGuiWindowFlags_HorizontalScrollbar);
 
 	for (int i = 0; i < m_PrototypesStrVec.size(); i++)
 	{
-		if (strstr(m_PrototypesStrVec[i].c_str(), searchBuffer) != nullptr) // 검색어와 일치하는 경우에만 항목을 표시
+		if (strstr(m_PrototypesStrVec[i].c_str(), m_ComponentSearchBuffer) != nullptr) // 검색어와 일치하는 경우에만 항목을 표시
 		{
 			searchResults.push_back(i);
 		}
@@ -321,10 +378,43 @@ void CInspectorWindow::Delete_Button()
 
 void CInspectorWindow::Add_GameObject_Function()
 {
+	wstring name = CConversion::StringToWstring(m_ObjectAddNameBuffer);
+	CGameInstance* pGameInstance = CGameInstance::GetInstance();
+	pGameInstance->Add_GameObject(LEVEL_TOOL, TEXT("Prototype_GameObject_DummyObject"), TEXT("ObjectLayer"), name.c_str());
+
+	IMGUI->ChangeTree();
 }
 
 void CInspectorWindow::Delete_GameObject_Function()
 {
+}
+
+HRESULT CInspectorWindow::Place_Object()
+{
+	if (m_bPlaceObject == false) return E_FAIL;
+
+	if (CInput_Device::GetInstance()->Get_DIMouseState(CInput_Device::DIMK_LBUTTON) & 0x80)
+	{
+		CComponent* component = IMGUI->GetCurSelectComponent();
+		CTransform* transform = dynamic_cast<CTransform*>(component);
+		if (transform == nullptr) return E_FAIL;
+
+		CDummyObject* terrain = dynamic_cast<CDummyObject*>(IMGUI->Find_GameObject(L"Terrain"));
+
+		if (terrain == nullptr) return E_FAIL;
+
+		CVIBuffer_Terrain* terrainBuffer = dynamic_cast<CVIBuffer_Terrain*>(terrain->m_pVIBufferCom);
+		CTransform* terrainTransform = dynamic_cast<CTransform*>(terrain->m_pTransformCom);
+
+		_float4 pickingPos = CCalculator::Picking_OnTerrain(g_hWnd, g_iWinSizeX, g_iWinSizeY, terrainBuffer, terrainTransform);
+
+		transform->Set_Position(XMLoadFloat4(&pickingPos));
+
+		m_bPlaceObject = false;
+	}
+
+	
+	return S_OK;
 }
 
 

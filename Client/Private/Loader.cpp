@@ -4,6 +4,7 @@
 #include "BackGround.h"
 #include "Camera_Free.h"
 #include "Terrain.h"
+#include "CubeObject.h"
 
 CLoader::CLoader(ID3D11Device * pDevice, ID3D11DeviceContext * pContext)
 	: m_pDevice(pDevice)
@@ -119,6 +120,11 @@ HRESULT CLoader::Loading_For_GamePlay()
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Terrain/Tile%d.dds"), 2))))
 		return E_FAIL;
 
+	/* For.Prototype_Component_Texture_Cube */
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Cube"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/SkyBox/Sky_3.dds")))))
+		return E_FAIL;
+
 
 	lstrcpy(m_szLoading, TEXT("모델 로딩 중."));
 	/* For.Prototype_Component_VIBuffer_Terrain */
@@ -147,6 +153,11 @@ HRESULT CLoader::Loading_For_GamePlay()
 	/* For.Prototype_GameObject_Camera_Free */
 	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Camera_Free"),
 		CCamera_Free::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	/* For.Prototype_GameObject_CubeObject */
+	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_CubeObject"),
+		CCubeObject::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 	lstrcpy(m_szLoading, TEXT("로딩 완료."));

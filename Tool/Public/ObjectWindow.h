@@ -15,16 +15,14 @@ public:
 	_uint			GetInspectorMode();
 	wstring			GetCurSelectName() { return m_pCurSelectName; }
 	CComponent*		GetCurSelectComponent() { return m_pCurSelectComponent; }
+	void			ChangeTree() { m_bChangeTree = true; }
+	CGameObject*	Find_GameObject(const wstring& name);
 
 private:
 	virtual void	Rendering() override;
-
 	void			MakeTree();
-	void			ShowTree(const list<CComponent*>& compList, _bool root = true);
-	void			ChangeTree() { m_bChangeTree = true; }
+	void			ShowTree(const list<CComponent*>& compList, _bool root = true);	
 	void			SelectInspectorMode(const wstring& name);
-	
-	
 
 private:
 	list<CComponent*>		m_GameObjects;

@@ -28,8 +28,8 @@ HRESULT CDummyObject::Initialize(void* pArg)
 	if (FAILED(__super::Initialize(pArg)))
 		return E_FAIL;
 
-	/*if (FAILED(Add_Components()))
-		return E_FAIL;	*/
+	if (FAILED(Add_Components()))
+		return E_FAIL;	
 
 	return S_OK;
 }
@@ -79,21 +79,21 @@ HRESULT CDummyObject::Add_Components()
 		TEXT("Transform"), (CComponent**)&m_pTransformCom, this, &desc)))
 		return E_FAIL;
 
-	/* For.Com_VIBuffer */
-	if (FAILED(Add_Component(LEVEL_TOOL, TEXT("Prototype_Component_VIBuffer_Terrain"),
-		TEXT("VIBuffer"), (CComponent**)&m_pVIBufferCom, this)))
-		return E_FAIL;
+	///* For.Com_VIBuffer */
+	//if (FAILED(Add_Component(LEVEL_TOOL, TEXT("Prototype_Component_VIBuffer_Terrain"),
+	//	TEXT("VIBuffer"), (CComponent**)&m_pVIBufferCom, this)))
+	//	return E_FAIL;
 
-	/* For.Com_Shader */
-	if (FAILED(Add_Component(LEVEL_TOOL, TEXT("Prototype_Component_Shader_VtxNorTex"),
-		TEXT("Shader"), (CComponent**)&m_pShaderCom, this)))
-		return E_FAIL;
+	///* For.Com_Shader */
+	//if (FAILED(Add_Component(LEVEL_TOOL, TEXT("Prototype_Component_Shader_VtxNorTex"),
+	//	TEXT("Shader"), (CComponent**)&m_pShaderCom, this)))
+	//	return E_FAIL;
 
-	
-	/* For.Com_Texture */
-	if (FAILED(Add_Component(LEVEL_TOOL, TEXT("Prototype_Component_Texture_Terrain"),
-		TEXT("Texture"), (CComponent**)&m_pTextureCom, this)))
-		return E_FAIL;
+	//
+	///* For.Com_Texture */
+	//if (FAILED(Add_Component(LEVEL_TOOL, TEXT("Prototype_Component_Texture_Terrain"),
+	//	TEXT("Texture"), (CComponent**)&m_pTextureCom, this)))
+	//	return E_FAIL;
 
 	return S_OK;
 }
@@ -128,16 +128,22 @@ HRESULT CDummyObject::SetUp_ShaderResources()
 	if (FAILED(m_pShaderCom->Bind_Matrix("g_ProjMatrix",
 		&myMatrix)))
 		return E_FAIL;
-	
-	_float3 lightPos = _float3(500.f, 500.f, 500.f);
-
-	if (FAILED(m_pShaderCom->Bind_Float3("g_LightPosition", &lightPos)))
-		return E_FAIL;
-
-	Safe_Release(pGameInstance);
 
 	if (FAILED(m_pTextureCom->Bind_ShaderResources(m_pShaderCom, "g_Texture")))
 		return E_FAIL;
+	
+	/*_float3 lightPos = _float3(500.f, 500.f, 500.f);
+
+	if (FAILED(m_pShaderCom->Bind_Float3("g_LightPosition", &lightPos)))
+	{
+		Safe_Release(pGameInstance);
+		return E_FAIL;
+	}*/
+	
+	_float3 lightPos = _float3(500.f, 500.f, 500.f);
+	m_pShaderCom->Bind_Float3("g_LightPosition", &lightPos);
+
+	Safe_Release(pGameInstance);
 
 	return S_OK;
 }

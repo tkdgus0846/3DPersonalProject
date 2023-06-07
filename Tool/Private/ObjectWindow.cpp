@@ -26,6 +26,16 @@ CObjectWindow* CObjectWindow::Create(const WINDOWDESC& windowDesc)
 	return newWindow;
 }
 
+CGameObject* CObjectWindow::Find_GameObject(const wstring& name)
+{
+	for (CComponent* component : m_GameObjects)
+	{
+		if (lstrcmp(name.c_str(), component->GetName().c_str()) == 0)
+			return dynamic_cast<CGameObject*>(component);
+	}
+	return nullptr;
+}
+
 void CObjectWindow::Rendering()
 {
 	m_eInspectorMode = IM_DEFAULT;

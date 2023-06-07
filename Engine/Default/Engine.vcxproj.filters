@@ -73,9 +73,6 @@
     <Filter Include="01.Utility\03.Components\Transform">
       <UniqueIdentifier>{acd7ba18-5ad7-477e-ad9e-088edda6e102}</UniqueIdentifier>
     </Filter>
-    <Filter Include="01.Utility\04. PipeLine">
-      <UniqueIdentifier>{801af56a-c390-4572-9409-bea6be83f112}</UniqueIdentifier>
-    </Filter>
     <Filter Include="01.Utility\02.GameObjects\Camera">
       <UniqueIdentifier>{d26b8ef3-298a-44ca-b3d3-f5ed1135fec3}</UniqueIdentifier>
     </Filter>
@@ -87,6 +84,18 @@
     </Filter>
     <Filter Include="01.Utility\05.Lights\Manager">
       <UniqueIdentifier>{8b0e6cf4-db36-44cb-94c4-a3f59350e49c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\03.Components\Model">
+      <UniqueIdentifier>{3f318bc0-2e84-4a4a-8158-ea3777fa2dd2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\03.Components\Model\Mesh">
+      <UniqueIdentifier>{ee5e15d0-7906-424b-b319-a86796320d58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\04.PipeLine">
+      <UniqueIdentifier>{801af56a-c390-4572-9409-bea6be83f112}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\98.StaticClasses">
+      <UniqueIdentifier>{cf760690-b255-4506-9786-d36c857ddaec}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -161,7 +170,7 @@
       <Filter>01.Utility\00.GameInstance</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\PipeLine.h">
-      <Filter>01.Utility\04. PipeLine</Filter>
+      <Filter>01.Utility\04.PipeLine</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Camera.h">
       <Filter>01.Utility\02.GameObjects\Camera</Filter>
@@ -177,6 +186,18 @@
     </ClInclude>
     <ClInclude Include="..\Public\Light_Manager.h">
       <Filter>01.Utility\05.Lights\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\VIBuffer_Cube.h">
+      <Filter>01.Utility\03.Components\VIBuffer\Cube</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Model.h">
+      <Filter>01.Utility\03.Components\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Mesh.h">
+      <Filter>01.Utility\03.Components\Model\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\Calculator.h">
+      <Filter>01.Utility\98.StaticClasses</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -235,7 +256,7 @@
       <Filter>01.Utility\03.Components\Transform</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\PipeLine.cpp">
-      <Filter>01.Utility\04. PipeLine</Filter>
+      <Filter>01.Utility\04.PipeLine</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\VIBuffer_Terrain.cpp">
       <Filter>01.Utility\03.Components\VIBuffer\Terrain</Filter>
@@ -254,6 +275,18 @@
     </ClCompile>
     <ClCompile Include="..\Private\Light_Manager.cpp">
       <Filter>01.Utility\05.Lights\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\VIBuffer_Cube.cpp">
+      <Filter>01.Utility\03.Components\VIBuffer\Cube</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Model.cpp">
+      <Filter>01.Utility\03.Components\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Mesh.cpp">
+      <Filter>01.Utility\03.Components\Model\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Calculator.cpp">
+      <Filter>01.Utility\98.StaticClasses</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

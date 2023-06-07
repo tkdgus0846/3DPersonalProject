@@ -139,6 +139,14 @@ void CImGuiManager::HideAllWindows()
 		
 }
 
+void CImGuiManager::ChangeTree()
+{
+	CObjectWindow* objectWindow = dynamic_cast<CObjectWindow*>(m_WindowsMap[OBJECT_WINDOW_NAME]);
+	if (objectWindow == nullptr) return;
+
+	objectWindow->ChangeTree();
+}
+
 _uint CImGuiManager::GetInspectorMode()
 {
 	CObjectWindow* objectWindow = dynamic_cast<CObjectWindow*>(m_WindowsMap[OBJECT_WINDOW_NAME]);
@@ -161,6 +169,14 @@ CComponent* CImGuiManager::GetCurSelectComponent()
 	if (objectWindow == nullptr) return nullptr;
 
 	return objectWindow->GetCurSelectComponent();
+}
+
+CGameObject* CImGuiManager::Find_GameObject(const wstring& name)
+{
+	CObjectWindow* objectWindow = dynamic_cast<CObjectWindow*>(m_WindowsMap[OBJECT_WINDOW_NAME]);
+	if (objectWindow == nullptr) return nullptr;
+
+	return objectWindow->Find_GameObject(name);
 }
 
 void CImGuiManager::Free()

@@ -143,6 +143,48 @@ _long CGameInstance::Get_DIMouseMove(CInput_Device::MOUSEMOVESTATE eMouseMoveID)
 	return m_pInput_Device->Get_DIMouseMove(eMouseMoveID);
 }
 
+bool CGameInstance::Key_Pressing(_ubyte ubyKey)
+{
+	if (nullptr == m_pInput_Device)
+		return 0;
+	return m_pInput_Device->Key_Pressing(ubyKey);
+}
+
+bool CGameInstance::Key_Down(_ubyte ubyKey)
+{
+	if (nullptr == m_pInput_Device)
+		return 0;
+	return m_pInput_Device->Key_Down(ubyKey);
+}
+
+bool CGameInstance::Key_Up(_ubyte ubyKey)
+{
+	if (nullptr == m_pInput_Device)
+		return 0;
+	return m_pInput_Device->Key_Up(ubyKey);
+}
+
+bool CGameInstance::Mouse_Down(CInput_Device::MOUSEKEYSTATE eMouseID)
+{
+	if (nullptr == m_pInput_Device)
+		return 0;
+	return m_pInput_Device->Mouse_Down(eMouseID);
+}
+
+bool CGameInstance::Mouse_Pressing(CInput_Device::MOUSEKEYSTATE eMouseID)
+{
+	if (nullptr == m_pInput_Device)
+		return 0;
+	return m_pInput_Device->Mouse_Pressing(eMouseID);
+}
+
+bool CGameInstance::Mouse_Up(CInput_Device::MOUSEKEYSTATE eMouseID)
+{
+	if (nullptr == m_pInput_Device)
+		return 0;
+	return m_pInput_Device->Mouse_Up(eMouseID);
+}
+
 _double CGameInstance::Get_Timer(const _tchar * pTimerTag)
 {
 	if (nullptr == m_pTimer_Manager)

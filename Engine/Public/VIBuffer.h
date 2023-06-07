@@ -21,6 +21,7 @@ public:
 public:
 	virtual HRESULT Render();
 
+
 protected:
 	ID3D11Buffer*				m_pVB = { nullptr };
 	ID3D11Buffer*				m_pIB = { nullptr };

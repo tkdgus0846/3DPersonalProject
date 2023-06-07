@@ -44,6 +44,11 @@ HRESULT CTransform::Initialize(void* pArg)
 	return S_OK;
 }
 
+void CTransform::Set_Position(_fvector vPos)
+{
+	Set_State(STATE_POSITION, vPos);
+}
+
 void CTransform::Go_Straight(_double TimeDelta)
 {
 	_vector		vPosition = Get_State(STATE_POSITION);
@@ -132,8 +137,10 @@ void CTransform::LookAt(_fvector vTargetPosition)
 }
 
 /* 항등상태를 기준으로 지정한 각만큼 회전시킨다. */
-void CTransform::Rotation(_fvector vAxis, _float fRadian)
+void CTransform::Rotation(_fvector vAxis, _float fDegree)
 {
+	_float fRadian = XMConvertToRadians(fDegree);
+
 	_float3		vScaled = Get_Scaled();
 
 	_vector		vRight = XMVectorSet(1.f, 0.f, 0.f, 0.f) * vScaled.x;
@@ -147,6 +154,43 @@ void CTransform::Rotation(_fvector vAxis, _float fRadian)
 	Set_State(STATE_RIGHT, XMVector3TransformNormal(vRight, RotationMatrix));
 	Set_State(STATE_UP, XMVector3TransformNormal(vUp, RotationMatrix));
 	Set_State(STATE_LOOK, XMVector3TransformNormal(vLook, RotationMatrix));
+}
+
+void CTransform::Rotation(AXIS eAxis, _float fDegree)
+{
+	_vector vAxis;
+	switch(eAxis)
+	{
+	case AXIS_X:
+		vAxis = { 1.f,0.f,0.f,0.f };
+		m_Rotation.x = fDegree;
+		break;
+	case AXIS_Y:
+		vAxis = { 0.f,1.f,0.f,0.f };
+		m_Rotation.y = fDegree;
+		break;
+	case AXIS_Z:
+		vAxis = { 0.f,0.f,1.f,0.f };
+		m_Rotation.z = fDegree;
+		break;
+	default:
+		break;
+	}
+
+	_float fRadian = XMConvertToRadians(fDegree);
+
+	_float3		vScaled = Get_Scaled();
+
+	_vector		vRight = XMVectorSet(1.f, 0.f, 0.f, 0.f) * vScaled.x;
+	_vector		vUp = XMVectorSet(0.f, 1.f, 0.f, 0.f) * vScaled.y;
+	_vector		vLook = XMVectorSet(0.f, 0.f, 1.f, 0.f) * vScaled.z;
+
+	_matrix		RotationMatrix = XMMatrixRotationAxis(vAxis, fRadian);
+
+	Set_State(STATE_RIGHT, XMVector3TransformNormal(vRight, RotationMatrix));
+	Set_State(STATE_UP, XMVector3TransformNormal(vUp, RotationMatrix));
+	Set_State(STATE_LOOK, XMVector3TransformNormal(vLook, RotationMatrix));
+
 }
 
 void CTransform::Turn(_fvector vAxis, _double TimeDelta)

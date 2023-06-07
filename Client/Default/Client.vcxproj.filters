@@ -43,6 +43,9 @@
     <Filter Include="02.GameObjects\Camera\FreeCam">
       <UniqueIdentifier>{2540757b-fa0b-4298-a299-9f0d328edfdc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02.GameObjects\TestObject">
+      <UniqueIdentifier>{e194f5f7-a53a-4b3b-b16b-88cc45dac25e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -87,6 +90,9 @@
     <ClInclude Include="..\Public\Terrain.h">
       <Filter>02.GameObjects\Terrain</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\CubeObject.h">
+      <Filter>02.GameObjects\TestObject</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp">
@@ -119,6 +125,9 @@
     <ClCompile Include="..\Private\Terrain.cpp">
       <Filter>02.GameObjects\Terrain</Filter>
     </ClCompile>
+    <ClCompile Include="..\Private\CubeObject.cpp">
+      <Filter>02.GameObjects\TestObject</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Client.ico">
@@ -138,6 +147,12 @@
       <Filter>97.ShaderFiles</Filter>
     </FxCompile>
     <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxNorTex.hlsl">
+      <Filter>97.ShaderFiles</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxTexCube.hlsl">
+      <Filter>97.ShaderFiles</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Bin\ShaderFiles\Shader_VtxMesh.hlsl">
       <Filter>97.ShaderFiles</Filter>
     </FxCompile>
   </ItemGroup>
