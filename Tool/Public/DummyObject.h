@@ -9,6 +9,7 @@ class CTexture;
 class CRenderer;
 class CTransform;
 class CVIBuffer;
+class CModel;
 END
 
 class CDummyObject final : public CGameObject
@@ -28,6 +29,7 @@ public:
 
 private:
 	CShader*				m_pShaderCom = { nullptr };
+	CModel*					m_pModelCom = { nullptr };
 	CTexture*				m_pTextureCom = { nullptr };
 	CRenderer*				m_pRendererCom = { nullptr };	
 	CTransform*				m_pTransformCom = { nullptr };

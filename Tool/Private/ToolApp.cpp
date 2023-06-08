@@ -135,6 +135,27 @@ HRESULT CToolApp::Ready_Prototype_Component_For_Static()
 	/* Prototype_Component_Shader_VtxTexCube */
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_Shader_VtxTexCube"), CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxTexCube.hlsl"), VTXPOSTEXCUBE_DECL::Elements, VTXPOSTEXCUBE_DECL::iNumElements))))
 		return E_FAIL;
+
+	/* For.Prototype_Component_Shader_VtxMesh*/
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_Shader_VtxMesh"),
+		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxMesh.hlsl"), VTXMESH_DECL::Elements, VTXMESH_DECL::iNumElements))))
+		return E_FAIL;
+
+	/////////////////////////////////////
+	///////////////////////////////////////
+	/////////////// 모델 //////////////////
+	///////////////////////////////////
+	////////////////////////////////
+
+	/* For.Prototype_Component_Model_Fiona */
+
+	_matrix		PivotMatrix = XMMatrixIdentity();
+
+	/*PivotMatrix = XMMatrixRotationY(XMConvertToRadians(180.0f));*/
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_Model_Wolf"),
+		CModel::Create(m_pDevice, m_pContext, "../Bin/Resources/Models/Wolf.fbx", PivotMatrix))))
+		return E_FAIL;
+
 #pragma endregion  Component 추가
 	
 #pragma region 게임오브젝트 추가

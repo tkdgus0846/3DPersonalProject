@@ -127,6 +127,10 @@ void CObjectWindow::SelectInspectorMode(const wstring& name)
 	{
 		m_eInspectorMode = IM_RENDERER;
 	}
+	else if (name == L"Model")
+	{
+		m_eInspectorMode = IM_MODEL;
+	}
 	else
 	{
 		m_eInspectorMode = IM_GAMEOBJECT;

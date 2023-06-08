@@ -19,7 +19,13 @@ HRESULT CInspectorWindow::Initialize(const WINDOWDESC& desc)
 		string name = CConversion::WstringToString(item.first);
 		m_PrototypesStrVec.push_back(name);
 	}
-	
+
+	m_RenderGroupStrVec.push_back("RENDER_PRIORITY");
+	m_RenderGroupStrVec.push_back("RENDER_NONBLEND");
+	m_RenderGroupStrVec.push_back("RENDER_NONLIGHT");
+	m_RenderGroupStrVec.push_back("RENDER_BLEND");
+	m_RenderGroupStrVec.push_back("RENDER_UI");
+
 
 	return result;
 }
@@ -203,6 +209,28 @@ void CInspectorWindow::Mode_Animation()
 void CInspectorWindow::Mode_Renderer()
 {
 	
+
+	// ImGui 윈도우 업데이트 루프 내부에서 다음 코드를 사용합니다.
+	//ImGui::ListBox("Render Group", &m_CurRenderGroupSelectedItem, m_RenderGroupStrVec.data(), m_RenderGroupStrVec.size());
+
+	//// 선택된 항목에 대한 작업을 수행합니다.
+	//switch (selectedItem)
+	//{
+	//case 0:
+	//	// 첫 번째 항목 선택됨
+	//	break;
+	//case 1:
+	//	// 두 번째 항목 선택됨
+	//	break;
+	//case 2:
+	//	// 세 번째 항목 선택됨
+	//	break;
+	//case 3:
+	//	// 네 번째 항목 선택됨
+	//	break;
+	//default:
+	//	break;
+	//}
 }
 
 void CInspectorWindow::Mode_Default()
@@ -315,6 +343,13 @@ void CInspectorWindow::Add_Component_Function()
 			name = str;
 			FieldComp = (CComponent**)&gameObject->m_pTextureCom;
 		}
+		if (str.compare("Model") == 0)
+		{
+			if (gameObject->m_pModelCom != nullptr) return;
+
+			name = str;
+			FieldComp = (CComponent**)&gameObject->m_pModelCom;
+		}
 		
 	}
 
@@ -357,6 +392,10 @@ void CInspectorWindow::Delete_Component_Function()
 	if (str.compare("Texture") == 0)
 	{
 		resultCom = (CComponent**)&gameObject->m_pTextureCom;
+	}
+	if (str.compare("Model") == 0)
+	{
+		resultCom = (CComponent**)&gameObject->m_pModelCom;
 	}
 	
 	if (resultCom != nullptr && *resultCom != nullptr)

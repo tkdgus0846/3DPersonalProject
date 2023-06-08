@@ -55,11 +55,34 @@ HRESULT CDummyObject::Render()
 	if (FAILED(SetUp_ShaderResources()))
 		return E_FAIL;
 
-	if (m_pShaderCom != nullptr)
-		m_pShaderCom->Begin(m_iPassNum);
+	if (m_pModelCom == nullptr)
+	{
+		if (m_pShaderCom != nullptr)
+			m_pShaderCom->Begin(m_iPassNum);
 
-	if (m_pVIBufferCom != nullptr)
-		m_pVIBufferCom->Render();
+		if (m_pVIBufferCom != nullptr)
+			m_pVIBufferCom->Render();
+	}
+	else
+	{
+		if (m_pShaderCom != nullptr)
+		{
+			_uint		iNumMeshes = m_pModelCom->Get_NumMeshes();
+
+			for (size_t i = 0; i < iNumMeshes; i++)
+			{
+				m_pModelCom->Bind_Material(m_pShaderCom, "g_DiffuseTexture", i, aiTextureType_DIFFUSE);
+				/*m_pModelCom->Bind_Material(m_pShaderCom, "g_NormalTexture", i, aiTextureType_NORMALS);*/
+
+				m_pShaderCom->Begin(0);
+
+				m_pModelCom->Render(i);
+			}
+		}
+		
+	}
+
+	
 
 	// 객체의 로컬축을 나타내자.
 
@@ -100,11 +123,16 @@ HRESULT CDummyObject::Add_Components()
 
 HRESULT CDummyObject::SetUp_ShaderResources()
 {
-	if (m_pTransformCom == nullptr ||
-		m_pTextureCom == nullptr ||
-		m_pRendererCom == nullptr ||
-		m_pVIBufferCom == nullptr ||
-		m_pShaderCom == nullptr) 
+	_bool bContinue = true;
+	if (m_pModelCom == nullptr && (m_pTextureCom == nullptr || m_pVIBufferCom == nullptr))
+	{
+		bContinue = false;
+	}
+
+	if (m_pShaderCom == nullptr)
+		bContinue = false;
+	
+	if (bContinue == false) 
 		return E_FAIL;
 
 	_float4x4 myMatrix = m_pTransformCom->Get_WorldFloat4x4();
@@ -113,37 +141,24 @@ HRESULT CDummyObject::SetUp_ShaderResources()
 
 	_float4x4		ViewMatrix, ProjMatrix;
 
-	/*XMStoreFloat4x4(&ViewMatrix, XMMatrixLookAtLH(XMVectorSet(0.f, 6.f, -1.f, 1.f), XMVectorSet(0.f, 0.f, 2.f, 1.f), XMVectorSet(0.f, 1.f, 0.f, 0.f)));
-	XMStoreFloat4x4(&ProjMatrix, XMMatrixPerspectiveFovLH(XMConvertToRadians(60.0f), (_float)g_iWinSizeX / g_iWinSizeY, 0.2f, 300.f));
-*/
 	CGameInstance*		pGameInstance = CGameInstance::GetInstance();
-	Safe_AddRef(pGameInstance);
 
+	if (m_pModelCom == nullptr)
+	{
+		m_pTextureCom->Bind_ShaderResources(m_pShaderCom, "g_Texture");
+	}
+	
 	myMatrix = pGameInstance->Get_TransformFloat4x4(CPipeLine::D3DTS_VIEW);
-	if (FAILED(m_pShaderCom->Bind_Matrix("g_ViewMatrix", 
-		&myMatrix)))
-		return E_FAIL;
+	m_pShaderCom->Bind_Matrix("g_ViewMatrix", &myMatrix);
 
 	myMatrix = pGameInstance->Get_TransformFloat4x4(CPipeLine::D3DTS_PROJ);
-	if (FAILED(m_pShaderCom->Bind_Matrix("g_ProjMatrix",
-		&myMatrix)))
-		return E_FAIL;
-
-	if (FAILED(m_pTextureCom->Bind_ShaderResources(m_pShaderCom, "g_Texture")))
-		return E_FAIL;
+	m_pShaderCom->Bind_Matrix("g_ProjMatrix", &myMatrix);
 	
-	/*_float3 lightPos = _float3(500.f, 500.f, 500.f);
-
-	if (FAILED(m_pShaderCom->Bind_Float3("g_LightPosition", &lightPos)))
-	{
-		Safe_Release(pGameInstance);
-		return E_FAIL;
-	}*/
+	_float4 vCamPos = pGameInstance->Get_CamPosition();
+	m_pShaderCom->Bind_RawValue("g_vCamPosition", &vCamPos, sizeof(_float4));
 	
 	_float3 lightPos = _float3(500.f, 500.f, 500.f);
 	m_pShaderCom->Bind_Float3("g_LightPosition", &lightPos);
-
-	Safe_Release(pGameInstance);
 
 	return S_OK;
 }
@@ -180,6 +195,7 @@ void CDummyObject::Free()
 	Safe_Release(m_pTextureCom);
 	Safe_Release(m_pVIBufferCom);
 	Safe_Release(m_pRendererCom);
+	Safe_Release(m_pModelCom);
 
 	__super::Free();
 }

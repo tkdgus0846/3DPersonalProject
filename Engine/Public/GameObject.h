@@ -16,6 +16,9 @@ public:
 	virtual HRESULT Initialize(void* pArg) override;
 	virtual CGameObject* Clone(void* pArg) override PURE;
 
+	void	Change_RenderGroup(_uint eRenderGroup) { m_eRenderGroup = eRenderGroup; }
+	void	Change_PassNum(_uint iPassNum) { m_iPassNum = iPassNum; }
+
 protected:
 	_uint		m_iPassNum = { 0 };
 	_uint		m_eRenderGroup;

@@ -1,17 +1,18 @@
 #include "..\Public\Mesh.h"
 
-CMesh::CMesh(ID3D11Device * pDevice, ID3D11DeviceContext * pContext)
+CMesh::CMesh(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: CVIBuffer(pDevice, pContext)
 {
 }
 
-CMesh::CMesh(const CMesh & rhs)
+CMesh::CMesh(const CMesh& rhs)
 	: CVIBuffer(rhs)
 {
 }
 
-HRESULT CMesh::Initialize_Prototype(const aiMesh * pAIMesh)
+HRESULT CMesh::Initialize_Prototype(const aiMesh* pAIMesh, _fmatrix PivotMatrix)
 {
+	m_iMaterialIndex = pAIMesh->mMaterialIndex;
 	strcpy_s(m_szName, pAIMesh->mName.data);
 	m_iNumVertexBuffers = { 1 };
 	m_iStride = { sizeof(VTXMESH) };
@@ -33,13 +34,19 @@ HRESULT CMesh::Initialize_Prototype(const aiMesh * pAIMesh)
 	m_BufferDesc.MiscFlags = { 0 };
 
 
-	VTXMESH*		pVertices = new VTXMESH[m_iNumVertices];
+	VTXMESH* pVertices = new VTXMESH[m_iNumVertices];
 	ZeroMemory(pVertices, sizeof(VTXMESH) * m_iNumVertices);
 
 	for (size_t i = 0; i < m_iNumVertices; i++)
 	{
 		memcpy(&pVertices[i].vPosition, &pAIMesh->mVertices[i], sizeof(_float3));
-		memcpy(&pVertices[i].vNormal, &pAIMesh->mNormals[i], sizeof(_float3));				
+		XMStoreFloat3(&pVertices[i].vPosition,
+			XMVector3TransformCoord(XMLoadFloat3(&pVertices[i].vPosition), PivotMatrix));
+
+		memcpy(&pVertices[i].vNormal, &pAIMesh->mNormals[i], sizeof(_float3));
+		XMStoreFloat3(&pVertices[i].vNormal,
+			XMVector3TransformNormal(XMLoadFloat3(&pVertices[i].vNormal), PivotMatrix));
+
 		memcpy(&pVertices[i].vTexCoord, &pAIMesh->mTextureCoords[0][i], sizeof(_float2));
 		memcpy(&pVertices[i].vTangent, &pAIMesh->mTangents[i], sizeof(_float3));
 	}
@@ -64,12 +71,12 @@ HRESULT CMesh::Initialize_Prototype(const aiMesh * pAIMesh)
 	m_BufferDesc.CPUAccessFlags = { 0 };
 	m_BufferDesc.MiscFlags = { 0 };
 
-	_ulong*		pIndices = new _ulong[m_iNumIndices];
+	_ulong* pIndices = new _ulong[m_iNumIndices];
 	ZeroMemory(pIndices, sizeof(_ulong) * m_iNumIndices);
 
 	_uint		iNumFaces = { 0 };
 
-	for (size_t i = 0; i < pAIMesh->mNumFaces; i++)	
+	for (size_t i = 0; i < pAIMesh->mNumFaces; i++)
 	{
 		pIndices[iNumFaces++] = pAIMesh->mFaces[i].mIndices[0];
 		pIndices[iNumFaces++] = pAIMesh->mFaces[i].mIndices[1];
@@ -87,16 +94,16 @@ HRESULT CMesh::Initialize_Prototype(const aiMesh * pAIMesh)
 	return S_OK;
 }
 
-HRESULT CMesh::Initialize(void * pArg)
+HRESULT CMesh::Initialize(void* pArg)
 {
 	return S_OK;
 }
 
-CMesh * CMesh::Create(ID3D11Device * pDevice, ID3D11DeviceContext * pContext, const aiMesh * pAIMesh)
+CMesh* CMesh::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const aiMesh* pAIMesh, _fmatrix PivotMatrix)
 {
-	CMesh*	pInstance = new CMesh(pDevice, pContext);
+	CMesh* pInstance = new CMesh(pDevice, pContext);
 
-	if (FAILED(pInstance->Initialize_Prototype(pAIMesh)))
+	if (FAILED(pInstance->Initialize_Prototype(pAIMesh, PivotMatrix)))
 	{
 		MSG_BOX("Failed to Created CMesh");
 		Safe_Release(pInstance);
@@ -104,9 +111,9 @@ CMesh * CMesh::Create(ID3D11Device * pDevice, ID3D11DeviceContext * pContext, co
 	return pInstance;
 }
 
-CComponent * CMesh::Clone(void * pArg)
+CComponent* CMesh::Clone(void* pArg)
 {
-	CMesh*	pInstance = new CMesh(*this);
+	CMesh* pInstance = new CMesh(*this);
 
 	if (FAILED(pInstance->Initialize(pArg)))
 	{

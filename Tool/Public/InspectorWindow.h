@@ -16,6 +16,7 @@ enum InspectorMode
 	IM_ANIMATION,
 	IM_VIBUFFER,
 	IM_RENDERER,
+	IM_MODEL,
 
 	IM_DEFAULT,
 	IM_END
@@ -72,5 +73,9 @@ private:
 	_float scale[3] = { 1.f, 1.f, 1.f };
 	_bool m_bPlaceObject = { false };
 	_bool m_bScaleLock = { false };
+
+	/* 렌더러 관련 변수들*/
+	vector<string>			m_RenderGroupStrVec;
+	_uint					m_CurRenderGroupSelectedItem = { 0 };
 };
 
