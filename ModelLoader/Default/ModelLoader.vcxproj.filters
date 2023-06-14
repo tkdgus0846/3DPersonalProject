@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="ModelLoader.cpp" />
+    <ClCompile Include="AssimpMesh.cpp">
+      <Filter>ModelLoaderClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="AssimpModel.cpp">
+      <Filter>ModelLoaderClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>ModelLoaderClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="AssimpAnimation.cpp">
+      <Filter>ModelLoaderClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="AssimpBone.cpp">
+      <Filter>ModelLoaderClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="AssimpChannel.cpp">
+      <Filter>ModelLoaderClasses</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="ModelLoaderClasses">
+      <UniqueIdentifier>{981e9fdf-115d-4fc1-b6c8-dc70b3e92d8a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AssimpChannel.h">
+      <Filter>ModelLoaderClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="AssimpMesh.h">
+      <Filter>ModelLoaderClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="AssimpModel.h">
+      <Filter>ModelLoaderClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>ModelLoaderClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="AssimpAnimation.h">
+      <Filter>ModelLoaderClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="AssimpBone.h">
+      <Filter>ModelLoaderClasses</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

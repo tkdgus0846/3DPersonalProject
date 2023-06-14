@@ -18,6 +18,7 @@ public:
 public:
 	HRESULT Bind_RawValue(const _char * pConstantName, const void* pValue, _uint iLength);
 	HRESULT Bind_Matrix(const _char * pConstantName, const _float4x4 * pMatrix);
+	HRESULT Bind_Matrices(const _char * pConstantName, const _float4x4 * pMatrix, _uint iNumMatrices);
 	HRESULT Bind_Float3(const _char * pConstantName, const _float3 * pFloat3);
 	HRESULT Bind_Float4(const _char * pConstantName, const _float4 * pFloat4);
 	HRESULT Bind_ShaderResource(const _char * pConstantName, ID3D11ShaderResourceView * pSRV);

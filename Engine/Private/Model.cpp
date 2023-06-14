@@ -1,7 +1,9 @@
 #include "..\Public\Model.h"
 #include "Mesh.h"
+#include "Bone.h"
 #include "Shader.h"
 #include "Texture.h"
+#include "Animation.h"
 
 CModel::CModel(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: CComponent(pDevice, pContext)
@@ -14,7 +16,17 @@ CModel::CModel(const CModel& rhs)
 	, m_Meshes(rhs.m_Meshes)
 	, m_iNumMaterials(rhs.m_iNumMaterials)
 	, m_Materials(rhs.m_Materials)
+	, m_iNumAnimations(rhs.m_iNumAnimations)
+	, m_PivotMatrix(rhs.m_PivotMatrix)
 {
+	for (auto& pOriginalAnimation : rhs.m_Animations)
+		m_Animations.push_back(pOriginalAnimation->Clone());
+
+	for (auto& pOriginalBone : rhs.m_Bones)
+	{
+		m_Bones.push_back(pOriginalBone->Clone());
+	}
+
 	for (auto& pMesh : m_Meshes)
 		Safe_AddRef(pMesh);
 
@@ -25,19 +37,37 @@ CModel::CModel(const CModel& rhs)
 	}
 }
 
-HRESULT CModel::Initialize_Prototype(const char* pModelFilePath, _fmatrix PivotMatrix)
+HRESULT CModel::Initialize_Prototype(TYPE eType, const char* pModelFilePath, _fmatrix PivotMatrix)
 {
+	_uint		iFlag = 0;
 
-	m_pAIScene = m_Importer.ReadFile(pModelFilePath, aiProcess_PreTransformVertices | aiProcess_ConvertToLeftHanded | aiProcessPreset_TargetRealtime_Fast);
+	XMStoreFloat4x4(&m_PivotMatrix, PivotMatrix);
+
+	if (TYPE_NONANIM == eType)
+		iFlag = aiProcess_PreTransformVertices | aiProcess_ConvertToLeftHanded | aiProcessPreset_TargetRealtime_Fast;
+	else
+		iFlag = aiProcess_ConvertToLeftHanded | aiProcessPreset_TargetRealtime_Fast;
+
+	m_pAIScene = m_Importer.ReadFile(pModelFilePath, iFlag);
 
 	if (nullptr == m_pAIScene)
 		return E_FAIL;
 
-	if (FAILED(Ready_Meshes(PivotMatrix)))
+	if (FAILED(Ready_Bones(m_pAIScene->mRootNode, nullptr)))
+		return E_FAIL;
+
+	if (FAILED(Ready_Meshes(eType, PivotMatrix)))
 		return E_FAIL;
 
 	if (FAILED(Ready_Materials(pModelFilePath)))
 		return E_FAIL;
+
+	if (FAILED(Ready_Animations()))
+		return E_FAIL;
+
+
+
+
 
 	return S_OK;
 }
@@ -54,6 +84,22 @@ HRESULT CModel::Render(_uint iMeshIndex)
 	return S_OK;
 }
 
+void CModel::Play_Animation(_double TimeDelta)
+{
+	/* 어떤 애니메이션을 재생하려고하는지?! */
+	/* 이 애니메이션은 어떤 뼈를 사용하는지?! */
+	/* 뼈들은 각각 어떤 상태(TransformationMatrix)를 취하고 있어야하는가?! */
+
+	/* 현재 애니메이션에서 사용하는 뼈들을 찾아서 해당 뼈들의 TransformationMatrix를 갱신한다. */
+	m_Animations[m_iCurrentAnimIndex]->Invalidate_TransformationMatrix(m_Bones, TimeDelta);
+
+	/* 모델에 표현되어있는 모든 뼈들의 CombinedTransformationMatrix */
+	for (auto& pBone : m_Bones)
+	{
+		pBone->Invalidate_CombinedTransformationMatrix(m_Bones);
+	}
+}
+
 HRESULT CModel::Bind_Material(CShader* pShader, const char* pConstantName, _uint iMeshIndex, aiTextureType MaterialType)
 {
 	if (iMeshIndex >= m_iNumMeshes ||
@@ -63,14 +109,27 @@ HRESULT CModel::Bind_Material(CShader* pShader, const char* pConstantName, _uint
 	return m_Materials[m_Meshes[iMeshIndex]->Get_MaterialIndex()].pMtrlTexture[MaterialType]->Bind_ShaderResource(pShader, pConstantName);
 }
 
+HRESULT CModel::Bind_BoneMatrices(CShader* pShader, const char* pConstantName, _uint iMeshIndex)
+{
+	_float4x4		BoneMatrices[256];
+	ZeroMemory(BoneMatrices, sizeof(_float4x4) * 256);
 
-HRESULT CModel::Ready_Meshes(_fmatrix PivotMatrix)
+	/* iMeshIndex번째 메시가 사용하느 ㄴ뼈들의 행려을 가져와서 BoneMatrices에 넣어준다. */
+	m_Meshes[iMeshIndex]->Get_Matrices(m_Bones, BoneMatrices, XMLoadFloat4x4(&m_PivotMatrix));
+
+	pShader->Bind_Matrices(pConstantName, BoneMatrices, 256);
+
+	return S_OK;
+}
+
+
+HRESULT CModel::Ready_Meshes(TYPE eType, _fmatrix PivotMatrix)
 {
 	m_iNumMeshes = m_pAIScene->mNumMeshes;
 
 	for (size_t i = 0; i < m_iNumMeshes; i++)
 	{
-		CMesh* pMesh = CMesh::Create(m_pDevice, m_pContext, m_pAIScene->mMeshes[i], PivotMatrix);
+		CMesh* pMesh = CMesh::Create(m_pDevice, m_pContext, eType, m_Bones, m_pAIScene->mMeshes[i], PivotMatrix);
 		if (nullptr == pMesh)
 			return E_FAIL;
 
@@ -126,11 +185,43 @@ HRESULT CModel::Ready_Materials(const char* pModelFilePath)
 	return S_OK;
 }
 
-CModel* CModel::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const char* pModelFilePath, _fmatrix PivotMatrix)
+HRESULT CModel::Ready_Bones(aiNode* pNode, CBone* pParent)
+{
+	CBone* pBone = CBone::Create(pNode, pParent, m_Bones.size());
+	if (nullptr == pBone)
+		return E_FAIL;
+
+	m_Bones.push_back(pBone);
+
+	for (size_t i = 0; i < pNode->mNumChildren; ++i)
+	{
+		Ready_Bones(pNode->mChildren[i], pBone);
+	}
+
+	return S_OK;
+}
+
+HRESULT CModel::Ready_Animations()
+{
+	m_iNumAnimations = m_pAIScene->mNumAnimations;
+
+	for (size_t i = 0; i < m_iNumAnimations; ++i)
+	{
+		CAnimation* pAnimation = CAnimation::Create(m_pAIScene->mAnimations[i], m_Bones);
+		if (nullptr == pAnimation)
+			return E_FAIL;
+
+		m_Animations.push_back(pAnimation);
+	}
+
+	return S_OK;
+}
+
+CModel* CModel::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, TYPE eType, const char* pModelFilePath, _fmatrix PivotMatrix)
 {
 	CModel* pInstance = new CModel(pDevice, pContext);
 
-	if (FAILED(pInstance->Initialize_Prototype(pModelFilePath, PivotMatrix)))
+	if (FAILED(pInstance->Initialize_Prototype(eType, pModelFilePath, PivotMatrix)))
 	{
 		MSG_BOX("Failed to Created CModel");
 		Safe_Release(pInstance);
@@ -166,4 +257,14 @@ void CModel::Free()
 		Safe_Release(pMesh);
 
 	m_Meshes.clear();
+
+	for (auto& pBone : m_Bones)
+		Safe_Release(pBone);
+
+	m_Bones.clear();
+
+	for (auto& pAnimation : m_Animations)
+		Safe_Release(pAnimation);
+
+	m_Animations.clear();
 }

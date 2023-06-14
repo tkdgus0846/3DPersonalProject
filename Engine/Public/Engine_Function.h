@@ -77,6 +77,7 @@ namespace Engine
 		const wchar_t*		m_pTargetTag = nullptr;
 	};
 
+#ifndef __MODEL_LOADER
 	class CConversion
 	{
 	public:
@@ -113,5 +114,6 @@ namespace Engine
 			return v;
 		}
 	};
+#endif
 
 }

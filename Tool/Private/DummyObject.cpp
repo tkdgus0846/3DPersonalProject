@@ -37,6 +37,9 @@ HRESULT CDummyObject::Initialize(void* pArg)
 void CDummyObject::Tick(_double TimeDelta)
 {
  	__super::Tick(TimeDelta);
+
+	if (m_pModelCom != nullptr)
+		m_pModelCom->Play_Animation(TimeDelta);
 }
 
 void CDummyObject::Late_Tick(_double TimeDelta)
@@ -71,6 +74,8 @@ HRESULT CDummyObject::Render()
 
 			for (size_t i = 0; i < iNumMeshes; i++)
 			{
+				m_pModelCom->Bind_BoneMatrices(m_pShaderCom, "g_BoneMatrices", i);
+
 				m_pModelCom->Bind_Material(m_pShaderCom, "g_DiffuseTexture", i, aiTextureType_DIFFUSE);
 				/*m_pModelCom->Bind_Material(m_pShaderCom, "g_NormalTexture", i, aiTextureType_NORMALS);*/
 

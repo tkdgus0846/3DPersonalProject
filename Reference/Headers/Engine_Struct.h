@@ -15,6 +15,14 @@ namespace Engine
 		class CTexture* pMtrlTexture[AI_TEXTURE_TYPE_MAX];
 	}MESHMATERIAL;
 
+	typedef struct tagKeyFrame
+	{
+		XMFLOAT3		vScale;
+		XMFLOAT4		vRotation;
+		XMFLOAT3		vTranslation;
+		double			Time;
+	}KEYFRAME;
+
 	typedef struct tagVertex_Position_TexCoord
 	{
 		XMFLOAT3		vPosition;
@@ -74,5 +82,108 @@ namespace Engine
 		_float3 vVertex1;
 		_float3 vVertex2;
 		_float3 vVertex3;
+	};
+
+	typedef struct tagVertex_AnimMesh
+	{
+		XMFLOAT3		vPosition;
+		XMFLOAT3		vNormal;
+		XMFLOAT2		vTexCoord;
+		XMFLOAT3		vTangent;
+		XMUINT4			vBlendIndices; /* 이 정점은 어떤 뼈들(최대4개)의 상태행렬 받아서 처리되야하는가?! : 뼈(모델X, 메시O)의 인덱스 */
+		XMFLOAT4		vBlendWeights; /* 네개뼈를 이용하되 각 뼈의 상태행렬을 몇퍼센트(1을 기준으로 표현한 비율)나 이용하는가?! */
+	}VTXANIMMESH;
+
+	typedef struct ENGINE_DLL tagVertex_AnimMesh_Declaration
+	{
+		static const unsigned int				iNumElements = { 6 };
+		static const D3D11_INPUT_ELEMENT_DESC			Elements[6];
+	}VTXANIMMESH_DECL;
+
+	struct ParsingData
+	{
+	};
+
+	class ENGINE_DLL ISerializable abstract
+	{
+	public:
+		virtual HRESULT Save_Data(ParsingData* data) PURE;
+		virtual HRESULT Load_Data(ParsingData* data) PURE;
+	};
+
+	// Load 기능만 구현하고 싶으면 상속
+	class ENGINE_DLL IReadable : public ISerializable
+	{
+	public:
+		virtual HRESULT Save_Data(ParsingData* data) final { return S_OK; };
+	};
+
+	// Save 기능만 구현하고 싶으면 상속
+	class ENGINE_DLL IWriteable : public ISerializable
+	{
+	public:
+		virtual HRESULT Load_Data(ParsingData* data) final { return S_OK; };
+	};
+
+	struct MeshParsingData : public ParsingData
+	{
+		_char				szName[FILE_NAME_SIZE];
+		_uint				iMaterialIndex;
+		_uint				iNumVertices;
+		_uint				iNumIndices;
+		vector<_ulong>		Indices;
+		vector<VTXANIMMESH> Vertices;
+		_uint				iNumBones;
+		vector<_uint>		BoneIndices;
+	};
+
+	struct BoneParsingData : public ParsingData
+	{
+		_char				szName[FILE_NAME_SIZE];
+		_float4x4			TransformationMatrix;
+		_float4x4			CombinedTransformationMatrix;
+		_float4x4			OffsetMatrix;
+		_int				iParentIndex;
+		_uint				iIndex;
+
+	};
+
+	struct ChannelParsingData : public ParsingData
+	{
+		_char				szName[FILE_NAME_SIZE];
+		_uint				iNumKeyFrames;
+		vector<KEYFRAME>	KeyFrames;
+		_uint				iBoneIndex;
+	};
+	struct AnimationParsingData : public ParsingData
+	{
+		vector<ChannelParsingData>	ChannelDatas;
+		_char						szName[FILE_NAME_SIZE];
+		_uint						iNumChannels;
+		_double						Duration;
+		_double						TickPerSecond;
+	};
+
+	struct ModelParsingData : public ParsingData
+	{
+		/////////////////// 모델 변수들 저장 ///////////////
+		_uint				iNumMeshes;
+		_uint				iNumMaterials;
+		vector<char*>		MaterialPaths;
+		_uint				iNumAnimations;
+
+		/////////////////// 메쉬 저장 //////////////////////
+		vector<MeshParsingData> MeshDatas;
+
+		////////////////// 뼈 저장 ////////////////////////
+		vector<BoneParsingData> BoneDatas;
+
+		///////////////// 애니메이션 저장 ///////////////////
+		vector<AnimationParsingData> AnimationDatas;
+	};
+
+	struct ObjectParsingData : public ParsingData
+	{
+
 	};
 }

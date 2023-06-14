@@ -97,6 +97,15 @@
     <Filter Include="01.Utility\98.StaticClasses">
       <UniqueIdentifier>{cf760690-b255-4506-9786-d36c857ddaec}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Utility\03.Components\Model\Bone">
+      <UniqueIdentifier>{97c0fe90-a8f5-4f17-a97e-360a115e2f54}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\03.Components\Model\Animation">
+      <UniqueIdentifier>{70c987ce-c6a2-4c4b-9fe4-abf04d5bc78c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\03.Components\Model\Animation\Channel">
+      <UniqueIdentifier>{d7d2d037-ba63-49a7-940e-03153ff73079}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\public\Base.h">
@@ -199,6 +208,18 @@
     <ClInclude Include="..\public\Calculator.h">
       <Filter>01.Utility\98.StaticClasses</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\Animation.h">
+      <Filter>01.Utility\03.Components\Model\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Channel.h">
+      <Filter>01.Utility\03.Components\Model\Animation\Channel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Bone.h">
+      <Filter>01.Utility\03.Components\Model\Bone</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\DataParsing.h">
+      <Filter>01.Utility\98.StaticClasses</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\private\Base.cpp">
@@ -286,6 +307,18 @@
       <Filter>01.Utility\03.Components\Model\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="..\private\Calculator.cpp">
+      <Filter>01.Utility\98.StaticClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Animation.cpp">
+      <Filter>01.Utility\03.Components\Model\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Bone.cpp">
+      <Filter>01.Utility\03.Components\Model\Bone</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Channel.cpp">
+      <Filter>01.Utility\03.Components\Model\Animation\Channel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\DataParsing.cpp">
       <Filter>01.Utility\98.StaticClasses</Filter>
     </ClCompile>
   </ItemGroup>

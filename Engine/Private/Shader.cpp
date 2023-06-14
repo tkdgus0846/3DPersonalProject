@@ -101,6 +101,24 @@ HRESULT CShader::Bind_Matrix(const _char* pConstantName, const _float4x4* pMatri
 	return pVariableMatrix->SetMatrix((_float*)pMatrix);
 }
 
+HRESULT CShader::Bind_Matrices(const _char* pConstantName, const _float4x4* pMatrix, _uint iNumMatrices)
+{
+	if (nullptr == m_pEffect)
+		return E_FAIL;
+
+	/* 해당하는 이름의 전역변수에 해당하는 컴객체를 얻어오낟. */
+	ID3DX11EffectVariable* pVariable = m_pEffect->GetVariableByName(pConstantName);
+	if (nullptr == pVariable)
+		return E_FAIL;
+
+	ID3DX11EffectMatrixVariable* pVariableMatrix = pVariable->AsMatrix();
+	if (nullptr == pVariableMatrix)
+		return E_FAIL;
+
+	/* 해당 컴객체로 변수에 값을 던진다. */
+	return pVariableMatrix->SetMatrixArray((_float*)pMatrix, 0, iNumMatrices);
+}
+
 HRESULT CShader::Bind_Float3(const _char* pConstantName, const _float3* pFloat3)
 {
 	if (nullptr == m_pEffect)
