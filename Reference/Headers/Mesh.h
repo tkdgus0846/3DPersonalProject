@@ -5,9 +5,10 @@
 
 BEGIN(Engine)
 
-class CMesh final : public CVIBuffer
+class CMesh final : public CVIBuffer, public IReadable
 {
-private:
+public:
+	CMesh() : CVIBuffer(nullptr, nullptr) {}
 	CMesh(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	CMesh(const CMesh& rhs);
 
@@ -21,7 +22,7 @@ public:
 	void Get_Matrices(CModel::BONES Bones, _float4x4* pMatrices, _fmatrix PivotMatrix);
 
 public:
-	virtual HRESULT Initialize_Prototype(CModel::TYPE eType, const CModel::BONES& Bones, const aiMesh* pAIMesh, _fmatrix PivotMatrix);
+	virtual HRESULT Initialize_Prototype(CModel::TYPE eType, const CModel::BONES& Bones, ParsingData* pData, _fmatrix PivotMatrix);
 	virtual HRESULT Initialize(void* pArg) override;
 
 private:
@@ -33,13 +34,15 @@ private:
 	vector<_uint>	m_BoneIndices; /* ∏µ®ø° ∑ŒµÂ«ÿ≥ı¿∫ ¿¸√ºª¿¿« ¿Œµ¶Ω∫. */
 
 private:
-	HRESULT Ready_VertexBuffer_NonAnim(const aiMesh* pAIMesh, _fmatrix PivotMatrix);
-	HRESULT Ready_VertexBuffer_Anim(const aiMesh* pAIMesh, const CModel::BONES& Bones);
+	HRESULT Ready_VertexBuffer_NonAnim(MeshParsingData* pData, _fmatrix PivotMatrix);
+	HRESULT Ready_VertexBuffer_Anim(MeshParsingData* pData, const CModel::BONES& Bones);
 
 public:
-	static CMesh* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, CModel::TYPE eType, const CModel::BONES& Bones, const aiMesh* pAIMesh, _fmatrix PivotMatrix);
+	static CMesh* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, CModel::TYPE eType, const CModel::BONES& Bones, ParsingData* pData, _fmatrix PivotMatrix);
 	virtual CComponent* Clone(void* pArg) override;
 	virtual void Free() override;
+
+	virtual ParsingData* Load_Data(HANDLE handle, ParsingData* data) final;
 };
 
 END

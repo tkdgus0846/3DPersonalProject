@@ -4,6 +4,7 @@
 #include "Shader.h"
 #include "Texture.h"
 #include "Animation.h"
+#include <DataParsing.h>
 
 CModel::CModel(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: CComponent(pDevice, pContext)
@@ -17,6 +18,7 @@ CModel::CModel(const CModel& rhs)
 	, m_iNumMaterials(rhs.m_iNumMaterials)
 	, m_Materials(rhs.m_Materials)
 	, m_iNumAnimations(rhs.m_iNumAnimations)
+	, m_iNumBones(rhs.m_iNumBones)
 	, m_PivotMatrix(rhs.m_PivotMatrix)
 {
 	for (auto& pOriginalAnimation : rhs.m_Animations)
@@ -39,33 +41,41 @@ CModel::CModel(const CModel& rhs)
 
 HRESULT CModel::Initialize_Prototype(TYPE eType, const char* pModelFilePath, _fmatrix PivotMatrix)
 {
-	_uint		iFlag = 0;
+	//_uint		iFlag = 0;
 
-	XMStoreFloat4x4(&m_PivotMatrix, PivotMatrix);
-
-	if (TYPE_NONANIM == eType)
+	/*if (TYPE_NONANIM == eType)
 		iFlag = aiProcess_PreTransformVertices | aiProcess_ConvertToLeftHanded | aiProcessPreset_TargetRealtime_Fast;
 	else
 		iFlag = aiProcess_ConvertToLeftHanded | aiProcessPreset_TargetRealtime_Fast;
 
-	m_pAIScene = m_Importer.ReadFile(pModelFilePath, iFlag);
+	m_pAIScene = m_Importer.ReadFile(pModelFilePath, iFlag);*/
 
-	if (nullptr == m_pAIScene)
+	/*if (nullptr == m_pAIScene)
+		return E_FAIL;*/
+
+	/*char ch[MAX_PATH];
+	strcpy(ch, pModelFilePath);*/
+	string path = pModelFilePath;
+	wstring finalPath = CConversion::StringToWstring(path);
+	
+	ModelParsingData* myData = (ModelParsingData*)CDataParsing::Load_File(finalPath.c_str(), this);
+
+	XMStoreFloat4x4(&m_PivotMatrix, PivotMatrix);
+
+	if (FAILED(Ready_Bones(myData)))
 		return E_FAIL;
 
-	if (FAILED(Ready_Bones(m_pAIScene->mRootNode, nullptr)))
+	if (FAILED(Ready_Meshes(myData, eType, PivotMatrix)))
 		return E_FAIL;
 
-	if (FAILED(Ready_Meshes(eType, PivotMatrix)))
-		return E_FAIL;
+	//if (FAILED(Ready_Materials(myData)))
+	//	return E_FAIL;
 
-	if (FAILED(Ready_Materials(pModelFilePath)))
-		return E_FAIL;
-
-	if (FAILED(Ready_Animations()))
+	if (FAILED(Ready_Animations(myData)))
 		return E_FAIL;
 
 
+	Safe_Delete(myData);
 
 
 
@@ -123,13 +133,12 @@ HRESULT CModel::Bind_BoneMatrices(CShader* pShader, const char* pConstantName, _
 }
 
 
-HRESULT CModel::Ready_Meshes(TYPE eType, _fmatrix PivotMatrix)
+HRESULT CModel::Ready_Meshes(ModelParsingData* parsingData,  TYPE eType, _fmatrix PivotMatrix)
 {
-	m_iNumMeshes = m_pAIScene->mNumMeshes;
 
 	for (size_t i = 0; i < m_iNumMeshes; i++)
 	{
-		CMesh* pMesh = CMesh::Create(m_pDevice, m_pContext, eType, m_Bones, m_pAIScene->mMeshes[i], PivotMatrix);
+		CMesh* pMesh = CMesh::Create(m_pDevice, m_pContext, eType, m_Bones, &parsingData->MeshDatas[i], PivotMatrix);
 		if (nullptr == pMesh)
 			return E_FAIL;
 
@@ -138,76 +147,25 @@ HRESULT CModel::Ready_Meshes(TYPE eType, _fmatrix PivotMatrix)
 	return S_OK;
 }
 
-HRESULT CModel::Ready_Materials(const char* pModelFilePath)
+HRESULT CModel::Ready_Bones(ModelParsingData* parsingData)
 {
-	/* 현재 모델에게 부여할 수 있는 재질(Diffuse, Normal, Specular etc) 텍스쳐의 갯수. */
-	m_iNumMaterials = m_pAIScene->mNumMaterials;
-
-	for (size_t i = 0; i < m_iNumMaterials; i++)
+	for (int i = 0; i < m_iNumBones; i++)
 	{
-		MESHMATERIAL			MeshMaterial;
-		ZeroMemory(&MeshMaterial, sizeof MeshMaterial);
+		CBone* pBone = CBone::Create(&parsingData->BoneDatas[i]);
+		if (nullptr == pBone)
+			return E_FAIL;
 
-		for (size_t j = 0; j < AI_TEXTURE_TYPE_MAX; j++)
-		{
-			aiString	strPath;
-
-			if (FAILED(m_pAIScene->mMaterials[i]->GetTexture(aiTextureType(j), 0, &strPath)))
-				continue;
-
-			char		szDrive[MAX_PATH] = "";
-			char		szDirectory[MAX_PATH] = "";
-			_splitpath_s(pModelFilePath, szDrive, MAX_PATH, szDirectory, MAX_PATH, nullptr, 0, nullptr, 0);
-
-			char		szFileName[MAX_PATH] = "";
-			char		szExt[MAX_PATH] = "";
-			_splitpath_s(strPath.data, nullptr, 0, nullptr, 0, szFileName, MAX_PATH, szExt, MAX_PATH);
-
-			char		szFullPath[MAX_PATH] = "";
-			strcpy_s(szFullPath, szDrive);
-			strcat_s(szFullPath, szDirectory);
-			strcat_s(szFullPath, szFileName);
-			strcat_s(szFullPath, szExt);
-
-			_tchar		wszFullPath[MAX_PATH] = TEXT("");
-
-			MultiByteToWideChar(CP_ACP, 0, szFullPath, strlen(szFullPath),
-				wszFullPath, MAX_PATH);
-
-			MeshMaterial.pMtrlTexture[j] = CTexture::Create(m_pDevice, m_pContext, wszFullPath, 1);
-			if (nullptr == MeshMaterial.pMtrlTexture[j])
-				return E_FAIL;
-		}
-
-		m_Materials.push_back(MeshMaterial);
+		m_Bones.push_back(pBone);
 	}
 
 	return S_OK;
 }
 
-HRESULT CModel::Ready_Bones(aiNode* pNode, CBone* pParent)
+HRESULT CModel::Ready_Animations(ModelParsingData* parsingData)
 {
-	CBone* pBone = CBone::Create(pNode, pParent, m_Bones.size());
-	if (nullptr == pBone)
-		return E_FAIL;
-
-	m_Bones.push_back(pBone);
-
-	for (size_t i = 0; i < pNode->mNumChildren; ++i)
-	{
-		Ready_Bones(pNode->mChildren[i], pBone);
-	}
-
-	return S_OK;
-}
-
-HRESULT CModel::Ready_Animations()
-{
-	m_iNumAnimations = m_pAIScene->mNumAnimations;
-
 	for (size_t i = 0; i < m_iNumAnimations; ++i)
 	{
-		CAnimation* pAnimation = CAnimation::Create(m_pAIScene->mAnimations[i], m_Bones);
+		CAnimation* pAnimation = CAnimation::Create(&parsingData->AnimationDatas[i]);
 		if (nullptr == pAnimation)
 			return E_FAIL;
 
@@ -267,4 +225,81 @@ void CModel::Free()
 		Safe_Release(pAnimation);
 
 	m_Animations.clear();
+}
+
+ParsingData* CModel::Load_Data(HANDLE handle, ParsingData* data)
+{
+	///////////////////////////////////////
+	////////////////////////////////////////
+	///////////////////////////////// 아래부터 파일불러오기
+
+	ModelParsingData* myData = new ModelParsingData;
+
+	DWORD dwByte = 0;
+	char str[MAX_PATH];
+
+	ReadFile(handle, &m_iNumMeshes, sizeof(_uint), &dwByte, nullptr);
+	ReadFile(handle, &m_iNumMaterials, sizeof(_uint), &dwByte, nullptr);
+	ReadFile(handle, &m_iNumAnimations, sizeof(_uint), &dwByte, nullptr);
+	ReadFile(handle, &m_iNumBones, sizeof(_uint), &dwByte, nullptr);
+
+	myData->iNumMeshes = m_iNumMeshes; // 저장
+	myData->iNumMaterials = m_iNumMaterials; // 저장
+	myData->iNumAnimations = m_iNumAnimations;
+	myData->iNumBones = m_iNumBones;
+
+	///////// 텍스쳐 경로 저장/////////////// 요건 나중에
+	/*m_Materials.push_back();
+	for (auto path : m_MaterialPaths)
+	{
+		if (path == nullptr) continue;
+		str = path;
+		WriteFile(handle, &str, sizeof(str), &dwByte, nullptr);
+	}*/
+
+	for (int i = 0; i < m_iNumMaterials; i++)
+	{
+		MESHMATERIAL			MeshMaterial;
+		ZeroMemory(&MeshMaterial, sizeof MeshMaterial);
+		for (size_t j = 0; j < AI_TEXTURE_TYPE_MAX; j++)
+		{
+			ReadFile(handle, &str, sizeof(str), &dwByte, nullptr);
+
+			if (strcmp("NULL", str) == 0) continue;
+
+			wstring wszFullPath = CConversion::StringToWstring(str);
+
+			MeshMaterial.pMtrlTexture[j] = CTexture::Create(m_pDevice, m_pContext, wszFullPath.c_str(), 1);
+			if (nullptr == MeshMaterial.pMtrlTexture[j])
+				return nullptr;
+		}
+		m_Materials.push_back(MeshMaterial);
+	}
+
+	
+	// 리드파일 해서 myData로 올리기만 하면됨 .
+
+	CMesh mesh;
+	CBone bone;
+	CAnimation Animation;
+
+	///////// 메쉬 정보 저장///////////////
+	for (int i = 0; i < m_iNumMeshes; i++)
+	{
+		mesh.Load_Data(handle, myData);
+	}
+
+	///////// 뼈 정보 저장///////////////
+	for (int i = 0; i < m_iNumBones; i++)
+	{
+		bone.Load_Data(handle, myData);
+	}
+
+	///////// 애니메이션 정보 저장///////////////
+	for (int i = 0; i < m_iNumAnimations; i++)
+	{
+		Animation.Load_Data(handle, myData);
+	}
+
+	return myData;
 }

@@ -15,15 +15,22 @@ CBone::CBone(const CBone & rhs)
 }
 
 
-HRESULT CBone::Initialize(aiNode * pAINode, CBone * pParent, _uint iIndex)
+HRESULT CBone::Initialize(ParsingData* pData)
 {
-	strcpy_s(m_szName, pAINode->mName.data);
-	memcpy(&m_TransformationMatrix, &pAINode->mTransformation, sizeof(_float4x4));
+	BoneParsingData* data = (BoneParsingData*)pData;
+
+
+	strcpy(m_szName, data->szName);
+	
+	memcpy(&m_TransformationMatrix, &data->TransformationMatrix, sizeof(_float4x4));
 	XMStoreFloat4x4(&m_TransformationMatrix, XMMatrixTranspose(XMLoadFloat4x4(&m_TransformationMatrix)));
 	XMStoreFloat4x4(&m_CombinedTransformationMatrix, XMMatrixIdentity());
-	m_OffsetMatrix = m_CombinedTransformationMatrix;
-	m_iParentIndex = pParent == nullptr ? -1 : pParent->m_iIndex;
-	m_iIndex = iIndex;
+
+	memcpy(&m_OffsetMatrix, &data->OffsetMatrix, sizeof(_float4x4));
+	memcpy(&m_CombinedTransformationMatrix, &data->CombinedTransformationMatrix, sizeof(_float4x4));
+	
+	m_iParentIndex = data->iParentIndex;
+	m_iIndex = data->iIndex;
 
 	return S_OK;
 }
@@ -44,11 +51,11 @@ void CBone::Invalidate_CombinedTransformationMatrix(const CModel::BONES& Bones)
 	
 }
 
-CBone * CBone::Create(aiNode * pAINode, CBone * pParent, _uint iIndex)
+CBone * CBone::Create(ParsingData* pData)
 {
 	CBone*	pInstance = new CBone();
 
-	if (FAILED(pInstance->Initialize(pAINode, pParent, iIndex)))
+	if (FAILED(pInstance->Initialize(pData)))
 	{
 		MSG_BOX("Failed to Created CBone");
 		Safe_Release(pInstance);
@@ -64,4 +71,25 @@ CBone * CBone::Clone()
 void CBone::Free()
 {
 
+}
+
+ParsingData* CBone::Load_Data(HANDLE handle, ParsingData* data)
+{
+	DWORD dwByte = 0;
+	char str[MAX_PATH];
+	ModelParsingData* myData = (ModelParsingData*)data;
+	BoneParsingData boneData;
+	
+	ReadFile(handle, &str, sizeof(str), &dwByte, nullptr);
+
+	strcpy(boneData.szName, str);
+
+	ReadFile(handle, &boneData.TransformationMatrix, sizeof(boneData.TransformationMatrix), &dwByte, nullptr);
+	ReadFile(handle, &boneData.CombinedTransformationMatrix, sizeof(boneData.CombinedTransformationMatrix), &dwByte, nullptr);
+	ReadFile(handle, &boneData.OffsetMatrix, sizeof(boneData.OffsetMatrix), &dwByte, nullptr);
+	ReadFile(handle, &boneData.iParentIndex, sizeof(boneData.iParentIndex), &dwByte, nullptr);
+	ReadFile(handle, &boneData.iIndex, sizeof(boneData.iIndex), &dwByte, nullptr);
+
+	myData->BoneDatas.push_back(boneData);
+	return S_OK;
 }

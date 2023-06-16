@@ -8,14 +8,14 @@
 
 BEGIN(Engine)
 
-class CChannel final : public CBase
+class CChannel final : public CBase, public IReadable
 {
-private:
+public:
 	CChannel();
 	virtual ~CChannel() = default;
 
 public:
-	HRESULT Initialize(const aiNodeAnim* pAIChannel, const CModel::BONES& Bones);
+	HRESULT Initialize(ParsingData* pData);
 	void Invalidate_TransformationMatrix(CModel::BONES& Bones, _double TimeAcc, _uint* pCurrentKeyFrameIndex);
 
 private:
@@ -25,8 +25,10 @@ private:
 	_uint				m_iBoneIndex = { 0 };
 
 public:
-	static CChannel* Create(const aiNodeAnim* pAIChannel, const CModel::BONES& Bones);
+	static CChannel* Create(ParsingData* pData);
 	virtual void Free() override;
+
+	virtual ParsingData* Load_Data(HANDLE handle, ParsingData* data) final;
 };
 
 END

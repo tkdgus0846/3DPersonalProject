@@ -46,6 +46,6 @@ public:
 
 
 	// IWriteable을(를) 통해 상속됨
-	virtual HRESULT Save_Data(ParsingData* data) override;
+	virtual ParsingData* Save_Data(HANDLE handle, ParsingData* data) override;
 
 };

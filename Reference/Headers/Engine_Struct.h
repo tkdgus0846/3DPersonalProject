@@ -104,30 +104,30 @@ namespace Engine
 	{
 	};
 
-	class ENGINE_DLL ISerializable abstract
+	class ISerializable abstract
 	{
 	public:
-		virtual HRESULT Save_Data(ParsingData* data) PURE;
-		virtual HRESULT Load_Data(ParsingData* data) PURE;
+		virtual ParsingData* Save_Data(HANDLE handle, ParsingData* data) PURE;
+		virtual ParsingData* Load_Data(HANDLE handle, ParsingData* data) PURE;
 	};
 
 	// Load 기능만 구현하고 싶으면 상속
-	class ENGINE_DLL IReadable : public ISerializable
+	class IReadable : public ISerializable
 	{
 	public:
-		virtual HRESULT Save_Data(ParsingData* data) final { return S_OK; };
+		virtual ParsingData* Save_Data(HANDLE handle, ParsingData* data) final { return nullptr; };
 	};
 
 	// Save 기능만 구현하고 싶으면 상속
-	class ENGINE_DLL IWriteable : public ISerializable
+	class IWriteable : public ISerializable
 	{
 	public:
-		virtual HRESULT Load_Data(ParsingData* data) final { return S_OK; };
+		virtual ParsingData* Load_Data(HANDLE handle, ParsingData* data) final { return nullptr; };
 	};
 
 	struct MeshParsingData : public ParsingData
 	{
-		_char				szName[FILE_NAME_SIZE];
+		_char				szName[MAX_PATH];
 		_uint				iMaterialIndex;
 		_uint				iNumVertices;
 		_uint				iNumIndices;
@@ -139,7 +139,7 @@ namespace Engine
 
 	struct BoneParsingData : public ParsingData
 	{
-		_char				szName[FILE_NAME_SIZE];
+		_char				szName[MAX_PATH];
 		_float4x4			TransformationMatrix;
 		_float4x4			CombinedTransformationMatrix;
 		_float4x4			OffsetMatrix;
@@ -150,16 +150,16 @@ namespace Engine
 
 	struct ChannelParsingData : public ParsingData
 	{
-		_char				szName[FILE_NAME_SIZE];
+		_char				szName[MAX_PATH];
 		_uint				iNumKeyFrames;
 		vector<KEYFRAME>	KeyFrames;
 		_uint				iBoneIndex;
 	};
 	struct AnimationParsingData : public ParsingData
 	{
-		vector<ChannelParsingData>	ChannelDatas;
-		_char						szName[FILE_NAME_SIZE];
 		_uint						iNumChannels;
+		vector<ChannelParsingData>	ChannelDatas;
+		_char						szName[MAX_PATH];
 		_double						Duration;
 		_double						TickPerSecond;
 	};
@@ -169,8 +169,11 @@ namespace Engine
 		/////////////////// 모델 변수들 저장 ///////////////
 		_uint				iNumMeshes;
 		_uint				iNumMaterials;
-		vector<char*>		MaterialPaths;
 		_uint				iNumAnimations;
+		_uint				iNumBones;
+
+		///////////////// 텍스쳐 경로들 저장 ////////////
+		vector<char*>		MaterialPaths;
 
 		/////////////////// 메쉬 저장 //////////////////////
 		vector<MeshParsingData> MeshDatas;

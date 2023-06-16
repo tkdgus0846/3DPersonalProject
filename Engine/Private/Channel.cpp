@@ -5,59 +5,19 @@ CChannel::CChannel()
 {
 }
 
-HRESULT CChannel::Initialize(const aiNodeAnim * pAIChannel, const CModel::BONES& Bones)
+HRESULT CChannel::Initialize(ParsingData* pData)
 {
-	strcpy_s(m_szName, pAIChannel->mNodeName.data);
+	ChannelParsingData* data = (ChannelParsingData*)pData;
 
-	// 모델이 들고 있는 같은 이름을 가진 뼈를 찾느다. 
-	auto	iter = find_if(Bones.begin(), Bones.end(), [&](CBone* pValue)
-	{
-		if (0 != strcmp(m_szName, pValue->Get_Name()))
-		{
-			++m_iBoneIndex;
-			return false;
-		}
-		else
-			return true;
-	});
+	strcpy(m_szName, data->szName);
 
-	m_iNumKeyFrames = max(pAIChannel->mNumScalingKeys, pAIChannel->mNumRotationKeys);
-	m_iNumKeyFrames = max(m_iNumKeyFrames, pAIChannel->mNumPositionKeys);
+	m_iBoneIndex = data->iBoneIndex;
 
-	_float3			vScale;
-	_float4			vRotation;
-	_float3			vTranslation;
+	m_iNumKeyFrames = data->iNumKeyFrames;
 
 	for (size_t i = 0; i < m_iNumKeyFrames; ++i)
 	{
-		KEYFRAME				Keyframe;
-
-		if (pAIChannel->mNumScalingKeys > i)
-		{
-			memcpy(&vScale, &pAIChannel->mScalingKeys[i].mValue, sizeof(_float3));
-			Keyframe.Time = pAIChannel->mScalingKeys[i].mTime;
-		}
-
-		if (pAIChannel->mNumRotationKeys > i)
-		{
-			vRotation.x = pAIChannel->mRotationKeys[i].mValue.x;
-			vRotation.y = pAIChannel->mRotationKeys[i].mValue.y;
-			vRotation.z = pAIChannel->mRotationKeys[i].mValue.z;
-			vRotation.w = pAIChannel->mRotationKeys[i].mValue.w;			
-			Keyframe.Time = pAIChannel->mRotationKeys[i].mTime;
-		}
-
-		if (pAIChannel->mNumPositionKeys > i)
-		{
-			memcpy(&vTranslation, &pAIChannel->mPositionKeys[i].mValue, sizeof(_float3));
-			Keyframe.Time = pAIChannel->mPositionKeys[i].mTime;
-		}
-
-		Keyframe.vScale = vScale;
-		Keyframe.vRotation = vRotation;
-		Keyframe.vTranslation = vTranslation;
-
-		m_KeyFrames.push_back(Keyframe);
+		m_KeyFrames.push_back(data->KeyFrames[i]);
 	}
 
 	return S_OK;
@@ -108,11 +68,11 @@ void CChannel::Invalidate_TransformationMatrix(CModel::BONES& Bones, _double Tim
 	Bones[m_iBoneIndex]->Set_TransformationMatrix(TransformationMatrix);
 }
 
-CChannel * CChannel::Create(const aiNodeAnim * pAIChannel, const CModel::BONES& Bones)
+CChannel * CChannel::Create(ParsingData* pData)
 {
 	CChannel*	pInstance = new CChannel();
 
-	if (FAILED(pInstance->Initialize(pAIChannel, Bones)))
+	if (FAILED(pInstance->Initialize(pData)))
 	{
 		MSG_BOX("Failed to Created CChannel");
 		Safe_Release(pInstance);
@@ -122,4 +82,9 @@ CChannel * CChannel::Create(const aiNodeAnim * pAIChannel, const CModel::BONES& 
 
 void CChannel::Free()
 {
+}
+
+ParsingData* CChannel::Load_Data(HANDLE handle, ParsingData* data)
+{
+	return nullptr;
 }

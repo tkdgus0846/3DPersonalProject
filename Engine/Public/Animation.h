@@ -12,14 +12,15 @@
 
 BEGIN(Engine)
 
-class CAnimation final : public CBase
+class CAnimation final : public CBase, public IReadable
 {
-private:
+public:
 	CAnimation();
+	CAnimation(const CAnimation& rhs);
 	virtual ~CAnimation() = default;
 
 public:
-	HRESULT Initialize(const aiAnimation* pAIAnimation, const CModel::BONES& Bones);
+	HRESULT Initialize(ParsingData* pData);
 	void Invalidate_TransformationMatrix(CModel::BONES& Bones, _double TimeDelta);
 
 private:
@@ -35,11 +36,11 @@ private:
 	_bool						m_isLoop = { false };
 
 public:
-	static CAnimation* Create(const aiAnimation* pAIAnimation, const CModel::BONES& Bones);
+	static CAnimation* Create(ParsingData* pData);
 	CAnimation* Clone();
 	virtual void Free();
 
-
+	virtual ParsingData* Load_Data(HANDLE handle, ParsingData* data) final;
 };
 
 END

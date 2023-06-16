@@ -13,7 +13,6 @@ enum InspectorMode
 	IM_COLLIDER,
 	IM_TEXTURE,
 	IM_SHADER,
-	IM_ANIMATION,
 	IM_VIBUFFER,
 	IM_RENDERER,
 	IM_MODEL,
@@ -39,6 +38,7 @@ private:
 	void			Mode_Texture();
 	void			Mode_Shader();
 	void			Mode_Animation();
+	void			Mode_Model();
 	void			Mode_Renderer();
 	void			Mode_Default();
 

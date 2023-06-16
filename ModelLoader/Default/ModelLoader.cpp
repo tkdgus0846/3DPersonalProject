@@ -11,11 +11,40 @@ void Load(path modelPath)
 
     for (const directory_entry& entry : recursive_directory_iterator(modelPath))
     {
+       
         if (entry.path().extension() == ".fbx")
         {
+            cout << entry.path() << endl;
             CAssimpModel* model = CAssimpModel::Create(entry.path().string());
             
-            CDataParsing::Save_File(L"이름", model);
+            wstring path = L"../../ExtractModels/";
+            path = path + entry.path().filename().wstring();
+
+            size_t lastDotIndex = path.find_last_of(L".");
+            wstring PathExceptExtension = path.substr(0, lastDotIndex); // 확장자를 제외한 파일명
+            wstring extension = path.substr(lastDotIndex + 1); // 확장자
+            
+            std::filesystem::path filePath = path;
+            wstring fileName = filePath.stem().wstring();
+
+            wstring PathWithFileName = PathExceptExtension + L"/" + fileName;
+            path = PathWithFileName + L".dat";
+
+
+            wstring folderPath = PathExceptExtension;  // 폴더 경로
+
+            // 폴더 생성
+            if (!CreateDirectory(folderPath.c_str(), NULL))
+            {
+                // 폴더 생성 실패
+                if (GetLastError() != ERROR_ALREADY_EXISTS)
+                {
+                    MSG_BOX("Failed to Create Folder");
+                    return;
+                }
+            }
+
+            CDataParsing::Save_File(path.c_str(), model);
             modelVector.push_back(model);
         }
     }
@@ -33,6 +62,7 @@ int main()
 {
     Load("../../Models/");
     Close();
+    return 0;
 }
 
 

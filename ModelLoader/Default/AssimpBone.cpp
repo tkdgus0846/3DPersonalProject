@@ -57,9 +57,9 @@ CAssimpBone * CAssimpBone::Create(aiNode * pAINode, CAssimpBone * pParent, _uint
 	return pInstance;
 }
 
-HRESULT CAssimpBone::Save_Data(ParsingData* data)
+ParsingData* CAssimpBone::Save_Data(HANDLE handle, ParsingData* data)
 {
-	ModelParsingData* myData = (ModelParsingData*)&data;
+	ModelParsingData* myData = (ModelParsingData*)data;
 	BoneParsingData boneData;
 
 	strcpy(boneData.szName, m_szName);
@@ -70,6 +70,6 @@ HRESULT CAssimpBone::Save_Data(ParsingData* data)
 	boneData.iIndex = m_iIndex;
 
 	myData->BoneDatas.push_back(boneData);
-	return S_OK;
+	return nullptr;
 }
 

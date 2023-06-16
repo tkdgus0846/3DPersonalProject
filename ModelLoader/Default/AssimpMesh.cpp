@@ -147,21 +147,22 @@ CAssimpMesh* CAssimpMesh::Create(const CAssimpModel::BONES& Bones, const aiMesh*
 	return pInstance;
 }
 
-HRESULT CAssimpMesh::Save_Data(ParsingData* data)
+ParsingData* CAssimpMesh::Save_Data(HANDLE handle, ParsingData* data)
 {
-	ModelParsingData* myData = (ModelParsingData*)&data;
+	ModelParsingData* myData = (ModelParsingData*)data;
 	MeshParsingData meshData;
 	
 	strcpy(meshData.szName, m_szName);
 	meshData.iMaterialIndex = m_iMaterialIndex;
 	meshData.iNumVertices = m_iNumVertices;
+	meshData.iNumIndices = m_iNumIndices;
 	meshData.Indices = m_Indices;
 	meshData.Vertices = m_Vertices;
 	meshData.iNumBones = m_iNumBones;
 	meshData.BoneIndices = m_BoneIndices;
 
 	myData->MeshDatas.push_back(meshData);
-	return S_OK;
+	return nullptr;
 }
 
 

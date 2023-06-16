@@ -64,6 +64,8 @@ HRESULT CAssimpModel::Initialize_Prototype(const string& pModelFilePath, _fmatri
 	if (FAILED(Ready_Bones(m_pAIScene->mRootNode, nullptr)))
 		return E_FAIL;
 
+	m_iNumBones = m_Bones.size();
+
 	if (FAILED(Ready_Meshes(PivotMatrix)))
 		return E_FAIL;
 
@@ -124,7 +126,7 @@ HRESULT CAssimpModel::Ready_Materials(const char* pModelFilePath)
 			strcat(szFullPath, szFileName);
 			strcat(szFullPath, szExt);
 
-			strcpy(m_MaterialPaths[j], szFullPath);
+			m_MaterialPaths[j] = szFullPath;
 		}
 	}
 
@@ -175,45 +177,139 @@ CAssimpModel* CAssimpModel::Create(const string& pModelFilePath, _fmatrix PivotM
 	return pInstance;
 }
 
-HRESULT CAssimpModel::Save_Data(ParsingData* data)
+ParsingData* CAssimpModel::Save_Data(HANDLE handle, ParsingData* data)
 {
 	ModelParsingData* modelParsingData = new ModelParsingData;
 
+	DWORD		dwByte = 0;
+	
 	modelParsingData->iNumMeshes = m_iNumMeshes; // 저장
 	modelParsingData->iNumMaterials = m_iNumMaterials; // 저장
-	
+	modelParsingData->iNumAnimations = m_iNumAnimations;
+	modelParsingData->iNumBones = m_iNumBones;
 
 	modelParsingData->MaterialPaths.resize(AI_TEXTURE_TYPE_MAX);
 	for (int i = 0; i < AI_TEXTURE_TYPE_MAX; i++)
 	{
-		strcpy(modelParsingData->MaterialPaths[i], m_MaterialPaths[i]); // 벡터 그대로 다 저장
+		modelParsingData->MaterialPaths[i] = m_MaterialPaths[i];
 	}
 	
 	modelParsingData->iNumAnimations = m_iNumAnimations; // 저장
 
 	for (auto mesh : m_Meshes)
 	{
-		mesh->Save_Data(data);
+		modelParsingData->MeshDatas.reserve(m_Meshes.size());
+		mesh->Save_Data(handle, modelParsingData);
 	}
 
 	for (auto bone : m_Bones)
 	{
-		bone->Save_Data(data);
+		modelParsingData->BoneDatas.reserve(m_Bones.size());
+		bone->Save_Data(handle, modelParsingData);
 	}
 
 	
 	for (auto animation : m_Animations)
 	{
-		animation->Save_Data(data);
+		modelParsingData->AnimationDatas.reserve(m_Animations.size());
+		animation->Save_Data(handle, modelParsingData);
 	}
-	// 메쉬 Save_Data(modelParsingData);
-	// 애니메이션 Save_Data(modelParsingData);
-	// ??? Save_Data(modelParsingData);
 
-	// 라고 했을때 세이브와 로드 순서가 지켜지는가?
-	// modelParsingData 를 함수 들어갈때 채워준 다음에 가지고 나와서 여기서 저장해도 되고, Save_Data 함수를 호출 할 때에 저장하는 방식을 채택해도 된다.
+	///////////////////////////////////////
+	////////////////////////////////////////
+	///////////////////////////////// 아래부터 파일저장
+
+	WriteFile(handle, &modelParsingData->iNumMeshes, sizeof(_uint), &dwByte, nullptr);
+	WriteFile(handle, &modelParsingData->iNumMaterials, sizeof(_uint), &dwByte, nullptr);
+	WriteFile(handle, &modelParsingData->iNumAnimations, sizeof(_uint), &dwByte, nullptr);
+	WriteFile(handle, &modelParsingData->iNumBones, sizeof(_uint), &dwByte, nullptr);
+
+	char str[MAX_PATH];
+
+	///////// 텍스쳐 경로 저장///////////////
+	for (auto path : modelParsingData->MaterialPaths)
+	{
+		if (path == nullptr)
+			strcpy(str, "NULL");
+		else				
+			strcpy(str, path);
+
+		WriteFile(handle, &str, sizeof(str), &dwByte, nullptr);
+	}
+
+	///////// 메쉬 정보 저장///////////////
+	for (auto meshData : modelParsingData->MeshDatas)
+	{
+		strcpy(str, meshData.szName);
+		//str = meshData.szName;
+		WriteFile(handle, &str, sizeof(str), &dwByte, nullptr);
+		WriteFile(handle, &meshData.iMaterialIndex, sizeof(meshData.iMaterialIndex), &dwByte, nullptr);
+		WriteFile(handle, &meshData.iNumVertices, sizeof(meshData.iNumVertices), &dwByte, nullptr);
+		WriteFile(handle, &meshData.iNumIndices, sizeof(meshData.iNumIndices), &dwByte, nullptr);
+
+		for (auto Index : meshData.Indices)
+		{
+			WriteFile(handle, &Index, sizeof(Index), &dwByte, nullptr);
+		}
+
+		for (auto Vertex : meshData.Vertices)
+		{
+			WriteFile(handle, &Vertex, sizeof(Vertex), &dwByte, nullptr);
+		}
+
+		WriteFile(handle, &meshData.iNumBones, sizeof(meshData.iNumBones), &dwByte, nullptr);
+
+		for (auto BoneIndex : meshData.BoneIndices)
+		{
+			WriteFile(handle, &BoneIndex, sizeof(BoneIndex), &dwByte, nullptr);
+		}
+	}
+
+	///////// 뼈 정보 저장///////////////
+	for (auto BoneData : modelParsingData->BoneDatas)
+	{
+		strcpy(str, BoneData.szName);
+		//str = BoneData.szName;
+		WriteFile(handle, &str, sizeof(str), &dwByte, nullptr);
+
+		WriteFile(handle, &BoneData.TransformationMatrix, sizeof(BoneData.TransformationMatrix), &dwByte, nullptr);
+		WriteFile(handle, &BoneData.CombinedTransformationMatrix, sizeof(BoneData.CombinedTransformationMatrix), &dwByte, nullptr);
+		WriteFile(handle, &BoneData.OffsetMatrix, sizeof(BoneData.OffsetMatrix), &dwByte, nullptr);
+		WriteFile(handle, &BoneData.iParentIndex, sizeof(BoneData.iParentIndex), &dwByte, nullptr);
+		WriteFile(handle, &BoneData.iIndex, sizeof(BoneData.iIndex), &dwByte, nullptr);
+	}
+
+	///////// 애니메이션 정보 저장///////////////
+	for (auto AnimData : modelParsingData->AnimationDatas)
+	{
+		WriteFile(handle, &AnimData.iNumChannels, sizeof(AnimData.iNumChannels), &dwByte, nullptr);
+
+		for (auto ChannelData : AnimData.ChannelDatas)
+		{
+			strcpy(str, ChannelData.szName);
+			//str = ChannelData.szName;
+			WriteFile(handle, &str, sizeof(str), &dwByte, nullptr);
+
+			WriteFile(handle, &ChannelData.iNumKeyFrames, sizeof(ChannelData.iNumKeyFrames), &dwByte, nullptr);
+
+			for (int i = 0; i < ChannelData.iNumKeyFrames; i++)
+			{
+				WriteFile(handle, &ChannelData.KeyFrames[i], sizeof(ChannelData.KeyFrames[i]), &dwByte, nullptr);
+			}
+			
+			WriteFile(handle, &ChannelData.iBoneIndex, sizeof(ChannelData.iBoneIndex), &dwByte, nullptr);
+		}
+
+		strcpy(str, AnimData.szName);
+		//str = AnimData.szName;
+		WriteFile(handle, &str, sizeof(str), &dwByte, nullptr);
+		
+		WriteFile(handle, &AnimData.Duration, sizeof(AnimData.Duration), &dwByte, nullptr);
+		WriteFile(handle, &AnimData.TickPerSecond, sizeof(AnimData.TickPerSecond), &dwByte, nullptr);
+	}
+
 
 	Safe_Delete(modelParsingData);
 
-	return S_OK;
+	return nullptr;
 }

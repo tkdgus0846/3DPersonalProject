@@ -37,6 +37,8 @@ private: /* For.Materials */
 
 private: /* For.Bones*/
 	vector<class CAssimpBone*>			m_Bones;
+	_uint					m_iNumBones;
+
 public:
 	typedef vector<class CAssimpBone*>	BONES;
 
@@ -60,6 +62,6 @@ public:
 
 
 	// ISerializable을(를) 통해 상속됨
-	virtual HRESULT Save_Data(ParsingData* data) override;
+	virtual ParsingData* Save_Data(HANDLE handle, ParsingData* data) override;
 
 };

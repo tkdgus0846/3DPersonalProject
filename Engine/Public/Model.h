@@ -4,7 +4,7 @@
 
 BEGIN(Engine)
 
-class ENGINE_DLL CModel final : public CComponent
+class ENGINE_DLL CModel final : public CComponent, public IReadable
 {
 public:
 	enum TYPE { TYPE_NONANIM, TYPE_ANIM, TYPE_END };
@@ -39,10 +39,6 @@ public:
 	HRESULT Bind_Material(class CShader* pShader, const char* pConstantName, _uint iMeshIndex, aiTextureType MaterialType);
 	HRESULT Bind_BoneMatrices(class CShader* pShader, const char* pConstantName, _uint iMeshIndex);
 
-private:
-	const aiScene* m_pAIScene = { nullptr };
-	Assimp::Importer		m_Importer; /* 파일을 읽어준다 .*/
-
 private: /* For.Meshes  */
 	_uint					m_iNumMeshes = { 0 };
 	vector<class CMesh*>	m_Meshes;
@@ -52,7 +48,9 @@ private: /* For.Materials */
 	vector<MESHMATERIAL>	m_Materials;
 
 private: /* For.Bones*/
-	vector<class CBone*>			m_Bones;
+	vector<class CBone*>	m_Bones;
+	_uint					m_iNumBones;
+
 public:
 	typedef vector<class CBone*>	BONES;
 
@@ -65,16 +63,18 @@ private:
 	_float4x4						m_PivotMatrix;
 
 private:
-	HRESULT Ready_Meshes(TYPE eType, _fmatrix PivotMatrix);
-	HRESULT Ready_Materials(const char* pModelFilePath);
-	HRESULT Ready_Bones(aiNode * pNode, class CBone* pParent);
-	HRESULT Ready_Animations();
+	HRESULT Ready_Meshes(ModelParsingData* parsingData, TYPE eType, _fmatrix PivotMatrix);
+	/*HRESULT Ready_Materials(ModelParsingData* parsingData);*/
+	HRESULT Ready_Bones(ModelParsingData* parsingData);
+	HRESULT Ready_Animations(ModelParsingData* parsingData);
 
 
 public:
 	static CModel* Create(ID3D11Device * pDevice, ID3D11DeviceContext * pContext, TYPE eType, const char* pModelFilePath, _fmatrix PivotMatrix);
 	virtual CComponent* Clone(void* pArg);
 	virtual void Free() override;
+
+	virtual ParsingData* Load_Data(HANDLE handle, ParsingData* data) final;
 };
 
 END

@@ -79,16 +79,16 @@ CAssimpAnimation * CAssimpAnimation::Create(const aiAnimation * pAIAnimation, co
 	return pInstance;
 }
 
-HRESULT CAssimpAnimation::Save_Data(ParsingData* data)
+ParsingData* CAssimpAnimation::Save_Data(HANDLE handle, ParsingData* data)
 {
-	ModelParsingData* myData = (ModelParsingData*)&data;
+	ModelParsingData* myData = (ModelParsingData*)data;
 	AnimationParsingData AnimData;
 
 	AnimData.ChannelDatas.resize(m_Channels.size());
 
 	for (int index = 0; index < m_Channels.size(); index++)
 	{
-		m_Channels[index]->Save_Data(&AnimData.ChannelDatas[index]);
+		m_Channels[index]->Save_Data(handle,&AnimData.ChannelDatas[index]);
 	}
 	strcpy(AnimData.szName, m_szName);
 	AnimData.iNumChannels = m_iNumChannels;
@@ -96,6 +96,6 @@ HRESULT CAssimpAnimation::Save_Data(ParsingData* data)
 	AnimData.TickPerSecond = m_TickPerSecond;
 
 	myData->AnimationDatas.push_back(AnimData);
-	return S_OK;
+	return nullptr;
 }
 

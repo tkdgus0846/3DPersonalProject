@@ -121,14 +121,14 @@ CAssimpChannel * CAssimpChannel::Create(const aiNodeAnim * pAIChannel, const CAs
 	return pInstance;
 }
 
-HRESULT CAssimpChannel::Save_Data(ParsingData* data)
+ParsingData* CAssimpChannel::Save_Data(HANDLE handle, ParsingData* data)
 {
-	ChannelParsingData* myData = (ChannelParsingData*)&data;
+	ChannelParsingData* myData = (ChannelParsingData*)data;
 
 	strcpy(myData->szName, m_szName);
 	myData->iNumKeyFrames = m_iNumKeyFrames;
 	myData->KeyFrames = m_KeyFrames;
 	myData->iBoneIndex = m_iBoneIndex;
 
-	return S_OK;
+	return nullptr;
 }

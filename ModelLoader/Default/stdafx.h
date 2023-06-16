@@ -22,8 +22,6 @@
 
 using namespace std::filesystem;
 
-#define MAX_PATH 256
-
 using namespace DirectX;
 
 using namespace std;
@@ -54,7 +52,6 @@ using namespace std;
 //	XMFLOAT3		vTangent;
 //}VTXMESH;
 
-#define MAX_PATH 256
 
 #define			MSG_BOX(_message)			MessageBox(nullptr, TEXT(_message), L"System Message", MB_OK)
 

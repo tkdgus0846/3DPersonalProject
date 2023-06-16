@@ -4,9 +4,9 @@
 
 BEGIN(Engine)
 
-class CBone final : public CBase
+class CBone final : public CBase, public IReadable
 {
-private:
+public:
 	CBone();
 	CBone(const CBone& rhs);
 	virtual ~CBone() = default;
@@ -32,7 +32,7 @@ public:
 	}
 
 public:
-	HRESULT Initialize(aiNode * pAINode, CBone * pParent, _uint iIndex);
+	HRESULT Initialize(ParsingData* pData);
 	void Invalidate_CombinedTransformationMatrix(const CModel::BONES& Bones);
 private:
 	char			m_szName[MAX_PATH] = "";
@@ -44,9 +44,11 @@ private:
 	_uint			m_iIndex = { 0 };
 
 public:
-	static CBone* Create(aiNode* pAINode, CBone* pParent, _uint iIndex);
+	static CBone* Create(ParsingData* pData);
 	CBone* Clone();
 	virtual void Free() override;
+
+	virtual ParsingData* Load_Data(HANDLE handle, ParsingData* data) final;
 
 };
 

@@ -89,8 +89,8 @@ void CInspectorWindow::Rendering()
 		case IM_SHADER:
 			Mode_Shader();
 			break;
-		case IM_ANIMATION:
-			Mode_Animation();
+		case IM_MODEL:
+			Mode_Model();
 			break;
 		case IM_RENDERER:
 			Mode_Renderer();
@@ -204,6 +204,15 @@ void CInspectorWindow::Mode_Shader()
 void CInspectorWindow::Mode_Animation()
 {
 	
+}
+
+void CInspectorWindow::Mode_Model()
+{
+	static int i = 2;
+	if (ArrowButton("Anim Index", i))
+	{
+
+	}
 }
 
 void CInspectorWindow::Mode_Renderer()

@@ -158,7 +158,7 @@ HRESULT CToolApp::Ready_Prototype_Component_For_Static()
 
 	/*PivotMatrix = XMMatrixRotationY(XMConvertToRadians(180.0f));*/
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_Model_Wolf"),
-		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../Bin/Resources/Models/Wolf.fbx", PivotMatrix))))
+		CModel::Create(m_pDevice, m_pContext, CModel::TYPE_ANIM, "../../ExtractModels/Wolf/Wolf.dat", PivotMatrix))))
 		return E_FAIL;
 
 #pragma endregion  Component Ãß°¡

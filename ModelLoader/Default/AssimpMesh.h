@@ -23,6 +23,7 @@ private:
 
 	_uint			m_iNumVertices = { 0 };
 	_uint			m_iNumIndices = { 0 };
+
 	vector<_ulong>		m_Indices;
 	vector<VTXANIMMESH>	m_Vertices;
 
@@ -35,6 +36,6 @@ public:
 	static CAssimpMesh* Create(const CAssimpModel::BONES& Bones, const aiMesh* pAIMesh, _fmatrix PivotMatrix);
 
 	// ISerializable을(를) 통해 상속됨
-	virtual HRESULT Save_Data(ParsingData* data) override;
+	virtual ParsingData* Save_Data(HANDLE handle, ParsingData* data) override;
 	
 };
