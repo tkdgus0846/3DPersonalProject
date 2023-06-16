@@ -39,7 +39,7 @@ CModel::CModel(const CModel& rhs)
 	}
 }
 
-HRESULT CModel::Initialize_Prototype(TYPE eType, const char* pModelFilePath, _fmatrix PivotMatrix)
+HRESULT CModel::Initialize_Prototype(const char* pModelFilePath, _fmatrix PivotMatrix)
 {
 	//_uint		iFlag = 0;
 
@@ -64,6 +64,11 @@ HRESULT CModel::Initialize_Prototype(TYPE eType, const char* pModelFilePath, _fm
 
 	if (FAILED(Ready_Bones(myData)))
 		return E_FAIL;
+
+	TYPE eType = TYPE_END;
+
+	if (m_iNumAnimations > 0) eType = TYPE_ANIM;
+	else eType = TYPE_NONANIM;
 
 	if (FAILED(Ready_Meshes(myData, eType, PivotMatrix)))
 		return E_FAIL;
@@ -175,11 +180,11 @@ HRESULT CModel::Ready_Animations(ModelParsingData* parsingData)
 	return S_OK;
 }
 
-CModel* CModel::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, TYPE eType, const char* pModelFilePath, _fmatrix PivotMatrix)
+CModel* CModel::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const char* pModelFilePath, _fmatrix PivotMatrix)
 {
 	CModel* pInstance = new CModel(pDevice, pContext);
 
-	if (FAILED(pInstance->Initialize_Prototype(eType, pModelFilePath, PivotMatrix)))
+	if (FAILED(pInstance->Initialize_Prototype(pModelFilePath, PivotMatrix)))
 	{
 		MSG_BOX("Failed to Created CModel");
 		Safe_Release(pInstance);
@@ -232,7 +237,6 @@ ParsingData* CModel::Load_Data(HANDLE handle, ParsingData* data)
 	///////////////////////////////////////
 	////////////////////////////////////////
 	///////////////////////////////// 아래부터 파일불러오기
-
 	ModelParsingData* myData = new ModelParsingData;
 
 	DWORD dwByte = 0;

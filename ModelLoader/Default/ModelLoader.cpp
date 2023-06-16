@@ -5,19 +5,17 @@
 
 vector<CAssimpModel*> modelVector;
 
-void Load(path modelPath)
+void Load(path modelPath, wstring extractPath, CAssimpModel::TYPE type)
 {
     // $(SolutionDir)Models\ 경로에 있는 모든 모델파일들을 불러온다. 모델 파일 하나당 파일 하나!
-
     for (const directory_entry& entry : recursive_directory_iterator(modelPath))
     {
-       
         if (entry.path().extension() == ".fbx")
         {
             cout << entry.path() << endl;
-            CAssimpModel* model = CAssimpModel::Create(entry.path().string());
+            CAssimpModel* model = CAssimpModel::Create(entry.path().string(), type);
             
-            wstring path = L"../../ExtractModels/";
+            wstring path = extractPath;
             path = path + entry.path().filename().wstring();
 
             size_t lastDotIndex = path.find_last_of(L".");
@@ -60,7 +58,8 @@ void Close()
 
 int main()
 {
-    Load("../../Models/");
+    Load("../../Models/AnimModels/", L"../../ExtractModels/AnimModels/", CAssimpModel::TYPE_ANIM);
+    Load("../../Models/NonAnimModels/", L"../../ExtractModels/NonAnimModels/", CAssimpModel::TYPE_NONANIM);
     Close();
     return 0;
 }

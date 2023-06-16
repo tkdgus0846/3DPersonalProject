@@ -24,9 +24,10 @@ public:
 			return;
 		m_iCurrentAnimIndex = iAnimIndex;
 	}
+	_uint Get_NumAnimations() const { return m_iNumAnimations; }
 
 public:
-	virtual HRESULT Initialize_Prototype(TYPE eType, const char* pModelFilePath, _fmatrix PivotMatrix);
+	virtual HRESULT Initialize_Prototype(const char* pModelFilePath, _fmatrix PivotMatrix);
 	virtual HRESULT Initialize(void* pArg);
 
 public:
@@ -70,7 +71,7 @@ private:
 
 
 public:
-	static CModel* Create(ID3D11Device * pDevice, ID3D11DeviceContext * pContext, TYPE eType, const char* pModelFilePath, _fmatrix PivotMatrix);
+	static CModel* Create(ID3D11Device * pDevice, ID3D11DeviceContext * pContext, const char* pModelFilePath, _fmatrix PivotMatrix);
 	virtual CComponent* Clone(void* pArg);
 	virtual void Free() override;
 

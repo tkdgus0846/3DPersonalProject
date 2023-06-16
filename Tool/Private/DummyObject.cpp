@@ -38,7 +38,7 @@ void CDummyObject::Tick(_double TimeDelta)
 {
  	__super::Tick(TimeDelta);
 
-	if (m_pModelCom != nullptr)
+	if (m_pModelCom != nullptr && m_pModelCom->Get_NumAnimations() > 0)
 		m_pModelCom->Play_Animation(TimeDelta);
 }
 

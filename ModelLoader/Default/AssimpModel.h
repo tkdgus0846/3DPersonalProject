@@ -21,7 +21,7 @@ public:
 	}
 
 public:
-	virtual HRESULT Initialize_Prototype(const string& pModelFilePath, _fmatrix PivotMatrix);
+	virtual HRESULT Initialize_Prototype(const string& pModelFilePath, TYPE eMeshType, _fmatrix PivotMatrix);
 
 private:
 	const aiScene* m_pAIScene = { nullptr };
@@ -58,7 +58,7 @@ private:
 
 
 public:
-	static CAssimpModel* Create(const string& pModelFilePath, _fmatrix PivotMatrix = XMMatrixIdentity());
+	static CAssimpModel* Create(const string& pModelFilePath, TYPE eMeshType, _fmatrix PivotMatrix = XMMatrixIdentity());
 
 
 	// ISerializable을(를) 통해 상속됨

@@ -34,7 +34,7 @@ CAssimpModel::~CAssimpModel()
 	m_Animations.clear();
 }
 
-HRESULT CAssimpModel::Initialize_Prototype(const string& pModelFilePath, _fmatrix PivotMatrix)
+HRESULT CAssimpModel::Initialize_Prototype(const string& pModelFilePath, TYPE eMeshType, _fmatrix PivotMatrix)
 {
 	_uint		iFlag = 0;
 
@@ -42,21 +42,12 @@ HRESULT CAssimpModel::Initialize_Prototype(const string& pModelFilePath, _fmatri
 
 	m_MaterialPaths.resize(AI_TEXTURE_TYPE_MAX);
 
-	/*if (TYPE_NONANIM == eType)
+	if (TYPE_NONANIM == eMeshType)
 		iFlag = aiProcess_PreTransformVertices | aiProcess_ConvertToLeftHanded | aiProcessPreset_TargetRealtime_Fast;
 	else
-		iFlag = aiProcess_ConvertToLeftHanded | aiProcessPreset_TargetRealtime_Fast;*/
-
-	iFlag = aiProcess_ConvertToLeftHanded | aiProcessPreset_TargetRealtime_Fast;
+		iFlag = aiProcess_ConvertToLeftHanded | aiProcessPreset_TargetRealtime_Fast;
 
 	m_pAIScene = m_Importer.ReadFile(pModelFilePath, iFlag);
-
-	_uint AnimationNums = m_pAIScene->mNumAnimations;
-
-	TYPE eType = TYPE_ANIM;
-
-	if (AnimationNums == 0) eType = TYPE_NONANIM;
-	else eType = TYPE_ANIM;
 
 	if (nullptr == m_pAIScene)
 		return E_FAIL;
@@ -165,11 +156,11 @@ HRESULT CAssimpModel::Ready_Animations()
 	return S_OK;
 }
 
-CAssimpModel* CAssimpModel::Create(const string& pModelFilePath, _fmatrix PivotMatrix)
+CAssimpModel* CAssimpModel::Create(const string& pModelFilePath, TYPE eMeshType, _fmatrix PivotMatrix)
 {
 	CAssimpModel* pInstance = new CAssimpModel();
 
-	if (FAILED(pInstance->Initialize_Prototype(pModelFilePath, PivotMatrix)))
+	if (FAILED(pInstance->Initialize_Prototype(pModelFilePath, eMeshType, PivotMatrix)))
 	{
 		MSG_BOX("Failed to Created CAssimpModel");
 		Safe_Delete(pInstance);

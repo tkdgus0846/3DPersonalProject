@@ -41,8 +41,8 @@ HRESULT CMesh::Initialize_Prototype(CModel::TYPE eType, const CModel::BONES& Bon
 
 	HRESULT		hr = 0;
 
-	if (CModel::TYPE_NONANIM == eType);
-		//hr = Ready_VertexBuffer_NonAnim(data, PivotMatrix);
+	if (CModel::TYPE_NONANIM == eType)
+		hr = Ready_VertexBuffer_NonAnim(data, PivotMatrix);
 	else
 		hr = Ready_VertexBuffer_Anim(data, Bones);
 
@@ -89,7 +89,7 @@ HRESULT CMesh::Initialize(void* pArg)
 
 HRESULT CMesh::Ready_VertexBuffer_NonAnim(MeshParsingData* pData, _fmatrix PivotMatrix)
 {
-	/*m_iStride = { sizeof(VTXMESH) };
+	m_iStride = { sizeof(VTXMESH) };
 
 	ZeroMemory(&m_BufferDesc, sizeof m_BufferDesc);
 
@@ -105,16 +105,16 @@ HRESULT CMesh::Ready_VertexBuffer_NonAnim(MeshParsingData* pData, _fmatrix Pivot
 
 	for (size_t i = 0; i < m_iNumVertices; i++)
 	{
-		memcpy(&pVertices[i].vPosition, &pAIMesh->mVertices[i], sizeof(_float3));
+		memcpy(&pVertices[i].vPosition, &pData->Vertices[i].vPosition, sizeof(_float3));
 		XMStoreFloat3(&pVertices[i].vPosition,
 			XMVector3TransformCoord(XMLoadFloat3(&pVertices[i].vPosition), PivotMatrix));
 
-		memcpy(&pVertices[i].vNormal, &pAIMesh->mNormals[i], sizeof(_float3));
+		memcpy(&pVertices[i].vNormal, &pData->Vertices[i].vNormal, sizeof(_float3));
 		XMStoreFloat3(&pVertices[i].vNormal,
 			XMVector3TransformNormal(XMLoadFloat3(&pVertices[i].vNormal), PivotMatrix));
 
-		memcpy(&pVertices[i].vTexCoord, &pAIMesh->mTextureCoords[0][i], sizeof(_float2));
-		memcpy(&pVertices[i].vTangent, &pAIMesh->mTangents[i], sizeof(_float3));
+		memcpy(&pVertices[i].vTexCoord, &pData->Vertices[i].vTexCoord, sizeof(_float2));
+		memcpy(&pVertices[i].vTangent, &pData->Vertices[i].vTangent, sizeof(_float3));
 	}
 
 	ZeroMemory(&m_SubResourceData, sizeof m_SubResourceData);
@@ -124,7 +124,6 @@ HRESULT CMesh::Ready_VertexBuffer_NonAnim(MeshParsingData* pData, _fmatrix Pivot
 		return E_FAIL;
 	Safe_Delete_Array(pVertices);
 
-	return S_OK;*/
 	return S_OK;
 }
 

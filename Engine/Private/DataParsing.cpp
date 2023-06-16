@@ -1,6 +1,6 @@
 #include "..\Public\DataParsing.h"
 
-ParsingData* CDataParsing::Save_File(const TCHAR* pFilePath, ISerializable* data)
+ParsingData* CDataParsing::Save_File(const TCHAR* pFilePath, ISerializable* data, ParsingData* pData)
 {
 	// 颇老 俺规
 	HANDLE		hFile = CreateFile
@@ -18,7 +18,7 @@ ParsingData* CDataParsing::Save_File(const TCHAR* pFilePath, ISerializable* data
 		return nullptr;
 	}
 
-	ParsingData* result = data->Save_Data(hFile, nullptr);
+	ParsingData* result = data->Save_Data(hFile, pData);
 
 	CloseHandle(hFile);
 
@@ -26,7 +26,7 @@ ParsingData* CDataParsing::Save_File(const TCHAR* pFilePath, ISerializable* data
 	return result;
 }
 
-ParsingData* CDataParsing::Load_File(const TCHAR* pFilePath, ISerializable* data)
+ParsingData* CDataParsing::Load_File(const TCHAR* pFilePath, ISerializable* data, ParsingData* pData)
 {
 	// 颇老 俺规
 	HANDLE		hFile = CreateFile
@@ -45,7 +45,7 @@ ParsingData* CDataParsing::Load_File(const TCHAR* pFilePath, ISerializable* data
 	}
 
 
-	ParsingData* result = data->Load_Data(hFile, nullptr);
+	ParsingData* result = data->Load_Data(hFile, pData);
 
 
 	// 颇老 家戈

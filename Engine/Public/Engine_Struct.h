@@ -102,6 +102,7 @@ namespace Engine
 
 	struct ParsingData
 	{
+	
 	};
 
 	class ISerializable abstract
