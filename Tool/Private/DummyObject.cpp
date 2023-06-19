@@ -9,7 +9,41 @@ CDummyObject::CDummyObject(ID3D11Device * pDevice, ID3D11DeviceContext * pContex
 
 CDummyObject::CDummyObject(const CDummyObject & rhs)
 	: CGameObject(rhs)
+	, m_ShaderPrototypeName(rhs.m_ShaderPrototypeName)
+	, m_ModelPrototypeName(rhs.m_ModelPrototypeName)
+	, m_TexturePrototypeName(rhs.m_TexturePrototypeName)
+	, m_VIBufferPrototypeName(rhs.m_VIBufferPrototypeName)
 {
+	// 컴포넌트 들을 싹다 복사해올 방법?
+	for (auto item : m_Components)
+	{
+		wstring compName = item.first;
+
+		if (compName.compare(RENDERER_W) == 0)
+		{
+			m_pRendererCom = dynamic_cast<CRenderer*>(item.second);
+		}
+		else if (compName.compare(TRANSFORM_W) == 0)
+		{
+			m_pTransformCom = dynamic_cast<CTransform*>(item.second);
+		}
+		else if (compName.compare(VIBUFFER_W) == 0)
+		{
+			m_pVIBufferCom = dynamic_cast<CVIBuffer*>(item.second);
+		}
+		else if (compName.compare(SHADER_W) == 0)
+		{
+			m_pShaderCom = dynamic_cast<CShader*>(item.second);
+		}
+		else if (compName.compare(TEXTURE_W) == 0)
+		{
+			m_pTextureCom = dynamic_cast<CTexture*>(item.second);
+		}
+		else if (compName.compare(MODEL_W) == 0)
+		{
+			m_pModelCom = dynamic_cast<CModel*>(item.second);
+		}
+	}
 }
 
 HRESULT CDummyObject::Initialize_Prototype()
@@ -203,4 +237,134 @@ void CDummyObject::Free()
 	Safe_Release(m_pModelCom);
 
 	__super::Free();
+}
+
+ParsingData* CDummyObject::Save_Data(HANDLE handle, ParsingData* data)
+{
+	ObjectParsingData* objectData = new ObjectParsingData;
+	DWORD dwByte;
+	_tchar name[MAX_PATH];
+
+
+	// 위치 저장
+	if (m_pTransformCom)
+	{
+		lstrcpy(name, TRANSFORM_W);
+		WriteFile(handle, name, sizeof(name), &dwByte, nullptr);
+		m_pTransformCom->Save_Data(handle, objectData);
+	}
+	//if (m_pRendererCom)
+	//{
+	//	lstrcpy(name, RENDERER_W);
+	//	WriteFile(handle, name, sizeof(name), &dwByte, nullptr);
+	//	m_pRendererCom->Save_Data(handle, objectData);
+	//}
+	if (m_pShaderCom)
+	{
+		lstrcpy(name, SHADER_W);
+		WriteFile(handle, name, sizeof(name), &dwByte, nullptr);
+
+		lstrcpy(name, m_ShaderPrototypeName.c_str());
+		WriteFile(handle, name, sizeof(name), &dwByte, nullptr);
+	}
+	// 무슨 모델이였는지 저장
+	if (m_pModelCom)
+	{
+		lstrcpy(name, MODEL_W);
+		WriteFile(handle, name, sizeof(name), &dwByte, nullptr);
+
+		lstrcpy(name, m_ModelPrototypeName.c_str());
+		WriteFile(handle, name, sizeof(name), &dwByte, nullptr);
+	}
+	if (m_pTextureCom)
+	{
+		lstrcpy(name, TEXTURE_W);
+		WriteFile(handle, name, sizeof(name), &dwByte, nullptr);
+
+		lstrcpy(name, m_TexturePrototypeName.c_str());
+		WriteFile(handle, name, sizeof(name), &dwByte, nullptr);
+	}
+	
+	if (m_pVIBufferCom)
+	{
+		lstrcpy(name, VIBUFFER_W);
+		WriteFile(handle, name, sizeof(name), &dwByte, nullptr);
+
+		lstrcpy(name, m_VIBufferPrototypeName.c_str());
+		WriteFile(handle, name, sizeof(name), &dwByte, nullptr);
+	}
+
+	// 무슨 버퍼였는지 텍스쳐였는지 저장
+
+	// 무슨 쉐이더를 쓰고 있었는지 저장
+
+	
+
+	Safe_Delete(objectData);
+	return nullptr;
+}
+
+ParsingData* CDummyObject::Load_Data(HANDLE handle, ParsingData* data)
+{
+	ObjectParsingData* objectData = new ObjectParsingData;
+	DWORD dwByte;
+	_tchar name[MAX_PATH];
+
+	while (true)
+	{
+		ReadFile(handle, name, sizeof(name), &dwByte, nullptr);
+		if (dwByte == 0) break;
+
+		CComponent** FieldComp = nullptr;
+		void* pArg = nullptr;
+		wstring prototypeName;
+		wstring componentName;
+
+		_bool bAddComponent = true;
+
+		if (lstrcmp(name, TRANSFORM_W) == 0)
+		{
+			m_pTransformCom->Load_Data(handle, objectData);
+
+			bAddComponent = false;
+		}
+		else if (lstrcmp(name, SHADER_W) == 0)
+		{
+			ReadFile(handle, name, sizeof(name), &dwByte, nullptr);
+
+			prototypeName = name;
+			componentName = SHADER_W;
+			FieldComp = (CComponent**)&m_pShaderCom;
+		}
+		else if (lstrcmp(name, MODEL_W) == 0)
+		{
+			ReadFile(handle, name, sizeof(name), &dwByte, nullptr);
+
+			prototypeName = name;
+			componentName = MODEL_W;
+			FieldComp = (CComponent**)&m_pModelCom;
+		}
+		else if (lstrcmp(name, TEXTURE_W) == 0)
+		{
+			ReadFile(handle, name, sizeof(name), &dwByte, nullptr);
+
+			prototypeName = name;
+			componentName = TEXTURE_W;
+			FieldComp = (CComponent**)&m_pTextureCom;
+		}
+		else if (lstrcmp(name, VIBUFFER_W) == 0)
+		{
+			ReadFile(handle, name, sizeof(name), &dwByte, nullptr);
+
+			prototypeName = name;
+			componentName = VIBUFFER_W;
+			FieldComp = (CComponent**)&m_pVIBufferCom;
+		}
+
+		if (bAddComponent)
+			Add_Component(LEVEL_TOOL, prototypeName.c_str(), componentName, FieldComp, this, pArg);
+	}
+
+	Safe_Delete(objectData);
+	return nullptr;
 }

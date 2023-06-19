@@ -250,3 +250,31 @@ void CTransform::Free()
 
 
 }
+
+ParsingData* CTransform::Save_Data(HANDLE handle, ParsingData* data)
+{
+	DWORD dwByte = { 0 };
+
+	ObjectParsingData* myData = (ObjectParsingData*)data;
+	TransformParsingData transformData;
+	
+	memcpy(&transformData.WorldMatrix, &m_WorldMatrix, sizeof(m_WorldMatrix));
+	WriteFile(handle, &m_WorldMatrix, sizeof(m_WorldMatrix), &dwByte, nullptr);
+
+
+	myData->TransformData = transformData;
+	return nullptr;
+}
+
+ParsingData* CTransform::Load_Data(HANDLE handle, ParsingData* data)
+{
+	DWORD dwByte = { 0 };
+	ObjectParsingData* myData = (ObjectParsingData*)data;
+	TransformParsingData transformData;
+
+	ReadFile(handle, &m_WorldMatrix, sizeof(m_WorldMatrix), &dwByte, nullptr);
+	memcpy(&transformData.WorldMatrix, &m_WorldMatrix, sizeof(m_WorldMatrix));
+
+	myData->TransformData = transformData;
+	return nullptr;
+}

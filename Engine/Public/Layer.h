@@ -17,6 +17,9 @@ public:
 	void Tick(_double TimeDelta);
 	void Late_Tick(_double TimeDelta);
 
+	CGameObject* Find_Object(const wstring& objName);
+	HRESULT Delete_GameObject(const wstring& pObjName);
+
 private:
 	list<class CGameObject*>				m_GameObjects;
 

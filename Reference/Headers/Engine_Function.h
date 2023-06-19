@@ -56,7 +56,7 @@ namespace Engine
 	class CTag_Finder
 	{
 	public:
-		explicit CTag_Finder(const wchar_t* pTag)
+		explicit CTag_Finder(const wstring& pTag)
 			: m_pTargetTag(pTag)
 		{
 		}
@@ -65,7 +65,7 @@ namespace Engine
 		template<typename T>
 		bool operator()(const T& pair)
 		{
-			if (0 == lstrcmpW(m_pTargetTag, pair.first))
+			if (0 == (m_pTargetTag.compare(pair.first)))
 			{
 				return true;
 			}
@@ -74,8 +74,8 @@ namespace Engine
 		}
 
 	private:
-		const wchar_t*		m_pTargetTag = nullptr;
-	};
+		wstring		m_pTargetTag = nullptr;
+	};	
 
 #ifndef __MODEL_LOADER
 	class CConversion
@@ -113,7 +113,69 @@ namespace Engine
 
 			return v;
 		}
+
+		static vector<wstring> SplitStringW(wstring wStr, const char* delimeter)
+		{
+			vector<wstring> resultVec;
+
+			string str = WstringToString(wStr);
+			vector<string> strVec = SplitStringA(str, delimeter);
+			for (auto& str : strVec)
+			{
+				resultVec.push_back(StringToWstring(str));
+			}
+
+			return resultVec;
+		}
+
+		static filesystem::path RelativePath(const std::filesystem::path& absolutePath, const std::filesystem::path& baseDirectory)
+		{
+			// Make sure both paths are absolute
+			std::filesystem::path absPath = std::filesystem::absolute(absolutePath);
+			std::filesystem::path absBaseDir = std::filesystem::absolute(baseDirectory);
+
+			// Calculate the relative path
+			std::filesystem::path relPath;
+			std::filesystem::path::const_iterator itPath = absPath.begin();
+			std::filesystem::path::const_iterator itBaseDir = absBaseDir.begin();
+
+			// Find common base directory
+			while (itPath != absPath.end() && itBaseDir != absBaseDir.end() && (*itPath) == (*itBaseDir)) {
+				++itPath;
+				++itBaseDir;
+			}
+
+			// Navigate up from the base directory to the common base directory
+			for (; itBaseDir != absBaseDir.end(); ++itBaseDir) {
+				relPath /= "..";
+			}
+
+			// Append the remaining path from the absolute path
+			for (; itPath != absPath.end(); ++itPath) {
+				relPath /= *itPath;
+			}
+
+			return relPath;
+		}
 	};
 #endif
 
+
+	static void DeleteFilesInDirectory(const std::string& directoryPath)
+	{
+		try {
+			for (const auto& entry : filesystem::directory_iterator(directoryPath))
+			{
+				if (entry.is_regular_file())
+				{
+					filesystem::remove(entry.path());
+				}
+			}
+		}
+		catch (const filesystem::filesystem_error& e)
+		{
+
+			cerr << "Error: " << e.what() << endl;
+		}
+	}
 }

@@ -32,5 +32,9 @@ public:
 	static CCamera_Main* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	virtual CGameObject* Clone(void* pArg) override;
 	virtual void Free() override;
+
+	// CCamera을(를) 통해 상속됨
+	virtual ParsingData* Save_Data(HANDLE handle, ParsingData* data) override;
+	virtual ParsingData* Load_Data(HANDLE handle, ParsingData* data) override;
 };
 

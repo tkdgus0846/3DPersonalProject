@@ -4,6 +4,7 @@
 #include "Object_Manager.h"
 #include "Timer_Manager.h"
 #include "Component_Manager.h"
+#include "DataParsing.h"
 
 #include "Layer.h"
 
@@ -213,6 +214,10 @@ HRESULT CGameInstance::Open_Level(_uint iLevelIndex, CLevel * pNewLevel)
 {
 	if (nullptr == m_pLevel_Manager)
 		return E_FAIL;
+	if (nullptr == m_pObject_Manager)
+		return E_FAIL;
+
+	m_pObject_Manager->Set_CurLevelIndex(iLevelIndex);
 
 	return m_pLevel_Manager->Open_Level(iLevelIndex, pNewLevel);	
 }
@@ -225,12 +230,70 @@ HRESULT CGameInstance::Add_Prototype(const _tchar * pPrototypeTag, CGameObject *
 	return m_pObject_Manager->Add_Prototype(pPrototypeTag, pPrototype);	
 }
 
-HRESULT CGameInstance::Add_GameObject(_uint iLevelIndex, const _tchar* pPrototypeTag, const _tchar* pLayerTag, const _tchar* pObjName, void* pArg)
+CGameObject* CGameInstance::Add_GameObject(_uint iLevelIndex, const wstring& pPrototypeTag, const wstring& pLayerTag, wstring& pObjName, void* pArg)
+{
+	if (nullptr == m_pObject_Manager)
+		return nullptr;
+
+	return m_pObject_Manager->Add_GameObject(iLevelIndex, pPrototypeTag, pLayerTag, pObjName, pArg);
+}
+
+HRESULT CGameInstance::Add_GameObject(_uint iLevelIndex, const wstring& pLayerTag, wstring& pObjName, CGameObject* object)
 {
 	if (nullptr == m_pObject_Manager)
 		return E_FAIL;
 
-	return m_pObject_Manager->Add_GameObject(iLevelIndex, pPrototypeTag, pLayerTag, pObjName, pArg);
+	return m_pObject_Manager->Add_GameObject(iLevelIndex,  pLayerTag, pObjName, object);
+}
+
+CGameObject* CGameInstance::Copy_GameObject(const wstring& layerTag, wstring& objectName)
+{
+	if (nullptr == m_pObject_Manager)
+		return nullptr;
+	if (nullptr == m_pLevel_Manager)
+		return nullptr;
+
+	return m_pObject_Manager->Copy_Object(m_pLevel_Manager->Get_CurLevelIndex(), layerTag, objectName);
+}
+
+HRESULT CGameInstance::Delete_GameObject(const wstring& pLayerTag, const wstring& pObjName)
+{
+	if (nullptr == m_pObject_Manager)
+		return E_FAIL;
+	if (nullptr == m_pLevel_Manager)
+		return E_FAIL;
+
+	return m_pObject_Manager->Delete_GameObject(m_pLevel_Manager->Get_CurLevelIndex(), pLayerTag, pObjName);
+}
+
+HRESULT CGameInstance::Save_CurLevel(const _tchar* curLevelName)
+{
+	if (nullptr == m_pObject_Manager)
+		return E_FAIL;
+
+	
+	LevelParsingData* levelData = new LevelParsingData(curLevelName);
+
+	m_pObject_Manager->Save_Data(0, levelData);
+	
+	Safe_Delete(levelData);
+	return S_OK;
+}
+
+HRESULT CGameInstance::Load_CurLevel(const _tchar* curLevelName, _bool bIsTool)
+{
+	if (nullptr == m_pObject_Manager)
+		return E_FAIL;
+
+
+	LevelParsingData* levelData = new LevelParsingData(curLevelName);
+
+	if (bIsTool == false)
+		m_pObject_Manager->Load_Data(0, levelData);
+	else
+		m_pObject_Manager->Load_Tool_Objects(levelData);
+	Safe_Delete(levelData);
+	return S_OK;
 }
 
 list<CGameObject*> CGameInstance::Get_All_Objects()

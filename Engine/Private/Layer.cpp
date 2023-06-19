@@ -27,6 +27,36 @@ void CLayer::Late_Tick(_double TimeDelta)
 		pGameObject->Late_Tick(TimeDelta);
 }
 
+CGameObject* CLayer::Find_Object(const wstring& objName)
+{
+	CGameObject* result = nullptr;
+	for (auto object : m_GameObjects)
+	{
+		if (object->GetName().compare(objName) == 0)
+		{
+			result = object;
+			return result;
+		}	
+	}
+	return result;
+}
+
+HRESULT CLayer::Delete_GameObject(const wstring& pObjName)
+{
+	for (auto it = m_GameObjects.begin(); it != m_GameObjects.end();)
+	{
+		if ((*it)->GetName().compare(pObjName) == 0)
+		{
+			Safe_Release(*it);
+			it = m_GameObjects.erase(it);
+			return S_OK;
+		}
+		else
+			it++;
+	}
+	return E_FAIL;
+}
+
 CLayer * CLayer::Create()
 {
 	return new CLayer();	

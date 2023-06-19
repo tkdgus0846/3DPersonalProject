@@ -105,6 +105,36 @@ void CInspectorWindow::Rendering()
 
 void CInspectorWindow::Mode_GameObject()
 {
+	if (ImGui::Button("Copy", ImVec2(100, 30)))
+	{
+		Copy_Object_Function();
+	}
+	SameLine();
+	if (ImGui::Button("Cancel", ImVec2(100, 30)))
+	{
+		m_bCopyingObject = false;
+		strcpy(m_CopyingObjectName, "");
+		m_bPastePicking = false;
+	}
+
+	m_bPastePicking = (m_bCopyingObject == false) ? false : m_bPastePicking;
+
+	SameLine();
+
+	ImGui::Text(m_CopyingObjectName);
+
+	if (RadioButton("Paste_Picking", m_bPastePicking))
+	{
+		m_bPastePicking = (m_bPastePicking == false) ? true : false;
+	}
+
+	if (m_bPastePicking == true)
+	{
+		Paste_Object_Function();
+	}
+	
+	NewLine();
+	NewLine();
 	Spacing();
 	Show_ComponentList();
 	NewLine();
@@ -113,6 +143,8 @@ void CInspectorWindow::Mode_GameObject()
 	{
 		Add_Component_Function();
 	}
+	
+	
 }
 
 void CInspectorWindow::Mode_Transform()
@@ -182,7 +214,8 @@ void CInspectorWindow::Mode_Transform()
 		m_bPlaceObject = (m_bPlaceObject == false) ? true:false;
 	}
 
-	Place_Object();
+	if (m_bPlaceObject == true)
+		Place_Object(transform);
 	
 }
 
@@ -294,6 +327,48 @@ void CInspectorWindow::Show_ComponentList()
 	//ImGui::ListBox("Prototypes", &selectedItemIndex, items, m_PrototypesStrVec.size());
 }
 
+void CInspectorWindow::Copy_Object_Function()
+{
+	// Copy 해서 복사본을 갖고 있게 해야됨.
+	m_bCopyingObject = true;
+
+	CDummyObject* object = dynamic_cast<CDummyObject*>(IMGUI->GetCurSelectComponent());
+	wstring name = object->GetName();
+	string objectName = CConversion::WstringToString(name);
+	strcpy(m_CopyingObjectName, objectName.c_str());
+	
+	
+}
+
+void CInspectorWindow::Paste_Object_Function()
+{
+	CGameInstance* pGameInstance = CGameInstance::GetInstance();
+
+	if (pGameInstance->Mouse_Up(CInput_Device::DIMK_LBUTTON))
+		m_bCopyLock = false;
+
+	if (pGameInstance->Mouse_Pressing(CInput_Device::DIMK_LBUTTON) && m_bCopyLock == false)
+	{
+		// GetCurSelectComponent 가 아니라 Copy 된 Object를 처리 해야됨.
+		CDummyObject* object = dynamic_cast<CDummyObject*>(IMGUI->GetCurSelectComponent());
+
+		wstring name = object->GetName();
+		CDummyObject* newObject = dynamic_cast<CDummyObject*>(pGameInstance->Copy_GameObject(TEXT("ObjectLayer"), name));
+
+		if (newObject == nullptr) return;
+
+		if (Place_Object(newObject->m_pTransformCom) == E_FAIL)
+		{
+			pGameInstance->Delete_GameObject(TEXT("ObjectLayer"), name);
+		}
+
+		m_bCopyLock = true;
+
+		IMGUI->ChangeTree();
+	}
+	
+}
+
 void CInspectorWindow::Add_Component_Function()
 {
 	if (selectedComponentIndex < 0 || selectedComponentIndex >= m_PrototypesVec.size()) return;
@@ -307,9 +382,11 @@ void CInspectorWindow::Add_Component_Function()
 	void* pArg = nullptr;
 	string name;
 
+	CTransform::TRANSFORMDESC desc = CTransform::TRANSFORMDESC(7.0, XMConvertToRadians(90.0f));
+
 	for (auto& str : splitVector)
 	{
-		if (str.compare("Renderer") == 0)
+		if (str.compare(RENDERER_A) == 0)
 		{
 			if (gameObject->m_pRendererCom != nullptr) 
 				return;
@@ -317,47 +394,53 @@ void CInspectorWindow::Add_Component_Function()
 			name = str;
 			FieldComp = (CComponent**)&gameObject->m_pRendererCom;
 		}
-		if (str.compare("Transform") == 0)
+		if (str.compare(TRANSFORM_A) == 0)
 		{
 			if (gameObject->m_pTransformCom != nullptr) 
 				return;
 
 			name = str;
 			FieldComp = (CComponent**)&gameObject->m_pTransformCom;
-
-			CTransform::TRANSFORMDESC desc = CTransform::TRANSFORMDESC(7.0, XMConvertToRadians(90.0f));
 			pArg = (void*)&desc;
 		}
-		if (str.compare("VIBuffer") == 0)
+		if (str.compare(VIBUFFER_A) == 0)
 		{
 			if (gameObject->m_pVIBufferCom != nullptr) 
 				return;
 
 			name = str;
 			FieldComp = (CComponent**)&gameObject->m_pVIBufferCom;
+
+			gameObject->m_VIBufferPrototypeName = m_PrototypesVec[selectedComponentIndex].first;
 		}
-		if (str.compare("Shader") == 0)
+		if (str.compare(SHADER_A) == 0)
 		{
 			if (gameObject->m_pShaderCom != nullptr)
 				return;
 
 			name = str;
 			FieldComp = (CComponent**)&gameObject->m_pShaderCom;
+
+			gameObject->m_ShaderPrototypeName = m_PrototypesVec[selectedComponentIndex].first;
 		}
-		if (str.compare("Texture") == 0)
+		if (str.compare(TEXTURE_A) == 0)
 		{
 			if (gameObject->m_pTextureCom != nullptr)
 				return;
 
 			name = str;
 			FieldComp = (CComponent**)&gameObject->m_pTextureCom;
+
+			gameObject->m_TexturePrototypeName = m_PrototypesVec[selectedComponentIndex].first;
 		}
-		if (str.compare("Model") == 0)
+		if (str.compare(MODEL_A) == 0)
 		{
 			if (gameObject->m_pModelCom != nullptr) return;
 
 			name = str;
 			FieldComp = (CComponent**)&gameObject->m_pModelCom;
+
+			gameObject->m_ModelPrototypeName = m_PrototypesVec[selectedComponentIndex].first;
 		}
 		
 	}
@@ -428,7 +511,7 @@ void CInspectorWindow::Add_GameObject_Function()
 {
 	wstring name = CConversion::StringToWstring(m_ObjectAddNameBuffer);
 	CGameInstance* pGameInstance = CGameInstance::GetInstance();
-	pGameInstance->Add_GameObject(LEVEL_TOOL, TEXT("Prototype_GameObject_DummyObject"), TEXT("ObjectLayer"), name.c_str());
+	pGameInstance->Add_GameObject(LEVEL_TOOL, TEXT("Prototype_GameObject_DummyObject"), TEXT("ObjectLayer"), name);
 
 	IMGUI->ChangeTree();
 }
@@ -437,14 +520,11 @@ void CInspectorWindow::Delete_GameObject_Function()
 {
 }
 
-HRESULT CInspectorWindow::Place_Object()
+HRESULT CInspectorWindow::Place_Object(CTransform* transformComp)
 {
-	if (m_bPlaceObject == false) return E_FAIL;
-
 	if (CInput_Device::GetInstance()->Get_DIMouseState(CInput_Device::DIMK_LBUTTON) & 0x80)
 	{
-		CComponent* component = IMGUI->GetCurSelectComponent();
-		CTransform* transform = dynamic_cast<CTransform*>(component);
+		CTransform* transform = transformComp;
 		if (transform == nullptr) return E_FAIL;
 
 		CDummyObject* terrain = dynamic_cast<CDummyObject*>(IMGUI->Find_GameObject(L"Terrain"));
@@ -454,7 +534,10 @@ HRESULT CInspectorWindow::Place_Object()
 		CVIBuffer_Terrain* terrainBuffer = dynamic_cast<CVIBuffer_Terrain*>(terrain->m_pVIBufferCom);
 		CTransform* terrainTransform = dynamic_cast<CTransform*>(terrain->m_pTransformCom);
 
-		_float4 pickingPos = CCalculator::Picking_OnTerrain(g_hWnd, g_iWinSizeX, g_iWinSizeY, terrainBuffer, terrainTransform);
+		_float4 pickingPos;
+		_bool pickingResult = CCalculator::Picking_OnTerrain(g_hWnd, g_iWinSizeX, g_iWinSizeY, terrainBuffer, terrainTransform, &pickingPos);
+
+		if (pickingResult == false) return E_FAIL;
 
 		transform->Set_Position(XMLoadFloat4(&pickingPos));
 

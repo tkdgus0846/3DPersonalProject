@@ -57,7 +57,15 @@ public: /* For.Level_Manager */
 
 public: /* For.Object_Manager */
 	HRESULT Add_Prototype(const _tchar* pPrototypeTag, class CGameObject* pPrototype);
-	HRESULT Add_GameObject(_uint iLevelIndex, const _tchar * pPrototypeTag, const _tchar * pLayerTag, const _tchar * pObjName, void* pArg = nullptr);
+	// 프로토타입을 기반으로 Add 해주는 역할.
+	CGameObject* Add_GameObject(_uint iLevelIndex, const wstring & pPrototypeTag, const wstring& pLayerTag, wstring & pObjName, void* pArg = nullptr);
+	// 프로토타입 기반X 로 Add 해주는 역할.
+	HRESULT Add_GameObject(_uint iLevelIndex, const wstring & pLayerTag, wstring & pObjName, CGameObject * object);
+	CGameObject* Copy_GameObject(const wstring & layerTag, wstring & objectName);
+	HRESULT Delete_GameObject(const wstring & pLayerTag, const wstring & pObjName);
+
+	HRESULT Save_CurLevel(const _tchar* curLevelName);
+	HRESULT Load_CurLevel(const _tchar* curLevelName, _bool bIsTool = false);
 
 	list<class CGameObject*> Get_All_Objects();
 
@@ -84,6 +92,7 @@ private:
 	class CTimer_Manager*			m_pTimer_Manager = { nullptr };
 	class CPipeLine*				m_pPipeLine = { nullptr };
 	class CLight_Manager*			m_pLight_Manager = { nullptr };
+
 public:
 	static void Release_Engine();
 	virtual void Free() override;

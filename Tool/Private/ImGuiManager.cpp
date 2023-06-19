@@ -85,6 +85,15 @@ void CImGuiManager::Render()
 	for (auto& item : m_WindowsMap)
 		item.second->Render();
 	
+	if (ImGuiFileDialog::Instance()->Display(m_pSaveLoadDlgKey.c_str()))
+	{
+		// IsOk 가 눌렸을때 세이브 모드인지 로드 모드인지 판단해서 시행해야 한다.
+		if (ImGuiFileDialog::Instance()->IsOk())
+		{
+			SaveLoad_Dialog_Function();
+		}
+		ImGuiFileDialog::Instance()->Close();
+	}
 	
 	ImGui::Render();
 
@@ -190,4 +199,27 @@ void CImGuiManager::Free()
 	ImGui_ImplDX11_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
+}
+
+void CImGuiManager::SaveLoad_Dialog_Function()
+{
+	if (m_pCurSaveLoadWindowName == OBJECT_WINDOW_NAME)
+	{
+		string name = ImGuiFileDialog::Instance()->GetFilePathName();
+		
+		// 내 현재 경로는 ?
+		filesystem::path curPath = name;
+
+		wstring wStr = CConversion::StringToWstring(curPath.filename().string());
+
+		if (m_bSaveMode == true)
+		{
+			CGameInstance::GetInstance()->Save_CurLevel(wStr.c_str());
+		}
+		else
+		{
+			ChangeTree();
+			CGameInstance::GetInstance()->Load_CurLevel(wStr.c_str(), true);
+		}
+	}
 }

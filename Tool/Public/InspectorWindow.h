@@ -4,6 +4,7 @@
 BEGIN(Engine)
 class CGameObject;
 class CComponent;
+class CTransform;
 END
 
 enum InspectorMode
@@ -44,6 +45,8 @@ private:
 
 	/*컴포넌트 인스펙터 창*/
 	void			Show_ComponentList();
+	void			Copy_Object_Function();
+	void			Paste_Object_Function();
 	void			Add_Component_Function();
 	void			Delete_Component_Function();
 	void			Delete_Button();
@@ -53,7 +56,7 @@ private:
 	void			Delete_GameObject_Function();
 
 	/* 마우스 피킹 */
-	HRESULT			Place_Object();
+	HRESULT			Place_Object(class CTransform* transformComp);
 
 
 private:
@@ -73,6 +76,12 @@ private:
 	_float scale[3] = { 1.f, 1.f, 1.f };
 	_bool m_bPlaceObject = { false };
 	_bool m_bScaleLock = { false };
+
+	/* 오브젝트 복사 관련 변수들*/
+	_bool m_bPastePicking = { false };
+	_bool m_bCopyingObject = { false };
+	_bool m_bCopyLock = { false };
+	_char m_CopyingObjectName[FILE_NAME_SIZE] = "";
 
 	/* 렌더러 관련 변수들*/
 	vector<string>			m_RenderGroupStrVec;

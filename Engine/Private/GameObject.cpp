@@ -10,8 +10,10 @@ CGameObject::CGameObject(ID3D11Device * pDevice, ID3D11DeviceContext * pContext)
 
 CGameObject::CGameObject(const CGameObject & rhs)
 	: CComposite(rhs)
+	, m_iPassNum(rhs.m_iPassNum)
+	, m_eRenderGroup(rhs.m_eRenderGroup)
 {
-
+	
 }
 
 HRESULT CGameObject::Initialize_Prototype()

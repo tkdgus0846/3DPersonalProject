@@ -49,6 +49,48 @@ CComposite::CComposite(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 CComposite::CComposite(const CComposite& rhs)
 	: CComponent(rhs)
 {
+	for (auto item : rhs.m_Components)
+	{
+		void* pArg = nullptr;
+
+		wstring compName = item.first;
+		CComponent* newComp = nullptr;
+		_bool bContinue = false;
+		
+		if (compName.compare(RENDERER_W) == 0)
+		{
+			bContinue = true;
+		}
+		else if (compName.compare(TRANSFORM_W) == 0)
+		{
+			bContinue = true;
+		}
+		else if (compName.compare(VIBUFFER_W) == 0)
+		{
+
+		}
+		else if (compName.compare(SHADER_W) == 0)
+		{
+
+		}
+		else if (compName.compare(TEXTURE_W) == 0)
+		{
+
+		}
+		else if (compName.compare(MODEL_W) == 0)
+		{
+
+		}
+
+		if (bContinue == true) continue;
+
+		newComp = item.second->Clone(pArg);
+		newComp->SetName(compName);
+		newComp->SetOwner(this);
+
+		m_Components.emplace(compName, newComp);
+		
+	}
 }
 
 HRESULT CComposite::Initialize_Prototype()
@@ -94,7 +136,7 @@ list<CComponent*> CComposite::Get_ComponentsByList()
 	return componentList;
 }
 
-HRESULT CComposite::Add_Component(_uint iLevelIndex, const _tchar* pPrototypeTag, const wstring& pComponentTag, _Inout_ CComponent** ppOut, CGameObject* pOwner, void* pArg)
+HRESULT CComposite::Add_Component(_uint iLevelIndex, const _tchar* pPrototypeTag, const wstring& pComponentTag, _Inout_ CComponent** ppOut, CComposite* pOwner, void* pArg)
 {
 	CGameInstance* pGameInstance = CGameInstance::GetInstance();
 	Safe_AddRef(pGameInstance);
@@ -117,6 +159,12 @@ HRESULT CComposite::Add_Component(_uint iLevelIndex, const _tchar* pPrototypeTag
 	return S_OK;
 }
 
+HRESULT CComposite::Add_Component(CComponent* newComp)
+{
+	m_Components.emplace(newComp->GetName(), newComp);
+	return S_OK;
+}
+
 HRESULT CComposite::Delete_Component(const _tchar* pComponentTag)
 {
 	auto iter = m_Components.find(pComponentTag);
@@ -134,6 +182,16 @@ HRESULT CComposite::Delete_Component(const _tchar* pComponentTag)
 
 	Safe_Release(pGameInstance);
 	return S_OK;
+}
+
+CComponent* CComposite::Get_Component(const wstring& compName)
+{
+	auto iter = m_Components.find(compName);
+
+	if (iter == m_Components.end()) 
+		return nullptr;
+	else 
+		return iter->second;
 }
 
 

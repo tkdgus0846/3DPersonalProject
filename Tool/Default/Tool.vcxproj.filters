@@ -131,9 +131,6 @@
     <ClInclude Include="..\Public\UIWindow.h">
       <Filter>IMGUI\ImguiWindows\UIWindow</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\DummyTerrain.h">
-      <Filter>02.GameObjects</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\Camera_Free.h">
       <Filter>02.GameObjects</Filter>
     </ClInclude>
@@ -142,6 +139,12 @@
     </ClInclude>
     <ClInclude Include="..\Public\DummyObject.h">
       <Filter>02.GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="..\IMGUI\ImGuiFileDialog.h">
+      <Filter>IMGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\IMGUI\ImGuiFileDialogConfig.h">
+      <Filter>IMGUI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -196,9 +199,6 @@
     <ClCompile Include="..\Private\UIWindow.cpp">
       <Filter>IMGUI\ImguiWindows\UIWindow</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\DummyTerrain.cpp">
-      <Filter>02.GameObjects</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\Camera_Free.cpp">
       <Filter>02.GameObjects</Filter>
     </ClCompile>
@@ -207,6 +207,9 @@
     </ClCompile>
     <ClCompile Include="..\Private\DummyObject.cpp">
       <Filter>02.GameObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="..\IMGUI\ImGuiFileDialog.cpp">
+      <Filter>IMGUI</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

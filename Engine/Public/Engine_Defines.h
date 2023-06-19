@@ -33,9 +33,13 @@
 #include <locale>
 #include <codecvt>
 
+#include <filesystem>
+#include <iostream>
+
 using namespace std;
 
 using namespace DirectX;
+using namespace std::filesystem;
 
 #include "Engine_Function.h"
 #include "Engine_TypeDef.h"

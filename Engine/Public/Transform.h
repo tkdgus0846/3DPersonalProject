@@ -7,7 +7,7 @@
 
 BEGIN(Engine)
 
-class ENGINE_DLL CTransform final : public CComponent
+class ENGINE_DLL CTransform final : public CComponent, public ISerializable
 {
 public:
 	enum STATE { STATE_RIGHT, STATE_UP, STATE_LOOK, STATE_POSITION, STATE_END };
@@ -79,12 +79,17 @@ private:
 	TRANSFORMDESC			m_TransformDesc;
 
 	_float4x4				m_WorldMatrix;
+
+	// 툴 상에 수치상으로만 각도를 나타내주기 위함. 다른 용도는 없음.
 	_float3					m_Rotation = { 0.f,0.f,0.f };
 
 public:
 	static CTransform* Create(ID3D11Device * pDevice, ID3D11DeviceContext * pContext);
 	virtual CComponent* Clone(void* pArg) override;
 	virtual void Free() override;
+
+	virtual ParsingData* Save_Data(HANDLE handle, ParsingData* data);
+	virtual ParsingData* Load_Data(HANDLE handle, ParsingData* data);
 };
 
 END

@@ -24,6 +24,9 @@ private:
 	void			ShowTree(const list<CComponent*>& compList, _bool root = true);	
 	void			SelectInspectorMode(const wstring& name);
 
+	virtual void	Save_Function() final;
+	virtual void	Load_Function() final;
+
 private:
 	list<CComponent*>		m_GameObjects;
 	_bool					m_bChangeTree = { true };
@@ -31,5 +34,7 @@ private:
 	_uint					m_eInspectorMode;
 	wstring					m_pCurSelectName = { L"" };
 	CComponent*				m_pCurSelectComponent = { nullptr };
+
+	
 };
 

@@ -48,8 +48,22 @@ public:
 	CComponent*			GetCurSelectComponent();
 	CGameObject*		Find_GameObject(const wstring& name);
 
+	string				SaveLoad_Dialog_Key() const { return m_pSaveLoadDlgKey; }
+	void				SaveMode() { m_bSaveMode = true; }
+	void				LoadMode() { m_bSaveMode = false; }
+	void				SaveLoad_By(const _char* pWindowName)
+	{
+		m_pCurSaveLoadWindowName = pWindowName;
+	}
+	const _char* Get_CurSaveLoadWindowName() const
+	{
+		return m_pCurSaveLoadWindowName;
+	}
+
 private:
-	virtual void	Free() override;
+	virtual void		Free() override;
+
+	void				SaveLoad_Dialog_Function();
 
 private:
 	ID3D11Device* m_pDevice = nullptr;
@@ -57,6 +71,9 @@ private:
 
 	map<const char*, class CImGuiWindow*> m_WindowsMap;
 
+	string					m_pSaveLoadDlgKey = "Save&Load";
+	_bool					m_bSaveMode = false;
+	const _char*			m_pCurSaveLoadWindowName = "";
 };
 
 #define IMGUI CImGuiManager::GetInstance()

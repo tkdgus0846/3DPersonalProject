@@ -10,6 +10,7 @@ HRESULT CObjectWindow::Initialize(const WINDOWDESC& desc)
 	HRESULT result = __super::Initialize(desc);
 
 	m_eInspectorMode = IM_DEFAULT;
+	
 
 	return result;
 }
@@ -48,6 +49,8 @@ void CObjectWindow::Rendering()
 		
 		ShowTree(m_GameObjects);
 	}
+
+	
 }
 
 void CObjectWindow::MakeTree()
@@ -135,6 +138,24 @@ void CObjectWindow::SelectInspectorMode(const wstring& name)
 	{
 		m_eInspectorMode = IM_GAMEOBJECT;
 	}
+}
+
+void CObjectWindow::Save_Function()
+{
+	IMGUI->SaveMode();
+	IMGUI->SaveLoad_By(OBJECT_WINDOW_NAME);
+	
+	ImGuiFileDialog::Instance()->OpenDialog(IMGUI->SaveLoad_Dialog_Key().c_str(), "Choose File", nullptr, "../../Levels/");
+		
+}
+
+void CObjectWindow::Load_Function()
+{
+	IMGUI->LoadMode();
+	IMGUI->SaveLoad_By(OBJECT_WINDOW_NAME);
+	
+	ImGuiFileDialog::Instance()->OpenDialog(IMGUI->SaveLoad_Dialog_Key().c_str(), "Choose File", nullptr, "../../Levels/");
+		
 }
 
 _uint CObjectWindow::GetInspectorMode()

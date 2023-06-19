@@ -2,6 +2,20 @@
 
 #define FILE_NAME_SIZE 128
 
+#define TRANSFORM_W		L"Transform"
+#define RENDERER_W		L"Renderer" 
+#define VIBUFFER_W		L"VIBuffer" 
+#define SHADER_W		L"Shader" 
+#define TEXTURE_W		L"Texture" 
+#define MODEL_W			L"Model" 
+
+#define TRANSFORM_A		"Transform"
+#define RENDERER_A		"Renderer" 
+#define VIBUFFER_A		"VIBuffer" 
+#define SHADER_A		"Shader" 
+#define TEXTURE_A		"Texture" 
+#define MODEL_A			"Model"
+
 #define D3DCOLOR_ARGB(a,r,g,b) \
     ((D3DCOLOR)((((a)&0xff)<<24)|(((r)&0xff)<<16)|(((g)&0xff)<<8)|((b)&0xff)))
 

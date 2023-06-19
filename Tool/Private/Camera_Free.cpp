@@ -131,3 +131,13 @@ void CCamera_Main::Free()
 {
 	__super::Free();
 }
+
+ParsingData* CCamera_Main::Save_Data(HANDLE handle, ParsingData* data)
+{
+	return nullptr;
+}
+
+ParsingData* CCamera_Main::Load_Data(HANDLE handle, ParsingData* data)
+{
+	return nullptr;
+}

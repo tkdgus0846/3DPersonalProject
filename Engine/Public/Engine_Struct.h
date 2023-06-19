@@ -126,6 +126,21 @@ namespace Engine
 		virtual ParsingData* Load_Data(HANDLE handle, ParsingData* data) final { return nullptr; };
 	};
 
+	struct LevelParsingData : public ParsingData
+	{
+		LevelParsingData(const wstring& levelName)
+		{
+			lstrcpy(LevelName, levelName.c_str());
+		}
+		_tchar				LevelName[MAX_PATH];
+		
+	};
+
+	struct TransformParsingData : public ParsingData
+	{
+		_float4x4 WorldMatrix;
+	};
+
 	struct MeshParsingData : public ParsingData
 	{
 		_char				szName[MAX_PATH];
@@ -188,6 +203,8 @@ namespace Engine
 
 	struct ObjectParsingData : public ParsingData
 	{
-
+		TransformParsingData	TransformData;
 	};
+
+	
 }

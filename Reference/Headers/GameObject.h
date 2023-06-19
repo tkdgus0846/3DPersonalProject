@@ -4,7 +4,7 @@
 
 BEGIN(Engine)
 
-class ENGINE_DLL CGameObject abstract : public CComposite
+class ENGINE_DLL CGameObject abstract : public CComposite, public ISerializable
 {
 protected:
 	CGameObject(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);

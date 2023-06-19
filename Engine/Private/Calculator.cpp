@@ -39,14 +39,21 @@ _bool CCalculator::Raycast(_fvector Origin, _fvector Direction, const vector<Tri
 	return ResultIsIntersect;
 }
 
-_float4 CCalculator::Picking_OnTerrain(HWND hWnd, _uint winSizeX, _uint winSizeY, CVIBuffer_Terrain* pTerrainBuffer, CTransform* pTerrainTransform)
+_bool CCalculator::Picking_OnTerrain(HWND hWnd, _uint winSizeX, _uint winSizeY, CVIBuffer_Terrain* pTerrainBuffer, CTransform* pTerrainTransform, _float4* resultPos)
 {
 	POINT	ptMouse{};
 	GetCursorPos(&ptMouse);
 	ScreenToClient(hWnd, &ptMouse);
 
-	// 뷰포트 -> 투영
+	RECT clientRect;
+	GetClientRect(hWnd, &clientRect);
 
+	if (!PtInRect(&clientRect, ptMouse))
+	{
+		return false;
+	}
+
+	// 뷰포트 -> 투영
 	_vector	vMouse;
 
 	vMouse.m128_f32[0] = ptMouse.x / (winSizeX * 0.5f) - 1.f;
@@ -78,15 +85,15 @@ _float4 CCalculator::Picking_OnTerrain(HWND hWnd, _uint winSizeX, _uint winSizeY
 	vRayPos = XMVector3TransformCoord(vRayPos, matWorldInverse);
 	vRayDir = XMVector3TransformNormal(vRayDir, matWorldInverse);
 
-	_float4 resultPos = { 0.f,0.f,0.f,1.f };
+	//_float4 resultPos = { 0.f,0.f,0.f,1.f };
 	_float dist;
 
 	// pTerrainBuffer, pTerrainTransform 이용하여 3번째 매개변수 대입.
 	vector<Triangle>* TriangleVector = pTerrainBuffer->Get_VerticesPos();
-	_bool rayHit = Raycast(vRayPos, vRayDir, TriangleVector, &resultPos, dist);
+	_bool rayHit = Raycast(vRayPos, vRayDir, TriangleVector, resultPos, dist);
 
-	_vector resPos = XMVector3TransformCoord(XMLoadFloat4(&resultPos), XMLoadFloat4x4(&pTerrainTransform->Get_WorldFloat4x4()));
+	_vector resPos = XMVector3TransformCoord(XMLoadFloat4(resultPos), XMLoadFloat4x4(&pTerrainTransform->Get_WorldFloat4x4()));
 	
-	XMStoreFloat4(&resultPos, resPos);
-	return resultPos;
+	XMStoreFloat4(resultPos, resPos);
+	return rayHit;
 }

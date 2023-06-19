@@ -138,9 +138,10 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>TOOL;NOMINMAX;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TOOL;NOMINMAX;_CRT_SECURE_NO_WARNINGS;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -158,9 +159,10 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>TOOL;NOMINMAX;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TOOL;NOMINMAX;_CRT_SECURE_NO_WARNINGS;_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -184,6 +186,8 @@
   <ItemGroup>
     <ClInclude Include="..\IMGUI\imconfig.h" />
     <ClInclude Include="..\IMGUI\imgui.h" />
+    <ClInclude Include="..\IMGUI\ImGuiFileDialog.h" />
+    <ClInclude Include="..\IMGUI\ImGuiFileDialogConfig.h" />
     <ClInclude Include="..\IMGUI\imgui_impl_dx11.h" />
     <ClInclude Include="..\IMGUI\imgui_impl_win32.h" />
     <ClInclude Include="..\IMGUI\imgui_internal.h" />
@@ -192,7 +196,6 @@
     <ClInclude Include="..\IMGUI\imstb_truetype.h" />
     <ClInclude Include="..\Public\Camera_Free.h" />
     <ClInclude Include="..\Public\DummyObject.h" />
-    <ClInclude Include="..\Public\DummyTerrain.h" />
     <ClInclude Include="..\public\ImGuiManager.h" />
     <ClInclude Include="..\public\ImGuiWindow.h" />
     <ClInclude Include="..\Public\InspectorWindow.h" />
@@ -212,6 +215,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\IMGUI\imgui.cpp" />
+    <ClCompile Include="..\IMGUI\ImGuiFileDialog.cpp" />
     <ClCompile Include="..\IMGUI\imgui_draw.cpp" />
     <ClCompile Include="..\IMGUI\imgui_impl_dx11.cpp" />
     <ClCompile Include="..\IMGUI\imgui_impl_win32.cpp" />
@@ -219,7 +223,6 @@
     <ClCompile Include="..\IMGUI\imgui_widgets.cpp" />
     <ClCompile Include="..\Private\Camera_Free.cpp" />
     <ClCompile Include="..\Private\DummyObject.cpp" />
-    <ClCompile Include="..\Private\DummyTerrain.cpp" />
     <ClCompile Include="..\private\ImGuiManager.cpp" />
     <ClCompile Include="..\private\ImGuiWindow.cpp" />
     <ClCompile Include="..\Private\InspectorWindow.cpp" />

@@ -65,8 +65,8 @@ HRESULT CLevel_Tool::Ready_Layer_Camera(const _tchar* pLayerTag)
 	CameraFreeDesc.CameraDesc.TransformDesc.SpeedPerSec = 10.f;
 	CameraFreeDesc.CameraDesc.TransformDesc.RotationPerSec = XMConvertToRadians(90.0f);
 
-
-	if (FAILED(pGameInstance->Add_GameObject(LEVEL_TOOL, TEXT("Prototype_GameObject_Camera_Free"), pLayerTag, TEXT("MainCamera"), &CameraFreeDesc)))
+	wstring name = TEXT("ToolCamera");
+	if (pGameInstance->Add_GameObject(LEVEL_TOOL, TEXT("Prototype_GameObject_Camera_Free"), pLayerTag, name, &CameraFreeDesc) == nullptr)
 		return E_FAIL;
 
 	Safe_Release(pGameInstance);

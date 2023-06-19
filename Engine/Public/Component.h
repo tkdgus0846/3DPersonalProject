@@ -7,6 +7,7 @@
 BEGIN(Engine)
 
 class CGameObject;
+class CComposite;
 
 class ENGINE_DLL CComponent abstract : public CBase
 {
@@ -25,8 +26,8 @@ public:
 
 	const wstring GetName() const { return m_pName; }
 	void SetName(const wstring& newName) { m_pName = newName; }
-	CGameObject* GetOwner() const { return m_pOwner; }
-	void SetOwner(CGameObject* pObj)
+	CComposite* GetOwner() const { return m_pOwner; }
+	void SetOwner(CComposite* pObj)
 	{
 		if (pObj == nullptr) 
 		{
@@ -40,7 +41,7 @@ protected:
 	ID3D11DeviceContext*			m_pContext = { nullptr };
 
 	_bool							m_isCloned = { false };
-	CGameObject*					m_pOwner = { nullptr };
+	CComposite*						m_pOwner = { nullptr };
 	wstring							m_pName = { L"" };
 
 public:
@@ -72,8 +73,12 @@ protected:
 	unordered_map<wstring, CComponent*>			m_Components;
 
 public:
-	HRESULT Add_Component(_uint iLevelIndex, const _tchar * pPrototypeTag, const wstring& pComponentTag, _Inout_ CComponent * *ppOut, CGameObject* pOwner, void* pArg = nullptr);
-	HRESULT Delete_Component(const _tchar* pComponentTag);
+	HRESULT Add_Component(_uint iLevelIndex, const _tchar * pPrototypeTag, const wstring& pComponentTag, _Inout_ CComponent * *ppOut, CComposite* pOwner, void* pArg = nullptr);
+
+	// 컴포넌트를 생성해서 그냥 집어넣는 식의 작업만 하기 위함이다.
+	HRESULT		Add_Component(CComponent* newComp);
+	HRESULT		Delete_Component(const _tchar* pComponentTag);
+	CComponent* Get_Component(const wstring& compName);
 
 public:
 	virtual void Free() override;
