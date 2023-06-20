@@ -157,15 +157,10 @@ HRESULT CToolApp::Ready_Prototype_Component_For_Static()
 	_matrix		PivotMatrix = XMMatrixIdentity();
 
 	/*PivotMatrix = XMMatrixRotationY(XMConvertToRadians(180.0f));*/
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_Model_CreatureBear_Standard_LOD00_rig"),
-		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/AnimModels/CreatureBear_Standard_LOD00_rig/CreatureBear_Standard_LOD00_rig.dat", PivotMatrix))))
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_Model_2087_model"),
+		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/AnimModels/2087_model/2087_model.dat", PivotMatrix))))
 		return E_FAIL;
-	
-	
-	
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_Model_Abess_GEO"),
-		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/NonAnimModels/Abess_GEO/Abess_GEO.dat", PivotMatrix))))
-		return E_FAIL;
+
 
 #pragma endregion  Component Ãß°¡
 	

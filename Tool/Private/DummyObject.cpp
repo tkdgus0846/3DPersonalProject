@@ -128,6 +128,23 @@ HRESULT CDummyObject::Render()
 	return S_OK;
 }
 
+BoundingSphere* CDummyObject::Get_PickingSphere()
+{ 
+	CTransform* transform = m_pTransformCom;
+
+	if (transform == nullptr) return nullptr;
+
+	_vector translation = transform->Get_State(CTransform::STATE_POSITION);
+
+	_float3 spherePos;
+	XMStoreFloat3(&spherePos, translation);
+
+	m_PickingSphere.Center = spherePos;
+	m_PickingSphere.Radius = 1.f;
+
+	return &m_PickingSphere; 
+}
+
 HRESULT CDummyObject::Add_Components()
 {
 	/* For.Com_Renderer */

@@ -64,6 +64,8 @@ public:
 	void Close_Window();
 
 	_bool IsAlwaysShow() const { return m_bAlwaysShow; }
+
+	virtual _bool Is_Use_Picking() { return false; }
 	
 protected:
 	//virtual void PreRender() PURE;

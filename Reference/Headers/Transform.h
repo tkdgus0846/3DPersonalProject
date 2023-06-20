@@ -60,7 +60,7 @@ public:
 
 public:
 	void Set_Position(_fvector vPos);
-	void Go_Straight(_double TimeDelta);
+	void Go_Straight(_double TimeDelta, class CNavigation* pNavigation = nullptr);
 	void Go_Backward(_double TimeDelta);
 	void Go_Left(_double TimeDelta);
 	void Go_Right(_double TimeDelta);

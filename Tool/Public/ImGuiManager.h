@@ -59,6 +59,7 @@ public:
 	{
 		return m_pCurSaveLoadWindowName;
 	}
+	_bool Window_Use_Picking(const char* windowName);
 
 private:
 	virtual void		Free() override;

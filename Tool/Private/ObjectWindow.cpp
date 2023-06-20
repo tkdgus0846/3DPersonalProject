@@ -4,6 +4,8 @@
 #include "GameObject.h"
 #include "GameInstance.h"
 #include "InspectorWindow.h"
+#include "Calculator.h"
+#include <DummyObject.h>
 
 HRESULT CObjectWindow::Initialize(const WINDOWDESC& desc)
 {
@@ -35,6 +37,28 @@ CGameObject* CObjectWindow::Find_GameObject(const wstring& name)
 			return dynamic_cast<CGameObject*>(component);
 	}
 	return nullptr;
+}
+
+void CObjectWindow::Picking_LoadObject()
+{
+	if (IMGUI->Window_Use_Picking(INSPECTOR_WINDOW_NAME))
+		return;
+
+	vector<BoundingSphere> BoundingSpheres;
+
+	for (auto& comp : m_GameObjects)
+	{
+		CDummyObject* object = dynamic_cast<CDummyObject*>(comp);
+		
+		BoundingSpheres.push_back(*object->Get_PickingSphere());
+	}
+	_float4 resultPos;
+	_int index = CCalculator::Picking_Sphere(g_hWnd, g_iWinSizeX, g_iWinSizeY, &BoundingSpheres, &resultPos);
+
+	if (index == -1) return;
+
+	// 여기다가 picking 됐을때 트리를 처리해주는 코드를 넣어야됨
+
 }
 
 void CObjectWindow::Rendering()

@@ -548,4 +548,9 @@ HRESULT CInspectorWindow::Place_Object(CTransform* transformComp)
 	return S_OK;
 }
 
+_bool CInspectorWindow::Is_Use_Picking()
+{
+	return (m_bPlaceObject || m_bPastePicking);
+}
+
 

@@ -40,8 +40,6 @@ HRESULT CAssimpModel::Initialize_Prototype(const string& pModelFilePath, TYPE eM
 
 	XMStoreFloat4x4(&m_PivotMatrix, PivotMatrix);
 
-	m_MaterialPaths.resize(AI_TEXTURE_TYPE_MAX);
-
 	if (TYPE_NONANIM == eMeshType)
 		iFlag = aiProcess_PreTransformVertices | aiProcess_ConvertToLeftHanded | aiProcessPreset_TargetRealtime_Fast;
 	else
@@ -91,11 +89,10 @@ HRESULT CAssimpModel::Ready_Materials(const char* pModelFilePath)
 	/* 현재 모델에게 부여할 수 있는 재질(Diffuse, Normal, Specular etc) 텍스쳐의 갯수. */
 	m_iNumMaterials = m_pAIScene->mNumMaterials;
 
+	m_MaterialPaths.resize(AI_TEXTURE_TYPE_MAX * m_iNumMaterials);
+
 	for (size_t i = 0; i < m_iNumMaterials; i++)
 	{
-		MESHMATERIAL			MeshMaterial;
-		ZeroMemory(&MeshMaterial, sizeof MeshMaterial);
-
 		for (size_t j = 0; j < AI_TEXTURE_TYPE_MAX; j++)
 		{
 			aiString	strPath;
@@ -117,7 +114,7 @@ HRESULT CAssimpModel::Ready_Materials(const char* pModelFilePath)
 			strcat(szFullPath, szFileName);
 			strcat(szFullPath, szExt);
 
-			m_MaterialPaths[j] = szFullPath;
+			m_MaterialPaths[i* AI_TEXTURE_TYPE_MAX + j] = (szFullPath);
 		}
 	}
 
@@ -179,11 +176,15 @@ ParsingData* CAssimpModel::Save_Data(HANDLE handle, ParsingData* data)
 	modelParsingData->iNumAnimations = m_iNumAnimations;
 	modelParsingData->iNumBones = m_iNumBones;
 
-	modelParsingData->MaterialPaths.resize(AI_TEXTURE_TYPE_MAX);
-	for (int i = 0; i < AI_TEXTURE_TYPE_MAX; i++)
+	_int index = 0;
+	for (int firstIndex = 0; firstIndex < m_iNumMaterials; firstIndex++)
 	{
-		modelParsingData->MaterialPaths[i] = m_MaterialPaths[i];
+		for (int i = 0; i < AI_TEXTURE_TYPE_MAX; i++)
+		{
+			modelParsingData->MaterialPaths.push_back(m_MaterialPaths[index++]);
+		}
 	}
+	
 	
 	modelParsingData->iNumAnimations = m_iNumAnimations; // 저장
 

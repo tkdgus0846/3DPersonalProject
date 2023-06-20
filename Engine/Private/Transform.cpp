@@ -1,4 +1,5 @@
 #include "..\Public\Transform.h"
+#include "Navigation.h"
 
 CTransform::CTransform(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: CComponent(pDevice, pContext)
@@ -49,14 +50,20 @@ void CTransform::Set_Position(_fvector vPos)
 	Set_State(STATE_POSITION, vPos);
 }
 
-void CTransform::Go_Straight(_double TimeDelta)
+void CTransform::Go_Straight(_double TimeDelta, CNavigation* pNavigation)
 {
 	_vector		vPosition = Get_State(STATE_POSITION);
 	_vector		vLook = Get_State(STATE_LOOK);
 
 	vPosition += XMVector3Normalize(vLook) * m_TransformDesc.SpeedPerSec * TimeDelta;
 
-	Set_State(STATE_POSITION, vPosition);
+	_bool		isMove = true;
+
+	if (nullptr != pNavigation)
+		isMove = pNavigation->is_Move(vPosition);
+
+	if (true == isMove)
+		Set_State(STATE_POSITION, vPosition);
 }
 
 void CTransform::Go_Backward(_double TimeDelta)

@@ -42,7 +42,11 @@ private:
 	wstring					m_TexturePrototypeName = { L"" };
 	wstring					m_VIBufferPrototypeName = { L"" };
 
+	BoundingSphere			m_PickingSphere;
+
 public:
+	BoundingSphere* Get_PickingSphere(); 
+
 	HRESULT Add_Components();
 	HRESULT SetUp_ShaderResources();
 

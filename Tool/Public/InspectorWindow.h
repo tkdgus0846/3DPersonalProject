@@ -58,6 +58,8 @@ private:
 	/* 마우스 피킹 */
 	HRESULT			Place_Object(class CTransform* transformComp);
 
+	_bool			Is_Use_Picking() override;
+
 
 private:
 	InspectorMode	m_eInspectorMode;
@@ -74,11 +76,11 @@ private:
 	_float translation[3] = { 0.f, 0.f, 0.f };
 	_float rotation[3] = { 0.f, 0.f, 0.f };
 	_float scale[3] = { 1.f, 1.f, 1.f };
-	_bool m_bPlaceObject = { false };
+	_bool m_bPlaceObject = { false }; // 피킹해서 트랜스폼 바꾸기.
 	_bool m_bScaleLock = { false };
 
 	/* 오브젝트 복사 관련 변수들*/
-	_bool m_bPastePicking = { false };
+	_bool m_bPastePicking = { false }; // 오브젝트를 복사해서 배치하기.
 	_bool m_bCopyingObject = { false };
 	_bool m_bCopyLock = { false };
 	_char m_CopyingObjectName[FILE_NAME_SIZE] = "";

@@ -188,6 +188,11 @@ CGameObject* CImGuiManager::Find_GameObject(const wstring& name)
 	return objectWindow->Find_GameObject(name);
 }
 
+_bool CImGuiManager::Window_Use_Picking(const char* windowName)
+{
+	return m_WindowsMap[windowName]->Is_Use_Picking();
+}
+
 void CImGuiManager::Free()
 {
 	for (auto it = m_WindowsMap.begin(); it != m_WindowsMap.end(); it++)

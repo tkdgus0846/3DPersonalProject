@@ -18,6 +18,10 @@ public:
 	void			ChangeTree() { m_bChangeTree = true; }
 	CGameObject*	Find_GameObject(const wstring& name);
 
+	void			Picking_LoadObject();
+
+	virtual _bool	Is_Use_Picking() final { return false; }
+
 private:
 	virtual void	Rendering() override;
 	void			MakeTree();
