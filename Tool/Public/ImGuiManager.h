@@ -41,6 +41,7 @@ public:
 
 	/// 오브젝트 윈도우 hierarchy 새로고침
 	void				ChangeTree();
+	void				PickingReset();
 
 	/// 인스펙터로 값을 넘기기위한 정보
 	_uint				GetInspectorMode();

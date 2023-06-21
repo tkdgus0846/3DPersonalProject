@@ -3,7 +3,7 @@
 #include "AssimpModel.h"
 #include "DataParsing.h"
 
-vector<CAssimpModel*> modelVector;
+//vector<CAssimpModel*> modelVector;
 
 void Load(path modelPath, wstring extractPath, CAssimpModel::TYPE type)
 {
@@ -43,23 +43,23 @@ void Load(path modelPath, wstring extractPath, CAssimpModel::TYPE type)
             }
 
             CDataParsing::Save_File(path.c_str(), model);
-            modelVector.push_back(model);
+            Safe_Delete(model);
         }
     }
 }
 
 void Close()
 {
-    for (auto& model : modelVector)
+    /*for (auto& model : modelVector)
     {
         Safe_Delete(model);
-    }
+    }*/
 }
 
 int main()
 {
     Load("../../Models/AnimModels/", L"../../ExtractModels/AnimModels/", CAssimpModel::TYPE_ANIM);
-    Load("../../Models/NonAnimModels/", L"../../ExtractModels/NonAnimModels/", CAssimpModel::TYPE_NONANIM);
+    //Load("../../Models/NonAnimModels/", L"../../ExtractModels/NonAnimModels/", CAssimpModel::TYPE_NONANIM);
     Close();
     return 0;
 }

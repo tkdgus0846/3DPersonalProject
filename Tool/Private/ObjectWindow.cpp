@@ -6,6 +6,7 @@
 #include "InspectorWindow.h"
 #include "Calculator.h"
 #include <DummyObject.h>
+#include <Camera_Main.h>
 
 HRESULT CObjectWindow::Initialize(const WINDOWDESC& desc)
 {
@@ -45,17 +46,28 @@ void CObjectWindow::Picking_LoadObject()
 		return;
 
 	vector<BoundingSphere> BoundingSpheres;
+	BoundingSpheres.resize(m_GameObjects.size());
 
+	_int loopIndex = -1;
 	for (auto& comp : m_GameObjects)
 	{
+		loopIndex++;
 		CDummyObject* object = dynamic_cast<CDummyObject*>(comp);
+		if (object == nullptr) continue;
 		
-		BoundingSpheres.push_back(*object->Get_PickingSphere());
+		BoundingSpheres[loopIndex] = *object->Get_PickingSphere();
 	}
 	_float4 resultPos;
-	_int index = CCalculator::Picking_Sphere(g_hWnd, g_iWinSizeX, g_iWinSizeY, &BoundingSpheres, &resultPos);
+	_int iPickingIndex;
 
-	if (index == -1) return;
+	iPickingIndex = CCalculator::Picking_Sphere(g_hWnd, g_iWinSizeX, g_iWinSizeY, &BoundingSpheres, &resultPos);
+
+	if (iPickingIndex == -1)
+	{
+		return;
+	}
+
+	PickingIndex(iPickingIndex);
 
 	// 여기다가 picking 됐을때 트리를 처리해주는 코드를 넣어야됨
 
@@ -67,6 +79,12 @@ void CObjectWindow::Rendering()
 	m_pCurSelectName = L"";
 	m_pCurSelectComponent = nullptr;
 
+	if (CGameInstance::GetInstance()->Mouse_Down(CInput_Device::DIMK_LBUTTON))
+		Picking_LoadObject();
+
+	
+	
+
 	if (ImGui::CollapsingHeader("Hierarchy"))
 	{
 		MakeTree();
@@ -74,7 +92,20 @@ void CObjectWindow::Rendering()
 		ShowTree(m_GameObjects);
 	}
 
-	
+	if (Is_Picking())
+	{
+		NewLine();
+		if (Button("Watch"))
+		{
+			Watch_Object();
+		}
+		SameLine();
+		if (Button("Cancel"))
+		{
+			PickingReset();
+			Watch_Main();
+		}
+	}
 }
 
 void CObjectWindow::MakeTree()
@@ -100,8 +131,15 @@ void CObjectWindow::MakeTree()
 
 void CObjectWindow::ShowTree(const list<CComponent*>& compList, _bool root)
 {
+	_int index = -1;
 	for (CComponent* obj : compList)
 	{
+		if (root == true) 
+			index++;
+
+		if (index != -1 && m_iPickingIndex != -1 && index != m_iPickingIndex)
+			continue;
+
 		wstring name = obj->GetName();
 
 		/*std::wstring_convert<std::codecvt_utf8_utf16<_tchar>, _tchar> converter;
@@ -109,10 +147,20 @@ void CObjectWindow::ShowTree(const list<CComponent*>& compList, _bool root)
 		string strString = CConversion::WstringToString(name);
 		//TreeNode("");
 
+		if (Is_Close_Picking() && root == true)
+			ImGui::SetNextItemOpen(false);
+		if (Is_Open_Picking() && root == true)
+			ImGui::SetNextItemOpen(true);
+
 		bool treeRet = TreeNode(strString.c_str());
+		// TRUE 일경우에 TreePop 을 해야한다. FALSE일 경우엔 하지 않음.
+		// TRUE로 만들고 Pop 을 한다는건 여는것
 		
 		if (treeRet == false) continue;
 		if (name.data() == nullptr) MSG_BOX("이름 null");
+
+		if (root == true)
+			PickingIndex(index);
 
 
 		m_pCurSelectComponent = obj;
@@ -123,12 +171,69 @@ void CObjectWindow::ShowTree(const list<CComponent*>& compList, _bool root)
 
 		if (comp != nullptr)
 		{
-			ShowTree(comp->Get_ComponentsByList());
+			ShowTree(comp->Get_ComponentsByList(), false);
 		}	
 		
 		if (treeRet)
 			TreePop();
 	}
+}
+
+void CObjectWindow::PickingIndex(_int iIndex)
+{
+	m_iPrePickingIndex = m_iPickingIndex;
+	m_iPickingIndex = iIndex;
+}
+
+void CObjectWindow::PickingReset()
+{
+	PickingIndex(-1);
+}
+
+_bool  CObjectWindow::Is_Picking()
+{
+	return (m_iPickingIndex == -1) ? false : true;
+}
+
+_bool  CObjectWindow::Is_Close_Picking()
+{
+	return (m_iPrePickingIndex != -1) && (m_iPickingIndex == -1);
+}
+
+_bool CObjectWindow::Is_Open_Picking()
+{
+	return (m_iPickingIndex != -1);
+}
+
+void  CObjectWindow::Watch_Object()
+{
+	CGameObject* object = CGameInstance::GetInstance()->Find_GameObject(TEXT("Layer_Camera"), L"MainCamera");
+	CCamera_Main* mainCamera = dynamic_cast<CCamera_Main*>(object);
+	CDummyObject* dummyObject; 
+	CComponent* comp = m_pCurSelectComponent;
+
+	while (true)
+	{
+		dummyObject = dynamic_cast<CDummyObject*>(comp);
+		if (dummyObject == nullptr)
+			comp = comp->GetOwner();
+		else
+			break;
+	}
+	
+
+
+	_float4x4 worldMatrix = dummyObject->m_pTransformCom->Get_WorldFloat4x4();
+	mainCamera->ChooseType(CCamera_Main::TYPE_OBJECT, XMLoadFloat4x4(&worldMatrix));
+	
+}
+
+void CObjectWindow::Watch_Main()
+{
+	CGameObject* object = CGameInstance::GetInstance()->Find_GameObject(TEXT("Layer_Camera"), L"MainCamera");
+	CCamera_Main* mainCamera = dynamic_cast<CCamera_Main*>(object);
+
+	mainCamera->ChooseType(CCamera_Main::TYPE_MAIN);
 }
 
 void CObjectWindow::SelectInspectorMode(const wstring& name)

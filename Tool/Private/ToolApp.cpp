@@ -6,7 +6,7 @@
 
 #include <ImGuiManager.h>
 #include "DummyObject.h"
-#include "Camera_Free.h"
+#include "Camera_Main.h"
 
 
 CToolApp::CToolApp()
@@ -157,9 +157,26 @@ HRESULT CToolApp::Ready_Prototype_Component_For_Static()
 	_matrix		PivotMatrix = XMMatrixIdentity();
 
 	/*PivotMatrix = XMMatrixRotationY(XMConvertToRadians(180.0f));*/
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_Model_2087_model"),
+	/*if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_Model_2087_model"),
 		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/AnimModels/2087_model/2087_model.dat", PivotMatrix))))
+		return E_FAIL;*/
+
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_Model_crow_final"),
+		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/AnimModels/crow_final/crow_final.dat", PivotMatrix))))
 		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_Model_Fiona"),
+		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/AnimModels/Fiona/Fiona.dat", PivotMatrix))))
+		return E_FAIL;
+
+
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_Model_3915"),
+		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/AnimModels/3915/3915.dat", PivotMatrix))))
+		return E_FAIL;
+
+	/*if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_Model_NPCNecromancer_SkeletonPriest"),
+		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/AnimModels/NPCNecromancer_SkeletonPriest/NPCNecromancer_SkeletonPriest.dat", PivotMatrix))))
+		return E_FAIL;*/
 
 
 #pragma endregion  Component 추가
@@ -169,7 +186,7 @@ HRESULT CToolApp::Ready_Prototype_Component_For_Static()
 		CDummyObject::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
-	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Camera_Free"),
+	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Camera_Main"),
 		CCamera_Main::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 #pragma endregion 게임오브젝트 추가

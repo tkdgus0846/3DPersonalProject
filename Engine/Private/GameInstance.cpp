@@ -266,6 +266,16 @@ HRESULT CGameInstance::Delete_GameObject(const wstring& pLayerTag, const wstring
 	return m_pObject_Manager->Delete_GameObject(m_pLevel_Manager->Get_CurLevelIndex(), pLayerTag, pObjName);
 }
 
+CGameObject* CGameInstance::Find_GameObject(const wstring& pLayerTag, const wstring& pObjName)
+{
+	if (nullptr == m_pObject_Manager)
+		return nullptr;
+	if (nullptr == m_pLevel_Manager)
+		return nullptr;
+
+	return m_pObject_Manager->Find_GameObject(m_pLevel_Manager->Get_CurLevelIndex(), pLayerTag, pObjName);
+}
+
 HRESULT CGameInstance::Save_CurLevel(const _tchar* curLevelName)
 {
 	if (nullptr == m_pObject_Manager)

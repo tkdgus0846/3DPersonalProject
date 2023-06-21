@@ -63,6 +63,7 @@ public: /* For.Object_Manager */
 	HRESULT Add_GameObject(_uint iLevelIndex, const wstring & pLayerTag, wstring & pObjName, CGameObject * object);
 	CGameObject* Copy_GameObject(const wstring & layerTag, wstring & objectName);
 	HRESULT Delete_GameObject(const wstring & pLayerTag, const wstring & pObjName);
+	CGameObject* Find_GameObject(const wstring & pLayerTag, const wstring & pObjName);
 
 	HRESULT Save_CurLevel(const _tchar* curLevelName);
 	HRESULT Load_CurLevel(const _tchar* curLevelName, _bool bIsTool = false);

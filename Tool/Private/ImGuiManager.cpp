@@ -156,6 +156,14 @@ void CImGuiManager::ChangeTree()
 	objectWindow->ChangeTree();
 }
 
+void CImGuiManager::PickingReset()
+{
+	CObjectWindow* objectWindow = dynamic_cast<CObjectWindow*>(m_WindowsMap[OBJECT_WINDOW_NAME]);
+	if (objectWindow == nullptr) return;
+
+	objectWindow->PickingReset();
+}
+
 _uint CImGuiManager::GetInspectorMode()
 {
 	CObjectWindow* objectWindow = dynamic_cast<CObjectWindow*>(m_WindowsMap[OBJECT_WINDOW_NAME]);

@@ -55,15 +55,12 @@ void CInspectorWindow::Rendering()
 	}*/
 	
 
-	wstring name = IMGUI->GetCurSelectName();
-
-	NewLine();
-
-	if (name.data() != nullptr)
+	if (IMGUI->GetCurSelectComponent() != nullptr)
 	{
-		SeparatorText(CConversion::WstringToString(name).c_str());
+		SeparatorText(CConversion::WstringToString(IMGUI->GetCurSelectComponent()->GetName()).c_str());
+		NewLine();
 	}
-
+	
 	_uint SelectMode = IMGUI->GetInspectorMode();
 	if (SelectMode == IM_GAMEOBJECT)
 	{
@@ -105,6 +102,16 @@ void CInspectorWindow::Rendering()
 
 void CInspectorWindow::Mode_GameObject()
 {
+	
+	Spacing();
+	PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.0f, 0.0f, 1.0f)); // 버튼 색상 변경		
+	if (ImGui::Button("Delete GameObject", ImVec2(200, 30)))
+	{
+		Delete_GameObject_Function();
+	}
+	ImGui::PopStyleColor(); // 이전의 스타일로 복원
+
+	NewLine();
 	if (ImGui::Button("Copy", ImVec2(100, 30)))
 	{
 		Copy_Object_Function();
@@ -132,17 +139,24 @@ void CInspectorWindow::Mode_GameObject()
 	{
 		Paste_Object_Function();
 	}
-	
-	NewLine();
+
 	NewLine();
 	Spacing();
-	Show_ComponentList();
-	NewLine();
 	
-	if (ImGui::Button("Add Component", ImVec2(180,50)))
+	
+	if (CollapsingHeader("Add Components"))
 	{
-		Add_Component_Function();
+		NewLine();
+
+		Show_ComponentList();
+		NewLine();
+
+		if (ImGui::Button("Add Component", ImVec2(180, 50)))
+		{
+			Add_Component_Function();
+		}
 	}
+	
 	
 	
 }
@@ -241,11 +255,17 @@ void CInspectorWindow::Mode_Animation()
 
 void CInspectorWindow::Mode_Model()
 {
-	static int i = 2;
-	if (ArrowButton("Anim Index", i))
+	static int i = 0;
+	if (Button("Anim Index"))
 	{
+		CComponent* component = IMGUI->GetCurSelectComponent();
+		CModel* model = dynamic_cast<CModel*>(component);
+		model->Set_AnimIndex(i);
+		i++;
+
 
 	}
+	ImGui::Text(to_string(i).c_str());
 }
 
 void CInspectorWindow::Mode_Renderer()
@@ -285,10 +305,6 @@ void CInspectorWindow::Mode_Default()
 		Add_GameObject_Function();
 	}
 	SameLine();
-	if (ImGui::Button("Delete GameObject", ImVec2(180, 50)))
-	{
-		Delete_GameObject_Function();
-	}
 }
 
 void CInspectorWindow::Show_ComponentList()
@@ -353,13 +369,13 @@ void CInspectorWindow::Paste_Object_Function()
 		CDummyObject* object = dynamic_cast<CDummyObject*>(IMGUI->GetCurSelectComponent());
 
 		wstring name = object->GetName();
-		CDummyObject* newObject = dynamic_cast<CDummyObject*>(pGameInstance->Copy_GameObject(TEXT("ObjectLayer"), name));
+		CDummyObject* newObject = dynamic_cast<CDummyObject*>(pGameInstance->Copy_GameObject(TEXT("Layer_Object"), name));
 
 		if (newObject == nullptr) return;
 
 		if (Place_Object(newObject->m_pTransformCom) == E_FAIL)
 		{
-			pGameInstance->Delete_GameObject(TEXT("ObjectLayer"), name);
+			pGameInstance->Delete_GameObject(TEXT("Layer_Object"), name);
 		}
 
 		m_bCopyLock = true;
@@ -511,13 +527,20 @@ void CInspectorWindow::Add_GameObject_Function()
 {
 	wstring name = CConversion::StringToWstring(m_ObjectAddNameBuffer);
 	CGameInstance* pGameInstance = CGameInstance::GetInstance();
-	pGameInstance->Add_GameObject(LEVEL_TOOL, TEXT("Prototype_GameObject_DummyObject"), TEXT("ObjectLayer"), name);
+	pGameInstance->Add_GameObject(LEVEL_TOOL, TEXT("Prototype_GameObject_DummyObject"), TEXT("Layer_Object"), name);
 
 	IMGUI->ChangeTree();
 }
 
 void CInspectorWindow::Delete_GameObject_Function()
 {
+	wstring objectName = IMGUI->GetCurSelectComponent()->GetName();
+
+	CGameInstance::GetInstance()->Delete_GameObject(L"Layer_Object", objectName);
+
+	IMGUI->PickingReset();
+
+	IMGUI->ChangeTree();
 }
 
 HRESULT CInspectorWindow::Place_Object(CTransform* transformComp)

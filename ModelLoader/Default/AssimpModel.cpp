@@ -157,7 +157,7 @@ CAssimpModel* CAssimpModel::Create(const string& pModelFilePath, TYPE eMeshType,
 {
 	CAssimpModel* pInstance = new CAssimpModel();
 
-	if (FAILED(pInstance->Initialize_Prototype(pModelFilePath, eMeshType, PivotMatrix)))
+if (FAILED(pInstance->Initialize_Prototype(pModelFilePath, eMeshType, PivotMatrix)))
 	{
 		MSG_BOX("Failed to Created CAssimpModel");
 		Safe_Delete(pInstance);

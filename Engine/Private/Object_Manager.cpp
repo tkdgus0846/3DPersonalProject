@@ -107,6 +107,19 @@ HRESULT CObject_Manager::Delete_GameObject(_uint iLevelIndex, const wstring& pLa
 	return hr;
 }
 
+CGameObject* CObject_Manager::Find_GameObject(_uint iLevelIndex, const wstring& pLayerTag, const wstring& pObjName)
+{
+	CGameObject* resultObject = nullptr;
+
+	auto iter = m_pLayers->find(pLayerTag);
+
+	if (iter != m_pLayers->end())
+	{
+		resultObject = iter->second->Find_Object(pObjName);
+	}
+	return resultObject;
+}
+
 void CObject_Manager::Clear_LevelResources(_uint iLevelIndex)
 {
 	for (auto& Pair : m_pLayers[iLevelIndex])
@@ -385,7 +398,7 @@ ParsingData* CObject_Manager::Load_Tool_Objects(ParsingData* data)
 
 			wstring fileName = entry.path().filename().stem();
 
-			CGameObject* object = Add_GameObject(0, L"Prototype_GameObject_DummyObject", L"ObjectLayer", fileName, nullptr);
+			CGameObject* object = Add_GameObject(0, L"Prototype_GameObject_DummyObject", L"Layer_Object", fileName, nullptr);
 			CDataParsing::Load_File(entry.path().c_str(), object, nullptr);
 		}
 	}

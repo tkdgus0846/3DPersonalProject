@@ -121,6 +121,8 @@ HRESULT CModel::Bind_Material(CShader* pShader, const char* pConstantName, _uint
 		MaterialType >= AI_TEXTURE_TYPE_MAX)
 		return E_FAIL;
 
+	if (m_Materials[m_Meshes[iMeshIndex]->Get_MaterialIndex()].pMtrlTexture[MaterialType] == nullptr) return S_OK;
+
 	return m_Materials[m_Meshes[iMeshIndex]->Get_MaterialIndex()].pMtrlTexture[MaterialType]->Bind_ShaderResource(pShader, pConstantName);
 }
 

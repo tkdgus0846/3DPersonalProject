@@ -2,7 +2,7 @@
 #include "..\Public\Level_Tool.h"
 
 #include "GameInstance.h"
-#include "Camera_Free.h"
+#include "Camera_Main.h"
 
 CLevel_Tool::CLevel_Tool(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: CLevel(pDevice, pContext)
@@ -15,7 +15,7 @@ HRESULT CLevel_Tool::Initialize()
 		return E_FAIL;
 
 	CGameInstance* pGameInstance = CGameInstance::GetInstance();
-	/*if (FAILED(pGameInstance->Add_GameObject(LEVEL_TOOL, TEXT("Prototype_GameObject_DummyObject"), TEXT("ObjectLayer"), TEXT("EmptyObject"))))
+	/*if (FAILED(pGameInstance->Add_GameObject(LEVEL_TOOL, TEXT("Prototype_GameObject_DummyObject"), TEXT("Layer_Object"), TEXT("EmptyObject"))))
 		return E_FAIL;*/
 
 	if (FAILED(Ready_Layer_Camera(TEXT("Layer_Camera"))))
@@ -65,8 +65,8 @@ HRESULT CLevel_Tool::Ready_Layer_Camera(const _tchar* pLayerTag)
 	CameraFreeDesc.CameraDesc.TransformDesc.SpeedPerSec = 10.f;
 	CameraFreeDesc.CameraDesc.TransformDesc.RotationPerSec = XMConvertToRadians(90.0f);
 
-	wstring name = TEXT("ToolCamera");
-	if (pGameInstance->Add_GameObject(LEVEL_TOOL, TEXT("Prototype_GameObject_Camera_Free"), pLayerTag, name, &CameraFreeDesc) == nullptr)
+	wstring name = TEXT("MainCamera");
+	if (pGameInstance->Add_GameObject(LEVEL_TOOL, TEXT("Prototype_GameObject_Camera_Main"), pLayerTag, name, &CameraFreeDesc) == nullptr)
 		return E_FAIL;
 
 	Safe_Release(pGameInstance);

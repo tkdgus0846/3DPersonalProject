@@ -42,6 +42,7 @@ public:
 	_float4x4 Get_WorldFloat4x4() const {
 		return m_WorldMatrix;
 	}
+	void Set_WorldFloat4x4(const _float4x4& matrix) { m_WorldMatrix = matrix; }
 
 	_matrix Get_WorldMatrix_Inverse() const {
 		return XMMatrixInverse(nullptr, XMLoadFloat4x4(&m_WorldMatrix));
@@ -73,6 +74,8 @@ public:
 	void Turn(_fvector vAxis, _double TimeDelta);
 
 	void Scaled(const _float3 & vScale);
+
+	
 
 
 private:
