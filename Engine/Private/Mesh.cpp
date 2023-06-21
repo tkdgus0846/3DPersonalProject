@@ -149,8 +149,8 @@ HRESULT CMesh::Ready_VertexBuffer_Anim(MeshParsingData* pData, const CModel::BON
 		memcpy(&pVertices[i].vNormal, &pData->Vertices[i].vNormal, sizeof(_float3));
 		memcpy(&pVertices[i].vTexCoord, &pData->Vertices[i].vTexCoord, sizeof(_float2));
 		memcpy(&pVertices[i].vTangent, &pData->Vertices[i].vTangent, sizeof(_float3));
-		memcpy(&pVertices[i].vBlendIndices, &pData->Vertices[i].vBlendIndices, sizeof(_float3));
-		memcpy(&pVertices[i].vBlendWeights, &pData->Vertices[i].vBlendWeights, sizeof(_float3));
+		memcpy(&pVertices[i].vBlendIndices, &pData->Vertices[i].vBlendIndices, sizeof(XMUINT4));
+		memcpy(&pVertices[i].vBlendWeights, &pData->Vertices[i].vBlendWeights, sizeof(XMFLOAT4));
 	}
 
 	m_iNumBones = pData->iNumBones;

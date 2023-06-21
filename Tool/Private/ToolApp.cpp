@@ -165,14 +165,18 @@ HRESULT CToolApp::Ready_Prototype_Component_For_Static()
 		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/AnimModels/crow_final/crow_final.dat", PivotMatrix))))
 		return E_FAIL;
 
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_Model_Fiona"),
+	/*if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_Model_Fiona"),
 		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/AnimModels/Fiona/Fiona.dat", PivotMatrix))))
-		return E_FAIL;
+		return E_FAIL;*/
 
 
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_Model_3915"),
-		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/AnimModels/3915/3915.dat", PivotMatrix))))
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_Model_ForestSpirit"),
+		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/AnimModels/ForestSpirit/ForestSpirit.dat", PivotMatrix))))
 		return E_FAIL;
+
+	/*if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_Model_3924"),
+		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/AnimModels/3924/3924.dat", PivotMatrix))))
+		return E_FAIL;*/
 
 	/*if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_Model_NPCNecromancer_SkeletonPriest"),
 		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/AnimModels/NPCNecromancer_SkeletonPriest/NPCNecromancer_SkeletonPriest.dat", PivotMatrix))))

@@ -3,6 +3,9 @@
 
 CAssimpBone::CAssimpBone()
 {
+	XMStoreFloat4x4(&m_TransformationMatrix, XMMatrixIdentity());
+	XMStoreFloat4x4(&m_CombinedTransformationMatrix, XMMatrixIdentity());
+	XMStoreFloat4x4(&m_OffsetMatrix, XMMatrixIdentity());
 }
 
 CAssimpBone::CAssimpBone(const CAssimpBone & rhs)
@@ -22,6 +25,7 @@ HRESULT CAssimpBone::Initialize(aiNode * pAINode, CAssimpBone * pParent, _uint i
 	memcpy(&m_TransformationMatrix, &pAINode->mTransformation, sizeof(_float4x4));
 	XMStoreFloat4x4(&m_TransformationMatrix, XMMatrixTranspose(XMLoadFloat4x4(&m_TransformationMatrix)));
 	XMStoreFloat4x4(&m_CombinedTransformationMatrix, XMMatrixIdentity());
+
 	m_OffsetMatrix = m_CombinedTransformationMatrix;
 	m_iParentIndex = pParent == nullptr ? -1 : pParent->m_iIndex;
 	m_iIndex = iIndex;

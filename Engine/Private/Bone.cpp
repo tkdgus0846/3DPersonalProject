@@ -2,6 +2,9 @@
 
 CBone::CBone()
 {
+	XMStoreFloat4x4(&m_TransformationMatrix, XMMatrixIdentity());
+	XMStoreFloat4x4(&m_CombinedTransformationMatrix, XMMatrixIdentity());
+	XMStoreFloat4x4(&m_OffsetMatrix, XMMatrixIdentity());
 }
 
 CBone::CBone(const CBone & rhs)
@@ -23,11 +26,11 @@ HRESULT CBone::Initialize(ParsingData* pData)
 	strcpy(m_szName, data->szName);
 	
 	memcpy(&m_TransformationMatrix, &data->TransformationMatrix, sizeof(_float4x4));
-	XMStoreFloat4x4(&m_TransformationMatrix, XMMatrixTranspose(XMLoadFloat4x4(&m_TransformationMatrix)));
+	//XMStoreFloat4x4(&m_TransformationMatrix, XMMatrixTranspose(XMLoadFloat4x4(&m_TransformationMatrix)));
 	XMStoreFloat4x4(&m_CombinedTransformationMatrix, XMMatrixIdentity());
 
 	memcpy(&m_OffsetMatrix, &data->OffsetMatrix, sizeof(_float4x4));
-	memcpy(&m_CombinedTransformationMatrix, &data->CombinedTransformationMatrix, sizeof(_float4x4));
+	//memcpy(&m_CombinedTransformationMatrix, &data->CombinedTransformationMatrix, sizeof(_float4x4));
 	
 	m_iParentIndex = data->iParentIndex;
 	m_iIndex = data->iIndex;
