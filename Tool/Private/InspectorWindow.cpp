@@ -20,6 +20,23 @@ HRESULT CInspectorWindow::Initialize(const WINDOWDESC& desc)
 		m_PrototypesStrVec.push_back(name);
 	}
 
+	/*auto iter1 = m_PrototypesVec.begin();
+	auto iter2 = m_PrototypesStrVec.begin();
+	while (true)
+	{
+		if ((*iter2).find("Terrain") != std::string::npos)
+		{
+			iter1 = m_PrototypesVec.erase(iter1);
+			iter2 = m_PrototypesStrVec.erase(iter2);
+		}
+		else
+		{
+			iter1++;
+			iter2++;
+		}
+		if (iter1 == m_PrototypesVec.end()) break;
+	}*/
+
 	m_RenderGroupStrVec.push_back("RENDER_PRIORITY");
 	m_RenderGroupStrVec.push_back("RENDER_NONBLEND");
 	m_RenderGroupStrVec.push_back("RENDER_NONLIGHT");
@@ -91,6 +108,9 @@ void CInspectorWindow::Rendering()
 			break;
 		case IM_RENDERER:
 			Mode_Renderer();
+			break;
+		case IM_NAVIGATION:
+			Mode_Navigation();
 			break;
 		default:
 			break;
@@ -177,10 +197,10 @@ void CInspectorWindow::Mode_Transform()
 	
 
 	ImGui::Spacing();
-	ImGui::DragFloat3("Translation", translation, 1.f, -99999.f, 99999.f);
+	ImGui::DragFloat3("Translation", translation, 0.5f, -99999.f, 99999.f);
 	ImGui::Spacing();
 	ImGui::Spacing();
-	if (ImGui::DragFloat3("Rotation", rotation, 1.f, -99999.f, 99999.f))
+	if (ImGui::DragFloat3("Rotation", rotation, 0.5f, -99999.f, 99999.f))
 	{
 		if (originRotation.x != rotation[0])
 			transform->Rotation(CTransform::AXIS_X, rotation[0]);
@@ -191,7 +211,7 @@ void CInspectorWindow::Mode_Transform()
 	}
 	ImGui::Spacing();
 	ImGui::Spacing();
-	ImGui::DragFloat3("Scale", scale, 0.3f, -99999.f, 99999.f);
+	ImGui::DragFloat3("Scale", scale, 0.012f, 0.002f, 99999.f);
 	if (m_bScaleLock == true)
 	{
 		if (originScale.x != scale[0])
@@ -245,7 +265,13 @@ void CInspectorWindow::Mode_Texture()
 
 void CInspectorWindow::Mode_Shader()
 {
-	
+	CComponent* component = IMGUI->GetCurSelectComponent();
+	CGameObject* object = dynamic_cast<CGameObject*>(component->GetOwner());
+
+	if (object)
+	{
+		object->Change_PassNum(1);
+	}
 }
 
 void CInspectorWindow::Mode_Animation()
@@ -293,6 +319,10 @@ void CInspectorWindow::Mode_Renderer()
 	//default:
 	//	break;
 	//}
+}
+
+void CInspectorWindow::Mode_Navigation()
+{
 }
 
 void CInspectorWindow::Mode_Default()
@@ -458,14 +488,23 @@ void CInspectorWindow::Add_Component_Function()
 
 			gameObject->m_ModelPrototypeName = m_PrototypesVec[selectedComponentIndex].first;
 		}
+		if (str.compare(NAVIGATION_A) == 0)
+		{
+			if (gameObject->m_pNavigationCom != nullptr) return;
+
+			name = str;
+			FieldComp = (CComponent**)&gameObject->m_pNavigationCom;
+
+			gameObject->m_NavigationPrototypeName = m_PrototypesVec[selectedComponentIndex].first;
+		}
 		
 	}
 
 	// Tchar* 변환 다시 처리하기
 
 	wstring componentName = CConversion::StringToWstring(name);
-	gameObject->Add_Component(LEVEL_TOOL, m_PrototypesVec[selectedComponentIndex].first,
-		componentName.c_str(), (CComponent**)FieldComp, gameObject, pArg);	
+	gameObject->Add_Component(LEVEL_TOOL, m_PrototypesVec[selectedComponentIndex].first.c_str(),
+		componentName.c_str(), (CComponent**)FieldComp, pArg);
 }
 
 void CInspectorWindow::Delete_Component_Function()
@@ -504,6 +543,10 @@ void CInspectorWindow::Delete_Component_Function()
 	if (str.compare("Model") == 0)
 	{
 		resultCom = (CComponent**)&gameObject->m_pModelCom;
+	}
+	if (str.compare(NAVIGATION_A) == 0)
+	{
+		resultCom = (CComponent**)&gameObject->m_pNavigationCom;
 	}
 	
 	if (resultCom != nullptr && *resultCom != nullptr)
@@ -558,9 +601,9 @@ HRESULT CInspectorWindow::Place_Object(CTransform* transformComp)
 		CTransform* terrainTransform = dynamic_cast<CTransform*>(terrain->m_pTransformCom);
 
 		_float4 pickingPos;
-		_bool pickingResult = CCalculator::Picking_OnTerrain(g_hWnd, g_iWinSizeX, g_iWinSizeY, terrainBuffer, terrainTransform, &pickingPos);
+		_int pickingResult = CCalculator::Picking_OnTerrain(g_hWnd, g_iWinSizeX, g_iWinSizeY, terrainBuffer, terrainTransform, &pickingPos);
 
-		if (pickingResult == false) return E_FAIL;
+		if (pickingResult == -1) return E_FAIL;
 
 		transform->Set_Position(XMLoadFloat4(&pickingPos));
 

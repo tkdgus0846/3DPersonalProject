@@ -40,6 +40,20 @@ CGameObject* CObjectWindow::Find_GameObject(const wstring& name)
 	return nullptr;
 }
 
+CDummyObject* CObjectWindow::Find_Terrain()
+{
+	for (CComponent* component : m_GameObjects)
+	{
+		wstring name = component->GetName();
+		// 터레인 이름이 들어간 버퍼가 맞다면
+		if (name.find(L"Terrain") != std::string::npos)
+		{
+			return dynamic_cast<CDummyObject*>(component);
+		}
+	}
+	return nullptr;
+}
+
 void CObjectWindow::Picking_LoadObject()
 {
 	if (IMGUI->Window_Use_Picking(INSPECTOR_WINDOW_NAME))
@@ -262,6 +276,10 @@ void CObjectWindow::SelectInspectorMode(const wstring& name)
 	else if (name == L"Model")
 	{
 		m_eInspectorMode = IM_MODEL;
+	}
+	else if (name.compare(NAVIGATION_W) == 0)
+	{
+		m_eInspectorMode = IM_NAVIGATION;
 	}
 	else
 	{

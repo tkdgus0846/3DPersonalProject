@@ -9,6 +9,7 @@ class CTexture;
 class CRenderer;
 class CTransform;
 class CVIBuffer_Terrain;
+class CNavigation;
 END
 
 BEGIN(Client)
@@ -35,6 +36,7 @@ private:
 	CRenderer*				m_pRendererCom = { nullptr };	
 	CTransform*				m_pTransformCom = { nullptr };
 	CVIBuffer_Terrain*		m_pVIBufferCom = { nullptr };
+	CNavigation*			m_pNavigationCom = { nullptr };
 
 public:
 	HRESULT Add_Components();

@@ -5,6 +5,8 @@
 #include "Camera_Free.h"
 #include "Terrain.h"
 #include "CubeObject.h"
+#include "Player.h"
+#include "Camera_Player_Main.h"
 
 CLoader::CLoader(ID3D11Device * pDevice, ID3D11DeviceContext * pContext)
 	: m_pDevice(pDevice)
@@ -60,7 +62,11 @@ HRESULT CLoader::Loading()
 	}
 
 	if (FAILED(hr))
+	{
+		MSG_BOX("로딩 실패");
 		return E_FAIL;
+	}
+		
 
 	LeaveCriticalSection(&m_Critical_Section);
 
@@ -129,35 +135,65 @@ HRESULT CLoader::Loading_For_GamePlay()
 	lstrcpy(m_szLoading, TEXT("모델 로딩 중."));
 	/* For.Prototype_Component_VIBuffer_Terrain */
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_VIBuffer_Terrain"),
-		CVIBuffer_Terrain::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Terrain/Height.bmp")))))
+		CVIBuffer_Terrain::Create(m_pDevice, m_pContext, wstring(L"../../Terrains/TSETESTS.dat")))))
 		return E_FAIL;
 
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_VIBuffer_Terrain_NoHeightMap"),
-		CVIBuffer_Terrain::Create(m_pDevice, m_pContext,100,100,0.1f))))
+	_matrix PivotMatrix = XMMatrixIdentity();
+
+	PivotMatrix = XMMatrixRotationY(180.f);
+
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Player"),
+		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/AnimModels/NPCPaladin_Standard_LOD00_rig/NPCPaladin_Standard_LOD00_rig.dat", PivotMatrix))))
+		return E_FAIL;
+
+	lstrcpy(m_szLoading, TEXT("네비게이션 로딩 중."));
+
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Navigation"),
+		CNavigation::Create(m_pDevice, m_pContext, L"../../NavMeshes/TSETESTS.dat"))))
 		return E_FAIL;
 
 
 	lstrcpy(m_szLoading, TEXT("셰이더 로딩 중."));
+
 	/* For.Prototype_Component_Shader_VtxNorTex */
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Shader_VtxNorTex"),
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Shader_VtxAnimMesh"),
+		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxAnimMesh.hlsl"), VTXANIMMESH_DECL::Elements, VTXANIMMESH_DECL::iNumElements))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Shader_VtxMesh"),
+		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxMesh.hlsl"), VTXMESH_DECL::Elements, VTXMESH_DECL::iNumElements))))
+		return E_FAIL;
+
+	/* For.Prototype_Component_Shader_VtxNorTex */
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Shader_VtxNorTex"),
 		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxNorTex.hlsl"), VTXPOSNORTEX_DECL::Elements, VTXPOSNORTEX_DECL::iNumElements))))
 		return E_FAIL;
 
 	lstrcpy(m_szLoading, TEXT("객체 로딩 중."));
-
-	/* For.Prototype_GameObject_Terrain */
-	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Terrain"),
-		CTerrain::Create(m_pDevice, m_pContext))))
-		return E_FAIL;
 
 	/* For.Prototype_GameObject_Camera_Free */
 	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Camera_Free"),
 		CCamera_Free::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
+	/* For.Prototype_GameObject_Camera_Free */
+	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Camera_Player_Main"),
+		CCamera_Player_Main::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
 	/* For.Prototype_GameObject_CubeObject */
 	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_CubeObject"),
 		CCubeObject::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	/* For.Prototype_GameObject_Player */
+	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Player"),
+		CPlayer::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	/* For.Prototype_GameObject_Terrain */
+	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Terrain"),
+		CTerrain::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 	lstrcpy(m_szLoading, TEXT("로딩 완료."));

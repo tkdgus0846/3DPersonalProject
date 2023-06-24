@@ -20,6 +20,9 @@ public:/*실제 사용할 레벨의 갯수만큼 미리 공간을 할당하낟. */
 	HRESULT Reserve_Containers(_uint iNumLevels);
 	HRESULT Add_Prototype(const _tchar* pPrototypeTag, class CGameObject* pPrototype);
 
+	// Add 하지 않고 프로토타입을 찾아서 Clone만 해주는 역할.
+	CGameObject* Clone_Object(const wstring& pPrototypeTag, wstring& pObjName, void* pArg);
+
 	// 프로토타입을 기반으로 Add 해주는 역할.
 	CGameObject* Add_GameObject(_uint iLevelIndex, const wstring& pPrototypeTag, const wstring& pLayerTag, wstring& pObjName, void* pArg);
 
@@ -30,7 +33,7 @@ public:/*실제 사용할 레벨의 갯수만큼 미리 공간을 할당하낟. */
 
 	CGameObject* Find_GameObject(_uint iLevelIndex, const wstring& pLayerTag, const wstring& pObjName);
 
-
+	HRESULT Clear_Layer(_uint iLevelIndex, const wstring& pLayerTag);
 	void Clear_LevelResources(_uint iLevelIndex);
 	void Tick(_double TimeDelta);
 	void Late_Tick(_double TimeDelta);
@@ -45,12 +48,15 @@ public:/*실제 사용할 레벨의 갯수만큼 미리 공간을 할당하낟. */
 		m_iCurLevelIndex = index; 
 	}
 
+	void Clear_ObjectNums() { m_ObjectsNums.clear(); }
+
 public:
 	unordered_map<wstring, class CLayer*>* Get_LayersMapPtr() { return m_pLayers; }
 
 private:	/* 키와 객체수를 바탕으로 네이밍을 하기위함.*/
 	unordered_map<wstring, _uint> m_ObjectsNums;
-	/* 키와 로딩에서 불러온 데이터들을 가지고 있기위함.*/
+
+	/* 키와 로딩에서 불러온 데이터들을 가지고 있기위함. 현재 레벨의 것만 들고 있는것.*/
 	unordered_map<wstring, vector<ObjectParsingData*>>  m_LoadedObjectDatas;
 
 private: /* 원형객체들을 생성하여 보관하고 있는다. */

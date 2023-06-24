@@ -19,7 +19,7 @@ HRESULT CComponent_Manager::Reserve_Containers(_uint iNumLevels)
 	return S_OK;
 }
 
-HRESULT CComponent_Manager::Add_Prototype(_uint iLevelIndex, const _tchar * pPrototypeTag, CComponent * pPrototype)
+HRESULT CComponent_Manager::Add_Prototype(_uint iLevelIndex, const wstring& pPrototypeTag, CComponent * pPrototype)
 {
 	if (nullptr != Find_Prototype(iLevelIndex, pPrototypeTag))
 		return E_FAIL;
@@ -29,7 +29,7 @@ HRESULT CComponent_Manager::Add_Prototype(_uint iLevelIndex, const _tchar * pPro
 	return S_OK;
 }
 
-CComponent * CComponent_Manager::Clone_Component(_uint iLevelIndex, const _tchar * pPrototypeTag, void * pArg)
+CComponent * CComponent_Manager::Clone_Component(_uint iLevelIndex, const wstring& pPrototypeTag, void * pArg)
 {
 	CComponent*		pPrototype = Find_Prototype(iLevelIndex, pPrototypeTag);
 	if (nullptr == pPrototype)
@@ -53,20 +53,21 @@ void CComponent_Manager::Clear_LevelResources(_uint iLevelIndex)
 	m_pPrototypes[iLevelIndex].clear();
 }
 
-vector<pair<const _tchar*, class CComponent*>> CComponent_Manager::Get_Prototypes_ByVector()
+vector<pair<wstring, class CComponent*>> CComponent_Manager::Get_Prototypes_ByVector(_uint iLevelIndex)
 {
-	vector<pair<const _tchar*, class CComponent*>> resultVec;
+	vector<pair<wstring, class CComponent*>> resultVec;
 
-	for (auto& item : *m_pPrototypes)
+	for (auto& item : m_pPrototypes[iLevelIndex])
 	{
 		resultVec.push_back(item);
 	}
 	return resultVec;
 }
 
-CComponent * CComponent_Manager::Find_Prototype(_uint iLevelIndex, const _tchar * pPrototypeTag)
+CComponent * CComponent_Manager::Find_Prototype(_uint iLevelIndex, const wstring& pPrototypeTag)
 {
-	auto	iter = find_if(m_pPrototypes[iLevelIndex].begin(), m_pPrototypes[iLevelIndex].end(), CTag_Finder(pPrototypeTag));
+	
+	auto	iter = m_pPrototypes[iLevelIndex].find(pPrototypeTag);
 
 	if (iter == m_pPrototypes[iLevelIndex].end())
 		return nullptr;

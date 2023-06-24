@@ -57,6 +57,12 @@ public: /* For.Level_Manager */
 
 public: /* For.Object_Manager */
 	HRESULT Add_Prototype(const _tchar* pPrototypeTag, class CGameObject* pPrototype);
+	HRESULT Clear_CurLevel_Layer(const wstring & pLayerTag);
+	void	Clear_ObjectNums();
+
+	// Add 하지 않고 프로토타입을 찾아서 Clone만 해주는 역할.
+	CGameObject* Clone_Object(const wstring & pPrototypeTag, wstring & pObjName, void* pArg = nullptr);
+
 	// 프로토타입을 기반으로 Add 해주는 역할.
 	CGameObject* Add_GameObject(_uint iLevelIndex, const wstring & pPrototypeTag, const wstring& pLayerTag, wstring & pObjName, void* pArg = nullptr);
 	// 프로토타입 기반X 로 Add 해주는 역할.
@@ -71,9 +77,9 @@ public: /* For.Object_Manager */
 	list<class CGameObject*> Get_All_Objects();
 
 public: /* For.Component_Manager*/ 
-	HRESULT Add_Prototype(_uint iLevelIndex, const _tchar* pPrototypeTag, class CComponent* pPrototype);
-	class CComponent* Clone_Component(_uint iLevelIndex, const _tchar* pPrototypeTag, void* pArg = nullptr);
-	vector<pair<const _tchar*, class CComponent*>> Get_Prototypes_ByVector();
+	HRESULT Add_Prototype(_uint iLevelIndex, const wstring & pPrototypeTag, class CComponent* pPrototype);
+	class CComponent* Clone_Component(_uint iLevelIndex, const wstring & pPrototypeTag, void* pArg = nullptr);
+	vector<pair<wstring, class CComponent*>> Get_Prototypes_ByVector();
 
 public: /* For.PipeLine */
 	_float4x4 Get_TransformFloat4x4(CPipeLine::D3DTRANSFORMSTATE eTransformState);

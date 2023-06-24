@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "DummyObject.h"
 #include "GameInstance.h"
+#include "Calculator.h"
 
 CDummyObject::CDummyObject(ID3D11Device * pDevice, ID3D11DeviceContext * pContext)
 	: CGameObject(pDevice, pContext)
@@ -113,7 +114,7 @@ HRESULT CDummyObject::Render()
 				m_pModelCom->Bind_Material(m_pShaderCom, "g_DiffuseTexture", i, aiTextureType_DIFFUSE);
 				/*m_pModelCom->Bind_Material(m_pShaderCom, "g_NormalTexture", i, aiTextureType_NORMALS);*/
 
-				m_pShaderCom->Begin(0);
+				m_pShaderCom->Begin(m_iPassNum);
 
 				m_pModelCom->Render(i);
 			}
@@ -121,6 +122,10 @@ HRESULT CDummyObject::Render()
 		
 	}
 
+#ifdef _DEBUG
+	if (m_pNavigationCom != nullptr)
+		m_pNavigationCom->Render_Navigation();
+#endif
 	
 
 	// 객체의 로컬축을 나타내자.
@@ -149,13 +154,13 @@ HRESULT CDummyObject::Add_Components()
 {
 	/* For.Com_Renderer */
 	if (FAILED(Add_Component(LEVEL_TOOL, TEXT("Prototype_Component_Renderer"),
-		TEXT("Renderer"), (CComponent**)&m_pRendererCom, this)))
+		TEXT("Renderer"), (CComponent**)&m_pRendererCom)))
 		return E_FAIL;
 
 	/* For.Com_Transform */
 	CTransform::TRANSFORMDESC desc = CTransform::TRANSFORMDESC(7.0, XMConvertToRadians(90.0f));
 	if (FAILED(Add_Component(LEVEL_TOOL, TEXT("Prototype_Component_Transform"),
-		TEXT("Transform"), (CComponent**)&m_pTransformCom, this, &desc)))
+		TEXT("Transform"), (CComponent**)&m_pTransformCom, &desc)))
 		return E_FAIL;
 
 	///* For.Com_VIBuffer */
@@ -178,7 +183,7 @@ HRESULT CDummyObject::Add_Components()
 }
 
 HRESULT CDummyObject::SetUp_ShaderResources()
-{
+{	
 	_bool bContinue = true;
 	if (m_pModelCom == nullptr && (m_pTextureCom == nullptr || m_pVIBufferCom == nullptr))
 	{
@@ -202,6 +207,11 @@ HRESULT CDummyObject::SetUp_ShaderResources()
 	if (m_pModelCom == nullptr)
 	{
 		m_pTextureCom->Bind_ShaderResources(m_pShaderCom, "g_Texture");
+
+		if (m_iPassNum == 1)
+		{
+			
+		}
 	}
 	
 	myMatrix = pGameInstance->Get_TransformFloat4x4(CPipeLine::D3DTS_VIEW);
@@ -252,6 +262,9 @@ void CDummyObject::Free()
 	Safe_Release(m_pVIBufferCom);
 	Safe_Release(m_pRendererCom);
 	Safe_Release(m_pModelCom);
+
+	Safe_Release(m_pBrushTexture);
+	Safe_Release(m_pNavigationCom);
 
 	__super::Free();
 }
@@ -310,6 +323,14 @@ ParsingData* CDummyObject::Save_Data(HANDLE handle, ParsingData* data)
 		lstrcpy(name, m_VIBufferPrototypeName.c_str());
 		WriteFile(handle, name, sizeof(name), &dwByte, nullptr);
 	}
+	if (m_pNavigationCom)
+	{
+		lstrcpy(name, NAVIGATION_W);
+		WriteFile(handle, name, sizeof(name), &dwByte, nullptr);
+
+		lstrcpy(name, m_NavigationPrototypeName.c_str());
+		WriteFile(handle, name, sizeof(name), &dwByte, nullptr);
+	}
 
 	// 무슨 버퍼였는지 텍스쳐였는지 저장
 
@@ -352,6 +373,7 @@ ParsingData* CDummyObject::Load_Data(HANDLE handle, ParsingData* data)
 			prototypeName = name;
 			componentName = SHADER_W;
 			FieldComp = (CComponent**)&m_pShaderCom;
+			m_ShaderPrototypeName = prototypeName;
 		}
 		else if (lstrcmp(name, MODEL_W) == 0)
 		{
@@ -360,6 +382,7 @@ ParsingData* CDummyObject::Load_Data(HANDLE handle, ParsingData* data)
 			prototypeName = name;
 			componentName = MODEL_W;
 			FieldComp = (CComponent**)&m_pModelCom;
+			m_ModelPrototypeName = prototypeName;
 		}
 		else if (lstrcmp(name, TEXTURE_W) == 0)
 		{
@@ -368,6 +391,7 @@ ParsingData* CDummyObject::Load_Data(HANDLE handle, ParsingData* data)
 			prototypeName = name;
 			componentName = TEXTURE_W;
 			FieldComp = (CComponent**)&m_pTextureCom;
+			m_TexturePrototypeName = prototypeName;
 		}
 		else if (lstrcmp(name, VIBUFFER_W) == 0)
 		{
@@ -376,10 +400,20 @@ ParsingData* CDummyObject::Load_Data(HANDLE handle, ParsingData* data)
 			prototypeName = name;
 			componentName = VIBUFFER_W;
 			FieldComp = (CComponent**)&m_pVIBufferCom;
+			m_VIBufferPrototypeName = prototypeName;
+		}
+		else if (lstrcmp(name, NAVIGATION_W) == 0)
+		{
+			ReadFile(handle, name, sizeof(name), &dwByte, nullptr);
+
+			prototypeName = name;
+			componentName = NAVIGATION_W;
+			FieldComp = (CComponent**)&m_pNavigationCom;
+			m_NavigationPrototypeName = prototypeName;
 		}
 
 		if (bAddComponent)
-			Add_Component(LEVEL_TOOL, prototypeName.c_str(), componentName, FieldComp, this, pArg);
+			Add_Component(LEVEL_TOOL, prototypeName.c_str(), componentName, FieldComp, pArg);
 	}
 
 	Safe_Delete(objectData);

@@ -46,6 +46,12 @@
     <Filter Include="02.GameObjects\TestObject">
       <UniqueIdentifier>{e194f5f7-a53a-4b3b-b16b-88cc45dac25e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02.GameObjects\Player">
+      <UniqueIdentifier>{687b3eec-a957-4eb8-bcff-73a55704976d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObjects\Camera\PlayerCam">
+      <UniqueIdentifier>{db3325dd-2c02-4e36-aaaa-0e280a398ae3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -93,6 +99,12 @@
     <ClInclude Include="..\Public\CubeObject.h">
       <Filter>02.GameObjects\TestObject</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\Player.h">
+      <Filter>02.GameObjects\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\Camera_Player_Main.h">
+      <Filter>02.GameObjects\Camera\PlayerCam</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp">
@@ -127,6 +139,12 @@
     </ClCompile>
     <ClCompile Include="..\Private\CubeObject.cpp">
       <Filter>02.GameObjects\TestObject</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Player.cpp">
+      <Filter>02.GameObjects\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Camera_Player_Main.cpp">
+      <Filter>02.GameObjects\Camera\PlayerCam</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

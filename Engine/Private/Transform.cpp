@@ -116,16 +116,28 @@ void CTransform::Go_Down(_double TimeDelta)
 	Set_State(STATE_POSITION, vPosition);
 }
 
-void CTransform::Chase(_fvector vTargetPosition, _double TimeDelta, _float fMinDistance)
+_bool CTransform::Chase(_fvector vTargetPosition, _double TimeDelta,  CNavigation* pNavigation, _float fMinDistance)
 {
+	_bool bSuccess = false;
 	_vector		vPosition = Get_State(STATE_POSITION);
 
 	_vector		vDir = vTargetPosition - vPosition;
 
 	if (fMinDistance < XMVectorGetX(XMVector3Length(vDir)))
+	{
 		vPosition += XMVector3Normalize(vDir) * m_TransformDesc.SpeedPerSec * TimeDelta;
+		bSuccess = true;
+	}
+		
+	_bool		isMove = true;
 
-	Set_State(STATE_POSITION, vPosition);
+	if (nullptr != pNavigation)
+		isMove = pNavigation->is_Move(vPosition);
+
+	if (true == isMove)
+		Set_State(STATE_POSITION, vPosition);
+
+	return bSuccess;
 }
 
 void CTransform::LookAt(_fvector vTargetPosition)

@@ -10,7 +10,7 @@ CVIBuffer_Cell::CVIBuffer_Cell(const CVIBuffer_Cell & rhs)
 {
 }
 
-HRESULT CVIBuffer_Cell::Initialize_Prototype(const _float3* pPoints)
+HRESULT CVIBuffer_Cell::Initialize_Prototype(const _float3* pPoints, TYPE eType)
 {
 	m_iNumVertexBuffers = { 1 };
 	m_iStride = { sizeof(VTXPOS) };
@@ -25,10 +25,20 @@ HRESULT CVIBuffer_Cell::Initialize_Prototype(const _float3* pPoints)
 	ZeroMemory(&m_BufferDesc, sizeof m_BufferDesc);
 
 	m_BufferDesc.ByteWidth = { m_iStride * m_iNumVertices };
-	m_BufferDesc.Usage = { D3D11_USAGE_DEFAULT };
+
+	if (eType == TYPE_DYNAMIC)
+		m_BufferDesc.Usage = { D3D11_USAGE_DYNAMIC };
+	else
+		m_BufferDesc.Usage = { D3D11_USAGE_DEFAULT };
+
 	m_BufferDesc.BindFlags = { D3D11_BIND_VERTEX_BUFFER };
 	m_BufferDesc.StructureByteStride = { m_iStride };
-	m_BufferDesc.CPUAccessFlags = { 0 };
+
+	if (eType == TYPE_DYNAMIC)
+		m_BufferDesc.CPUAccessFlags = { D3D11_CPU_ACCESS_WRITE };
+	else
+		m_BufferDesc.CPUAccessFlags = { 0 };
+
 	m_BufferDesc.MiscFlags = { 0 };
 	
 
@@ -82,11 +92,25 @@ HRESULT CVIBuffer_Cell::Initialize(void * pArg)
 	return S_OK;
 }
 
-CVIBuffer_Cell* CVIBuffer_Cell::Create(ID3D11Device * pDevice, ID3D11DeviceContext * pContext, const _float3* pPoints)
+void CVIBuffer_Cell::Edit_Point(_uint iIndex, const _float3& pos)
+{
+	// 동적 버텍스 버퍼 매핑
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	m_pContext->Map(m_pVB, 0, D3D11_MAP_WRITE_NO_OVERWRITE, 0, &mappedResource);
+
+	// mappedResource.pData를 통해 동적 버텍스 버퍼의 데이터에 접근할 수 있음
+	VTXPOS* vertices = reinterpret_cast<VTXPOS*>(mappedResource.pData);
+
+	vertices[iIndex].vPosition = pos;
+
+	m_pContext->Unmap(m_pVB, 0);
+}
+
+CVIBuffer_Cell* CVIBuffer_Cell::Create(ID3D11Device * pDevice, ID3D11DeviceContext * pContext, const _float3* pPoints, TYPE eType)
 {
 	CVIBuffer_Cell*	pInstance = new CVIBuffer_Cell(pDevice, pContext);
 
-	if (FAILED(pInstance->Initialize_Prototype(pPoints)))
+	if (FAILED(pInstance->Initialize_Prototype(pPoints, eType)))
 	{
 		MSG_BOX("Failed to Created CVIBuffer_Cell");
 		Safe_Release(pInstance);

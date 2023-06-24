@@ -19,6 +19,7 @@ public:
 
 	CGameObject* Find_Object(const wstring& objName);
 	HRESULT Delete_GameObject(const wstring& pObjName);
+	HRESULT Clear_Layer();
 
 private:
 	list<class CGameObject*>				m_GameObjects;

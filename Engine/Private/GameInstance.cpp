@@ -81,6 +81,7 @@ void CGameInstance::Clear_LevelResources(_uint iLevelIndex)
 		nullptr == m_pComponent_Manager)
 		return;
 
+	Clear_ObjectNums();
 	m_pObject_Manager->Clear_LevelResources(iLevelIndex);
 	m_pComponent_Manager->Clear_LevelResources(iLevelIndex);
 
@@ -230,6 +231,32 @@ HRESULT CGameInstance::Add_Prototype(const _tchar * pPrototypeTag, CGameObject *
 	return m_pObject_Manager->Add_Prototype(pPrototypeTag, pPrototype);	
 }
 
+HRESULT CGameInstance::Clear_CurLevel_Layer(const wstring& pLayerTag)
+{
+	if (nullptr == m_pObject_Manager)
+		return E_FAIL;
+	if (nullptr == m_pLevel_Manager)
+		return E_FAIL;
+
+	return m_pObject_Manager->Clear_Layer(m_pLevel_Manager->Get_CurLevelIndex(), pLayerTag);
+}
+
+void CGameInstance::Clear_ObjectNums()
+{
+	if (nullptr == m_pObject_Manager)
+		return;
+
+	m_pObject_Manager->Clear_ObjectNums();
+}
+
+CGameObject* CGameInstance::Clone_Object(const wstring& pPrototypeTag, wstring& pObjName, void* pArg)
+{
+	if (nullptr == m_pObject_Manager)
+		return nullptr;
+
+	return m_pObject_Manager->Clone_Object(pPrototypeTag, pObjName, pArg);
+}
+
 CGameObject* CGameInstance::Add_GameObject(_uint iLevelIndex, const wstring& pPrototypeTag, const wstring& pLayerTag, wstring& pObjName, void* pArg)
 {
 	if (nullptr == m_pObject_Manager)
@@ -317,7 +344,7 @@ list<CGameObject*> CGameInstance::Get_All_Objects()
 	return resultObjList;
 }
 
-HRESULT CGameInstance::Add_Prototype(_uint iLevelIndex, const _tchar * pPrototypeTag, CComponent * pPrototype)
+HRESULT CGameInstance::Add_Prototype(_uint iLevelIndex, const wstring& pPrototypeTag, CComponent * pPrototype)
 {
 	if (nullptr == m_pComponent_Manager)
 		return E_FAIL;
@@ -326,7 +353,7 @@ HRESULT CGameInstance::Add_Prototype(_uint iLevelIndex, const _tchar * pPrototyp
 	
 }
 
-CComponent * CGameInstance::Clone_Component(_uint iLevelIndex, const _tchar * pPrototypeTag, void * pArg)
+CComponent * CGameInstance::Clone_Component(_uint iLevelIndex, const wstring& pPrototypeTag, void * pArg)
 {
 	if (nullptr == m_pComponent_Manager)
 		return nullptr;
@@ -335,11 +362,14 @@ CComponent * CGameInstance::Clone_Component(_uint iLevelIndex, const _tchar * pP
 	
 }
 
-vector<pair<const _tchar*, class CComponent*>> CGameInstance::Get_Prototypes_ByVector()
+vector<pair<wstring, class CComponent*>> CGameInstance::Get_Prototypes_ByVector()
 {
 	if (nullptr == m_pComponent_Manager)
-		return vector<pair<const _tchar*, class CComponent*>>();
-	return m_pComponent_Manager->Get_Prototypes_ByVector();
+		return vector<pair<wstring, class CComponent*>>();
+	if (nullptr == m_pLevel_Manager)
+		return vector<pair<wstring, class CComponent*>>();
+
+	return m_pComponent_Manager->Get_Prototypes_ByVector(m_pLevel_Manager->Get_CurLevelIndex());
 }
 
 _float4x4 CGameInstance::Get_TransformFloat4x4(CPipeLine::D3DTRANSFORMSTATE eTransformState)

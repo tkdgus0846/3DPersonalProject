@@ -104,6 +104,7 @@ protected:
 	_bool				unsaved_document = false;
 	_bool				cond_always = true;
 	_bool				save_load_button = true;
+	_bool				only_load_button = false;
 
 	
 };

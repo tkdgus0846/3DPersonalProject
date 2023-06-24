@@ -27,6 +27,10 @@ public:
 	virtual void Late_Tick(_double TimeDelta) override;
 	virtual HRESULT Render() override;
 
+	void			Look_At(_fvector pos);
+	void			Set_Pos(_fvector pos);
+	_vector			Get_Pos();
+
 protected:
 	class CTransform*			m_pTransform = { nullptr };
 	_float4						m_vEye, m_vAt, m_vUp;

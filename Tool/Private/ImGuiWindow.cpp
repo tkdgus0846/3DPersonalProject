@@ -107,11 +107,14 @@ void CImGuiWindow::SaveLoadButton()
 	PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 1.0f, 1.0f, 1.0f)); // 버튼 색상 변경	
 	PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
 	
-	if (Button("Save", {50,50}))
+	if (only_load_button == false)
 	{
-		Save_Function();
+		if (Button("Save", { 50,50 }))
+		{
+			Save_Function();
+		}
+		SameLine();
 	}
-	SameLine();
 	if (Button("Load", { 50,50 }))
 	{
 		Load_Function();

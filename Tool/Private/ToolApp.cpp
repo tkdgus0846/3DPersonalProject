@@ -48,6 +48,7 @@ void CToolApp::Tick(_double TimeDelta)
 		return;
 
 	m_pGameInstance->Tick_Engine(TimeDelta);
+	IMGUI->Tick(TimeDelta);
 }
 
 HRESULT CToolApp::Render()
@@ -106,16 +107,41 @@ HRESULT CToolApp::Ready_Prototype_Component_For_Static()
 		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/SkyBox/Sky_3.dds")))))
 		return E_FAIL;
 
+	/* For.Prototype_Component_Texture_Cube */
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_Texture_Brush"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Terrain/Brush.png")))))
+		return E_FAIL; 
+
+	
+
+	/* For.Prototype_Component_Texture_Cube */
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_Texture_Cobbolstone"),
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/SilverhillsBuilding_Cobblestone02_bc.dds")))))
+		return E_FAIL;
+
 
 	/* For.Prototype_Component_VIBuffer_Terrain */
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_VIBuffer_Terrain"),
-		CVIBuffer_Terrain::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Terrain/Height.bmp")))))
+		CVIBuffer_Terrain::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Terrain/Height.bmp"),  CVIBuffer_Terrain::TYPE::DYNAMIC))))
 		return E_FAIL;
 
-	/* For.Prototype_Component_VIBuffer_Terrain_NoHeightMap*/
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_VIBuffer_Terrain_NoHeightMap"),
-		CVIBuffer_Terrain::Create(m_pDevice, m_pContext, 100, 100, 1.0f))))
-		return E_FAIL;
+	///* For.Prototype_Component_VIBuffer_Terrain_NoHeightMap*/
+	//if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_VIBuffer_Terrain_100x100"),
+	//	CVIBuffer_Terrain::Create(m_pDevice, m_pContext, 100, 100, 1.0f))))
+	//	return E_FAIL;
+
+	//if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_VIBuffer_Terrain_200x200"),
+	//	CVIBuffer_Terrain::Create(m_pDevice, m_pContext, 200, 200, 1.0f))))
+	//	return E_FAIL;
+
+	///* For.Prototype_Component_VIBuffer_Terrain_NoHeightMap*/
+	//if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_VIBuffer_Terrain_500x500"),
+	//	CVIBuffer_Terrain::Create(m_pDevice, m_pContext, 500, 500, 1.0f))))
+	//	return E_FAIL;
+
+	//if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_VIBuffer_Terrain_1000x1000"),
+	//	CVIBuffer_Terrain::Create(m_pDevice, m_pContext, 1000, 1000, 1.0f))))
+	//	return E_FAIL;
 
 	/* For.Prototype_Component_VIBuffer_Cube*/
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_VIBuffer_Cube"),
@@ -146,33 +172,83 @@ HRESULT CToolApp::Ready_Prototype_Component_For_Static()
 		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxAnimMesh.hlsl"), VTXANIMMESH_DECL::Elements, VTXANIMMESH_DECL::iNumElements))))
 		return E_FAIL;
 
+	////////////////////// ÅÍ·¹ÀÎ /////////////////////////
+	path terrainPath = L"../../Terrains/";
+	wstring prototypeName = TEXT("Prototype_Component_VIBuffer_Terrain_");
+	for (const directory_entry& entry : directory_iterator(terrainPath))
+	{
+		if (entry.path().extension() == L".dat")
+		{
+			wstring FullName = prototypeName + entry.path().filename().stem().wstring();
+			wstring FullPath = terrainPath.wstring() + entry.path().filename().stem().wstring() + L".dat";
+
+			m_pGameInstance->Add_Prototype(LEVEL_TOOL, FullName.c_str(),
+				CVIBuffer_Terrain::Create(m_pDevice, m_pContext, FullPath, CVIBuffer_Terrain::TYPE::DYNAMIC));
+		}
+	}
+
+	///////////////////////// ³×ºß ¸Þ½¬µé ////////////////////////
+	path navPath = L"../../NavMeshes/";
+	prototypeName = TEXT("Prototype_Component_Navigation_");
+	for (const directory_entry& entry : directory_iterator(navPath))
+	{
+		if (entry.path().extension() == L".dat")
+		{
+			wstring FullName = prototypeName + entry.path().filename().stem().wstring();
+			wstring FullPath = navPath.wstring() + entry.path().filename().stem().wstring() + L".dat";
+
+			m_pGameInstance->Add_Prototype(LEVEL_TOOL, FullName.c_str(),
+				CNavigation::Create(m_pDevice, m_pContext, FullPath.c_str()));
+		}
+	}
+
+
 	/////////////////////////////////////
 	///////////////////////////////////////
 	/////////////// ¸ðµ¨ //////////////////
 	///////////////////////////////////
 	////////////////////////////////
 
+	_matrix		PivotMatrix = XMMatrixIdentity();
+	
+	///////////// ³í¾Ö´Ô ¸ðµ¨µé ///////////////
+	path modelPath = "../../ExtractModels/NonAnimModels/";
+	prototypeName = TEXT("Prototype_Component_NonAnim_Model_");
+	for (const directory_entry& entry : recursive_directory_iterator(modelPath))
+	{
+		if (entry.path().extension() == L".dat")
+		{
+			wstring FullName = prototypeName + entry.path().filename().stem().wstring();
+			string FullPath = modelPath.string()+ "/" + entry.path().filename().stem().string()+ "/" + entry.path().filename().stem().string() + ".dat";
+
+			m_pGameInstance->Add_Prototype(LEVEL_TOOL, FullName,
+				CModel::Create(m_pDevice, m_pContext, FullPath.c_str(), PivotMatrix));
+		}
+	}
+
+	//////////// ¾Ö´Ô ¸ðµ¨µé //////////////////////////
+
 	/* For.Prototype_Component_Model_Fiona */
 
-	_matrix		PivotMatrix = XMMatrixIdentity();
+	
 
-	/*PivotMatrix = XMMatrixRotationY(XMConvertToRadians(180.0f));*/
-	/*if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_Model_2087_model"),
-		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/AnimModels/2087_model/2087_model.dat", PivotMatrix))))
-		return E_FAIL;*/
-
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_Model_crow_final"),
-		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/AnimModels/crow_final/crow_final.dat", PivotMatrix))))
+	PivotMatrix = XMMatrixRotationY(XMConvertToRadians(180.0f));
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_Model_NPCPaladin_Standard_LOD00_rig"),
+		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/AnimModels/NPCPaladin_Standard_LOD00_rig/NPCPaladin_Standard_LOD00_rig.dat", PivotMatrix))))
 		return E_FAIL;
+
+	/*if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_Model_crow_final"),
+		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/AnimModels/crow_final/crow_final.dat", PivotMatrix))))
+		return E_FAIL;*/
 
 	/*if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_Model_Fiona"),
 		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/AnimModels/Fiona/Fiona.dat", PivotMatrix))))
 		return E_FAIL;*/
 
 
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_Model_ForestSpirit"),
+	/*if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_Model_ForestSpirit"),
 		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/AnimModels/ForestSpirit/ForestSpirit.dat", PivotMatrix))))
-		return E_FAIL;
+		return E_FAIL;*/
 
 	/*if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_Model_3924"),
 		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/AnimModels/3924/3924.dat", PivotMatrix))))

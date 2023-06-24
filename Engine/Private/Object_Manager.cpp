@@ -32,6 +32,18 @@ HRESULT CObject_Manager::Add_Prototype(const _tchar * pPrototypeTag, CGameObject
 	return S_OK;
 }
 
+CGameObject* CObject_Manager::Clone_Object(const wstring& pPrototypeTag, wstring& pObjName, void* pArg)
+{
+	CGameObject* pPrototype = Find_Prototype(pPrototypeTag);
+	if (nullptr == pPrototype)
+		return nullptr;
+
+	CGameObject* pGameObject = pPrototype->Clone(pArg);
+	pGameObject->SetName(pObjName);
+
+	return pGameObject;
+}
+
 CGameObject* CObject_Manager::Add_GameObject(_uint iLevelIndex, const wstring& pPrototypeTag, const wstring& pLayerTag, wstring& pObjName, void * pArg)
 {
 	CGameObject*	pPrototype = Find_Prototype(pPrototypeTag);
@@ -96,11 +108,11 @@ HRESULT CObject_Manager::Delete_GameObject(_uint iLevelIndex, const wstring& pLa
 	CGameObject* resultObject = nullptr;
 	HRESULT hr = E_FAIL;
 
-	auto iter = m_pLayers->find(pLayerTag);
+	CLayer* pLayer = Find_Layer(iLevelIndex, pLayerTag);
 
-	if (iter != m_pLayers->end())
+	if (nullptr != pLayer)
 	{
-		hr = iter->second->Delete_GameObject(pObjName);
+		hr = pLayer->Delete_GameObject(pObjName);
 		//Decrease_Object_Name(pObjName);
 		
 	}
@@ -111,13 +123,25 @@ CGameObject* CObject_Manager::Find_GameObject(_uint iLevelIndex, const wstring& 
 {
 	CGameObject* resultObject = nullptr;
 
-	auto iter = m_pLayers->find(pLayerTag);
+	CLayer* pLayer = Find_Layer(iLevelIndex, pLayerTag);
 
-	if (iter != m_pLayers->end())
+	if (nullptr != pLayer)
 	{
-		resultObject = iter->second->Find_Object(pObjName);
+		resultObject = pLayer->Find_Object(pObjName);
 	}
 	return resultObject;
+}
+
+HRESULT CObject_Manager::Clear_Layer(_uint iLevelIndex, const wstring& pLayerTag)
+{
+	CLayer* pLayer = Find_Layer(iLevelIndex, pLayerTag);
+
+	if (pLayer != nullptr)
+	{
+		pLayer->Clear_Layer();
+		return S_OK;
+	}
+	return E_FAIL;
 }
 
 void CObject_Manager::Clear_LevelResources(_uint iLevelIndex)
@@ -127,6 +151,15 @@ void CObject_Manager::Clear_LevelResources(_uint iLevelIndex)
 		Safe_Release(Pair.second);
 	}
 	m_pLayers[iLevelIndex].clear();
+
+	for (auto& Pair : m_LoadedObjectDatas)
+	{
+		for (auto data : Pair.second)
+		{
+			Safe_Delete(data);
+		}
+	}
+	m_LoadedObjectDatas.clear();
 }
 
 void CObject_Manager::Tick(_double TimeDelta)
@@ -155,11 +188,11 @@ CGameObject* CObject_Manager::Copy_Object(_uint iLevelIndex, const wstring& laye
 {
 	CGameObject* resultObject = nullptr;
 
-	auto iter = m_pLayers->find(layerTag);
+	CLayer* pLayer = Find_Layer(iLevelIndex, layerTag);
 
-	if (iter != m_pLayers->end())
+	if (nullptr != pLayer)
 	{
-		CGameObject* object = iter->second->Find_Object(objectName);
+		CGameObject* object = pLayer->Find_Object(objectName);
 
 		if (object != nullptr)
 		{
@@ -302,7 +335,7 @@ ParsingData* CObject_Manager::Save_Data(HANDLE handle, ParsingData* data)
 		for (auto& object : *layer.second->Get_GameObjectsList())
 		{
 			// 툴에서 사용하는 카메라는 저장하지 않기 위함이다.
-			if (object->GetName().compare(L"ToolCamera") == 0)
+			if (object->GetName().compare(L"MainCamera") == 0)
 				continue;
 
 			Make_ObjectPath(objectPath, fullPath, object->GetName());
@@ -349,6 +382,7 @@ ParsingData* CObject_Manager::Load_Data(HANDLE handle, ParsingData* data)
 			TransformParsingData transformData;
 
 			/* 트랜스폼 읽어오는 과정*/
+			/// 여기서 나의 생각은 트랜스폼만 읽어오고 나머지 정보는 무시해도 된다는 생각이다.
 			ReadFile(handle, compName, sizeof(compName), &dwByte, nullptr);
 			ReadFile(handle, &transformData.WorldMatrix, sizeof(transformData.WorldMatrix), &dwByte, nullptr);
 			myData->TransformData = transformData;
@@ -395,7 +429,6 @@ ParsingData* CObject_Manager::Load_Tool_Objects(ParsingData* data)
 	{
 		if (entry.is_regular_file())
 		{
-
 			wstring fileName = entry.path().filename().stem();
 
 			CGameObject* object = Add_GameObject(0, L"Prototype_GameObject_DummyObject", L"Layer_Object", fileName, nullptr);

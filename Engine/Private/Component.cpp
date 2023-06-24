@@ -1,6 +1,7 @@
 #include "..\Public\Component.h"
 
 #include "GameInstance.h"
+#include "GameObject.h"
 
 CComponent::CComponent(ID3D11Device * pDevice, ID3D11DeviceContext * pContext)
 	: m_pDevice(pDevice)
@@ -136,7 +137,7 @@ list<CComponent*> CComposite::Get_ComponentsByList()
 	return componentList;
 }
 
-HRESULT CComposite::Add_Component(_uint iLevelIndex, const _tchar* pPrototypeTag, const wstring& pComponentTag, _Inout_ CComponent** ppOut, CComposite* pOwner, void* pArg)
+HRESULT CComposite::Add_Component(_uint iLevelIndex, const _tchar* pPrototypeTag, const wstring& pComponentTag, _Inout_ CComponent** ppOut, void* pArg)
 {
 	CGameInstance* pGameInstance = CGameInstance::GetInstance();
 	Safe_AddRef(pGameInstance);
@@ -148,7 +149,7 @@ HRESULT CComposite::Add_Component(_uint iLevelIndex, const _tchar* pPrototypeTag
 	m_Components.emplace(pComponentTag, pComponent);
 
 	pComponent->SetName(pComponentTag);
-	pComponent->SetOwner(pOwner);
+	pComponent->SetOwner(this);
 
 	*ppOut = pComponent;
 
@@ -159,9 +160,41 @@ HRESULT CComposite::Add_Component(_uint iLevelIndex, const _tchar* pPrototypeTag
 	return S_OK;
 }
 
-HRESULT CComposite::Add_Component(CComponent* newComp)
+HRESULT CComposite::Add_Component(CComponent* newComp, const wstring& componentName)
 {
+	newComp->SetOwner(this);
+	newComp->SetName(componentName);
+
 	m_Components.emplace(newComp->GetName(), newComp);
+	return S_OK;
+}
+
+HRESULT CComposite::Add_Component(const wstring& PrototypeTag, const wstring& ObjectName, CGameObject** ppOut, void* pArg)
+{
+	CGameInstance* pGameInstance = CGameInstance::GetInstance();
+	Safe_AddRef(pGameInstance);
+
+	wstring name = ObjectName;
+	CGameObject* resultObj = pGameInstance->Clone_Object(PrototypeTag, name, pArg);
+
+	if (resultObj == nullptr) return E_FAIL;
+
+	if (m_Components.find(ObjectName) != m_Components.end())
+	{
+		Safe_Release(resultObj);
+		return E_FAIL;
+	}
+
+	resultObj->SetOwner(this);
+	
+	*ppOut = resultObj;
+
+	m_Components[ObjectName] = (CComponent*)resultObj;
+
+	Safe_AddRef(resultObj);
+
+	Safe_Release(pGameInstance);
+
 	return S_OK;
 }
 

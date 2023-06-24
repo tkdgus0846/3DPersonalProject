@@ -87,12 +87,19 @@ namespace Engine
 
 	struct Triangle
 	{
-		Triangle(const _float3& v1, const _float3& v2, const _float3& v3) : vVertex1(v1), vVertex2(v2), vVertex3(v3) {}
+		Triangle(const _float3& v1, const _float3& v2, const _float3& v3) : vVertex1(v1), vVertex2(v2), vVertex3(v3), iIndex1(0), iIndex2(0), iIndex3(0) {}
+
+		Triangle(const _float3& v1, const _float3& v2, const _float3& v3, const _ulong& I1, const _ulong& I2, const _ulong& I3) : vVertex1(v1), vVertex2(v2), vVertex3(v3), iIndex1(I1), iIndex2(I2), iIndex3(I3) {}
+
 		Triangle() {}
 
 		_float3 vVertex1;
 		_float3 vVertex2;
 		_float3 vVertex3;
+
+		_ulong iIndex1;
+		_ulong iIndex2;
+		_ulong iIndex3;
 	};
 
 	typedef struct tagVertex_AnimMesh
@@ -119,8 +126,8 @@ namespace Engine
 	class ISerializable abstract
 	{
 	public:
-		virtual ParsingData* Save_Data(HANDLE handle, ParsingData* data) PURE;
-		virtual ParsingData* Load_Data(HANDLE handle, ParsingData* data) PURE;
+		virtual ParsingData* Save_Data(HANDLE handle, ParsingData* data) { return nullptr; }
+		virtual ParsingData* Load_Data(HANDLE handle, ParsingData* data) { return nullptr; }
 	};
 
 	// Load 기능만 구현하고 싶으면 상속

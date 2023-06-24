@@ -20,6 +20,10 @@ HRESULT CLevel_GamePlay::Initialize()
 		return E_FAIL;
 	if (FAILED(Ready_Layer_Camera(TEXT("Layer_Camera"))))
 		return E_FAIL;
+	if (FAILED(Ready_Layer_Objects(TEXT("Layer_Object"))))
+		return E_FAIL;
+	if (FAILED(Ready_Layer_Terrain(TEXT("Layer_Object"))))
+		return E_FAIL;
 
 	return S_OK;
 }
@@ -76,7 +80,8 @@ HRESULT CLevel_GamePlay::Ready_Layer_BackGround(const _tchar* pLayerTag)
 		return E_FAIL;*/
 
 
-	if (FAILED(pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_CubeObject"), pLayerTag, TEXT("CubeObject"))))
+	wstring objName = TEXT("CubeObject");
+	if (pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_CubeObject"), pLayerTag, objName) == nullptr)
 		return E_FAIL;
 
 	Safe_Release(pGameInstance);
@@ -103,10 +108,33 @@ HRESULT CLevel_GamePlay::Ready_Layer_Camera(const _tchar * pLayerTag)
 	CameraFreeDesc.CameraDesc.TransformDesc.RotationPerSec = XMConvertToRadians(90.0f);
 
 
-	if (FAILED(pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Camera_Free"), pLayerTag, L"Camera_Free", & CameraFreeDesc)))
+	wstring objName = L"Camera_Free";
+	if (pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Camera_Free"), pLayerTag, objName, & CameraFreeDesc) == nullptr)
 		return E_FAIL;
 
 	Safe_Release(pGameInstance);
+
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::Ready_Layer_Objects(const _tchar* pLayerTag)
+{
+	CGameInstance* pGameInstance = CGameInstance::GetInstance();
+
+	wstring objName = L"Player";
+	if (pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Player"), pLayerTag, objName) == nullptr)
+		return E_FAIL;
+
+	return S_OK;
+}
+
+HRESULT CLevel_GamePlay::Ready_Layer_Terrain(const _tchar* pLayerTag)
+{
+	CGameInstance* pGameInstance = CGameInstance::GetInstance();
+
+	wstring objName = L"Terrain";
+	if (pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Terrain"), pLayerTag, objName) == nullptr)
+		return E_FAIL;
 
 	return S_OK;
 }

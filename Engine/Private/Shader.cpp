@@ -156,7 +156,7 @@ HRESULT CShader::Bind_Float4(const _char* pConstantName, const _float4* pFloat4)
 		return E_FAIL;
 
 	/* 해당 컴객체로 변수에 값을 던진다. */
-	return pVariableVector->SetFloatVector((_float*)&pFloat4);
+	return pVariableVector->SetFloatVector((_float*)pFloat4);
 }
 
 HRESULT CShader::Bind_ShaderResource(const _char* pConstantName, ID3D11ShaderResourceView* pSRV)

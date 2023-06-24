@@ -59,9 +59,11 @@ HRESULT CTerrain::Render()
 
 	m_pShaderCom->Begin(m_iPassNum);
 
-
-
 	m_pVIBufferCom->Render();
+
+#ifdef _DEBUG
+	m_pNavigationCom->Render_Navigation();
+#endif
 
 	return S_OK;
 }
@@ -70,28 +72,33 @@ HRESULT CTerrain::Add_Components()
 {
 	/* For.Com_Renderer */
 	if (FAILED(__super::Add_Component(LEVEL_STATIC, TEXT("Prototype_Component_Renderer"),
-		TEXT("Com_Renderer"), (CComponent**)&m_pRendererCom, this)))
+		TEXT("Com_Renderer"), (CComponent**)&m_pRendererCom)))
 		return E_FAIL;
 
 	/* For.Com_Transform */
 	if (FAILED(__super::Add_Component(LEVEL_STATIC, TEXT("Prototype_Component_Transform"),
-		TEXT("Com_Transform"), (CComponent**)&m_pTransformCom, this, &CTransform::TRANSFORMDESC(7.0, XMConvertToRadians(90.0f)))))
+		TEXT("Com_Transform"), (CComponent**)&m_pTransformCom, &CTransform::TRANSFORMDESC(7.0, XMConvertToRadians(90.0f)))))
 		return E_FAIL;
 
 	/* For.Com_VIBuffer */
 	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_VIBuffer_Terrain"),
-		TEXT("Com_VIBuffer"), (CComponent**)&m_pVIBufferCom, this)))
+		TEXT("Com_VIBuffer"), (CComponent**)&m_pVIBufferCom)))
 		return E_FAIL;
 
 	/* For.Com_Shader */
-	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Shader_VtxNorTex"),
-		TEXT("Com_Shader"), (CComponent**)&m_pShaderCom, this)))
+	if (FAILED(__super::Add_Component(LEVEL_STATIC, TEXT("Prototype_Component_Shader_VtxNorTex"),
+		TEXT("Com_Shader"), (CComponent**)&m_pShaderCom)))
 		return E_FAIL;
 
 
 	/* For.Com_Texture */
 	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Terrain"),
-		TEXT("Com_Texture"), (CComponent**)&m_pTextureCom, this)))
+		TEXT("Com_Texture"), (CComponent**)&m_pTextureCom)))
+		return E_FAIL;
+
+	/* For.Com_Navigation*/
+	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Navigation"),
+		TEXT("Com_Navigation"), (CComponent**)&m_pNavigationCom)))
 		return E_FAIL;
 
 	return S_OK;
@@ -116,6 +123,10 @@ HRESULT CTerrain::SetUp_ShaderResources()
 
 	if (FAILED(m_pShaderCom->Bind_Matrix("g_ProjMatrix",
 		&pGameInstance->Get_TransformFloat4x4(CPipeLine::D3DTS_PROJ))))
+		return E_FAIL;
+
+	if (FAILED(m_pShaderCom->Bind_RawValue("g_vCamPosition",
+		&pGameInstance->Get_CamPosition(), sizeof(_float4))))
 		return E_FAIL;
 
 	_float3 lightPos = _float3(500.f, 500.f, 500.f);
@@ -164,6 +175,7 @@ void CTerrain::Free()
 	Safe_Release(m_pTextureCom);
 	Safe_Release(m_pVIBufferCom);
 	Safe_Release(m_pRendererCom);
+	Safe_Release(m_pNavigationCom);
 
 	__super::Free();
 }

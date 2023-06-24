@@ -8,6 +8,7 @@
 #define SHADER_W		L"Shader" 
 #define TEXTURE_W		L"Texture" 
 #define MODEL_W			L"Model" 
+#define NAVIGATION_W	L"Navigation"
 
 #define TRANSFORM_A		"Transform"
 #define RENDERER_A		"Renderer" 
@@ -15,6 +16,7 @@
 #define SHADER_A		"Shader" 
 #define TEXTURE_A		"Texture" 
 #define MODEL_A			"Model"
+#define NAVIGATION_A	"Navigation"
 
 #define D3DCOLOR_ARGB(a,r,g,b) \
     ((D3DCOLOR)((((a)&0xff)<<24)|(((r)&0xff)<<16)|(((g)&0xff)<<8)|((b)&0xff)))

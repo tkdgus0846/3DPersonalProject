@@ -37,7 +37,7 @@ public:
 	void				HideWindow(const char* WindowName);
 	class CImGuiWindow* GetWindow(const char* WindowName);
 	void				ShowAllWindows();
-	void				HideAllWindows();
+	void				HideAllWindows(const char* WindowName = nullptr);
 
 	/// 오브젝트 윈도우 hierarchy 새로고침
 	void				ChangeTree();
@@ -48,6 +48,14 @@ public:
 	wstring				GetCurSelectName();
 	CComponent*			GetCurSelectComponent();
 	CGameObject*		Find_GameObject(const wstring& name);
+
+	// 렌더모드 설정하기 위한 함수
+	void				Set_Render_NavMesh(_bool bRender);
+
+	// 맵 윈도우 함수들
+	void				Set_CurTerrain(class CDummyObject* pTerrain);
+
+	vector<CGameObject*> Find_Terrains();
 
 	string				SaveLoad_Dialog_Key() const { return m_pSaveLoadDlgKey; }
 	void				SaveMode() { m_bSaveMode = true; }
@@ -61,6 +69,9 @@ public:
 		return m_pCurSaveLoadWindowName;
 	}
 	_bool Window_Use_Picking(const char* windowName);
+
+	ID3D11Device* GetDevice() { return m_pDevice; }
+	ID3D11DeviceContext* GetContext() { return m_pContext; }
 
 private:
 	virtual void		Free() override;

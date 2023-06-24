@@ -30,12 +30,17 @@ HRESULT CMainWindow::Initialize(const WINDOWDESC& desc)
 
 void CMainWindow::Rendering()
 {
+	Render_Mode();
+
+	SetCursorPosX(10.f);
+	SetCursorPosY(10.f);
+
 	PushStyleColor(ImGuiCol_Button, ImVec4(0.6f, 0.6f, 0.6f, 1.0f)); // 버튼 색상 변경	
 	PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.0f, 0.0f, 1.0f));
 
 	if (Button("MapTool", BUTTON_SIZE))
 	{
-		IMGUI->HideAllWindows();
+		IMGUI->HideAllWindows(MAP_WINDOW_NAME);
 		IMGUI->ShowWindow(MAP_WINDOW_NAME);
 	}
 	SameLine();
@@ -96,6 +101,22 @@ void CMainWindow::ExitButton()
 
 	ImGui::PopStyleColor(); // 이전의 스타일로 복원
 	ImGui::PopStyleColor(); // 이전의 스타일로 복원
+}
+
+void CMainWindow::Render_Mode()
+{
+	SetCursorPosX(900.f);
+	if (RadioButton("NavMesh	  ON/OFF", m_bNavMeshRender))
+	{
+		m_bNavMeshRender = (m_bNavMeshRender == false) ? true : false;
+		IMGUI->Set_Render_NavMesh(m_bNavMeshRender);
+	}
+	SetCursorPosX(900.f);
+	if (RadioButton("WireFrame	ON/OFF", m_bWireFrameRender))
+	{
+		m_bWireFrameRender = (m_bWireFrameRender == false) ? true : false;
+	}
+
 }
 
 void CMainWindow::Save_Function()

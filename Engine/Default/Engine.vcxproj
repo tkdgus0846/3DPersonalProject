@@ -123,6 +123,10 @@
     <FxCompile>
       <ShaderModel>5.0</ShaderModel>
     </FxCompile>
+    <PostBuildEvent>
+      <Command>cd /d $(SolutionDir) 
+call Copy.bat</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -170,6 +174,10 @@
     <FxCompile>
       <ShaderModel>5.0</ShaderModel>
     </FxCompile>
+    <PostBuildEvent>
+      <Command>cd /d $(SolutionDir) 
+call Copy.bat</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\Public\Animation.h" />
@@ -182,6 +190,7 @@
     <ClInclude Include="..\public\Component.h" />
     <ClInclude Include="..\public\Component_Manager.h" />
     <ClInclude Include="..\public\DataParsing.h" />
+    <ClInclude Include="..\Public\DebugDraw.h" />
     <ClInclude Include="..\Public\Engine_Macro.h" />
     <ClInclude Include="..\Public\Engine_Defines.h" />
     <ClInclude Include="..\Public\Engine_Function.h" />
@@ -225,6 +234,7 @@
     <ClCompile Include="..\private\Component.cpp" />
     <ClCompile Include="..\private\Component_Manager.cpp" />
     <ClCompile Include="..\private\DataParsing.cpp" />
+    <ClCompile Include="..\Private\DebugDraw.cpp" />
     <ClCompile Include="..\Private\GameInstance.cpp" />
     <ClCompile Include="..\private\GameObject.cpp" />
     <ClCompile Include="..\Private\Graphic_Device.cpp" />

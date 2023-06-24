@@ -57,6 +57,16 @@ HRESULT CLayer::Delete_GameObject(const wstring& pObjName)
 	return E_FAIL;
 }
 
+HRESULT CLayer::Clear_Layer()
+{
+	for (auto& obj : m_GameObjects)
+	{
+		Safe_Release(obj);
+	}
+	m_GameObjects.clear();
+	return S_OK;
+}
+
 CLayer * CLayer::Create()
 {
 	return new CLayer();	

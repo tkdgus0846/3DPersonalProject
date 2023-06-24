@@ -138,12 +138,18 @@ void CImGuiManager::ShowAllWindows()
 	}	
 }
 
-void CImGuiManager::HideAllWindows()
+void CImGuiManager::HideAllWindows(const char* WindowName)
 {
 	for (auto& iter : m_WindowsMap)
 	{
 		if (!iter.second->IsAlwaysShow())
+		{
+			if (WindowName != nullptr && iter.first == WindowName)
+				continue;
+			
 			iter.second->Close_Window();
+		}
+			
 	}
 		
 }
@@ -196,6 +202,31 @@ CGameObject* CImGuiManager::Find_GameObject(const wstring& name)
 	return objectWindow->Find_GameObject(name);
 }
 
+void CImGuiManager::Set_Render_NavMesh(_bool bRender)
+{
+	CMapWindow* mapWindow = dynamic_cast<CMapWindow*>(m_WindowsMap[MAP_WINDOW_NAME]);
+	if (mapWindow == nullptr) return;
+
+	return mapWindow->Set_Render_NavMesh(bRender);
+}
+
+void CImGuiManager::Set_CurTerrain(CDummyObject* pTerrain)
+{
+	CMapWindow* mapWindow = dynamic_cast<CMapWindow*>(m_WindowsMap[MAP_WINDOW_NAME]);
+	if (mapWindow == nullptr) return;
+
+	return mapWindow->Set_CurTerrain(pTerrain);
+}
+
+vector<CGameObject*> CImGuiManager::Find_Terrains()
+{
+	/*CObjectWindow* objectWindow = dynamic_cast<CObjectWindow*>(m_WindowsMap[OBJECT_WINDOW_NAME]);
+	if (objectWindow == nullptr) return nullptr;
+
+	return objectWindow->Find_GameObject(name);*/
+	return vector<CGameObject*>();
+}
+
 _bool CImGuiManager::Window_Use_Picking(const char* windowName)
 {
 	return m_WindowsMap[windowName]->Is_Use_Picking();
@@ -231,8 +262,39 @@ void CImGuiManager::SaveLoad_Dialog_Function()
 		}
 		else
 		{
-			ChangeTree();
+			
+			CGameInstance::GetInstance()->Clear_CurLevel_Layer(L"Layer_Object");
+			CGameInstance::GetInstance()->Clear_ObjectNums();
 			CGameInstance::GetInstance()->Load_CurLevel(wStr.c_str(), true);
+
+			CObjectWindow* window = dynamic_cast<CObjectWindow*>(m_WindowsMap[OBJECT_WINDOW_NAME]);
+
+			if (window == nullptr) return;
+			window->ChangeTree();
+			window->MakeTree();
+			Set_CurTerrain(window->Find_Terrain());
 		}
+	}
+
+	if (m_pCurSaveLoadWindowName == MAP_WINDOW_NAME)
+	{
+		string name = ImGuiFileDialog::Instance()->GetFilePathName();
+
+		// 내 현재 경로는 ?
+		filesystem::path curPath = name;
+
+		wstring wStr = CConversion::StringToWstring(curPath.filename().stem().string());
+
+		CMapWindow* mapWindow = dynamic_cast<CMapWindow*>(m_WindowsMap[MAP_WINDOW_NAME]);
+		if (mapWindow == nullptr) return;
+
+		if (m_bSaveMode == true)
+		{
+			mapWindow->Save_Terrain(wStr);
+		}
+		else
+		{
+			mapWindow->Load_Terrain(wStr);
+		}		
 	}
 }

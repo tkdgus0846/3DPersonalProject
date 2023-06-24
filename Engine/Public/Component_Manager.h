@@ -9,6 +9,7 @@
 #include "Transform.h"
 #include "VIBuffer_Terrain.h"
 #include "VIBuffer_Cube.h"
+#include "Navigation.h"
 
 
 BEGIN(Engine)
@@ -22,19 +23,19 @@ private:
 
 public:
 	HRESULT Reserve_Containers(_uint iNumLevels);
-	HRESULT Add_Prototype(_uint iLevelIndex, const _tchar* pPrototypeTag, class CComponent* pPrototype);
-	class CComponent* Clone_Component(_uint iLevelIndex, const _tchar* pPrototypeTag, void* pArg);
+	HRESULT Add_Prototype(_uint iLevelIndex, const wstring& pPrototypeTag, class CComponent* pPrototype);
+	class CComponent* Clone_Component(_uint iLevelIndex, const wstring& pPrototypeTag, void* pArg);
 	void Clear_LevelResources(_uint iLevelIndex);
-	vector<pair<const _tchar*, class CComponent*>> Get_Prototypes_ByVector();
+	vector<pair<wstring, class CComponent*>> Get_Prototypes_ByVector(_uint iLevelIndex);
 
 private:
 	_uint	m_iNumLevels = { 0 } ;
 private:
-	unordered_map<const _tchar*, class CComponent*>*		m_pPrototypes = { nullptr };
-	typedef unordered_map<const _tchar*, class CComponent*>	PROTOTYPES;
+	unordered_map<wstring, class CComponent*>*		m_pPrototypes = { nullptr };
+	typedef unordered_map<wstring, class CComponent*>	PROTOTYPES;
 
 private:
-	class CComponent* Find_Prototype(_uint iLevelIndex, const _tchar* pPrototypeTag);
+	class CComponent* Find_Prototype(_uint iLevelIndex, const wstring& pPrototypeTag);
 
 public:
 	virtual void Free() override;

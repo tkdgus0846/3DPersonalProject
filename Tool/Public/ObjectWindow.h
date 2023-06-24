@@ -17,6 +17,9 @@ public:
 	CComponent*		GetCurSelectComponent() { return m_pCurSelectComponent; }
 	void			ChangeTree() { m_bChangeTree = true; }
 	CGameObject*	Find_GameObject(const wstring& name);
+	void			MakeTree();
+
+	class CDummyObject* Find_Terrain();
 
 	void			Picking_LoadObject();
 
@@ -25,7 +28,7 @@ public:
 
 private:
 	virtual void	Rendering() override;
-	void			MakeTree();
+	
 	void			ShowTree(const list<CComponent*>& compList, _bool root = true);
 	//void			Close_All_TreeNode();
 

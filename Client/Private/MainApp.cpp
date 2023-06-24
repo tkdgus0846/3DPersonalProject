@@ -66,39 +66,42 @@ HRESULT CMainApp::Ready_Prototype_Component_For_Static()
 	if (nullptr == m_pGameInstance)
 		return E_FAIL;
 
+	wstring prototypeName = L"Prototype_Component_Renderer";
+
 	/* Prototype_Component_Renderer */
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Renderer"),
+	//prototypeName = L"Prototype_Component_Renderer";
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, prototypeName,
 		m_pRenderer = CRenderer::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 	/* Prototype_Component_Transform */
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Transform"),
-		CTransform::Create(m_pDevice, m_pContext))))
+	prototypeName = L"Prototype_Component_Transform";
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, prototypeName, CTransform::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 	/* Prototype_Component_Shader_Vtxtex */
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Shader_Vtxtex"),
-		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_Vtxtex.hlsl"), VTXPOSTEX_DECL::Elements, VTXPOSTEX_DECL::iNumElements))))
+	prototypeName = L"Prototype_Component_Shader_Vtxtex";
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, prototypeName, CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_Vtxtex.hlsl"), VTXPOSTEX_DECL::Elements, VTXPOSTEX_DECL::iNumElements))))
 		return E_FAIL;
 
 	/* Prototype_Component_VIBuffer_Rect */
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_VIBuffer_Rect"),
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, wstring(L"Prototype_Component_VIBuffer_Rect"),
 		CVIBuffer_Rect::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 	/* For.Prototype_Component_VIBuffer_Cube*/
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_VIBuffer_Cube"),
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, wstring(L"Prototype_Component_VIBuffer_Cube"),
 		CVIBuffer_Cube::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 
 	///* Prototype_Component_Shader_VtxNortex */
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Shader_VtxNortex"),
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, wstring(L"Prototype_Component_Shader_VtxNortex"),
 		CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxNortex.hlsl"), VTXPOSNORTEX_DECL::Elements, VTXPOSNORTEX_DECL::iNumElements))))
 		return E_FAIL;
 
 	/* Prototype_Component_Shader_VtxTexCube */
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_Shader_VtxTexCube"), CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxTexCube.hlsl"), VTXPOSTEXCUBE_DECL::Elements, VTXPOSTEXCUBE_DECL::iNumElements))))
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, wstring(L"Prototype_Component_Shader_VtxTexCube"), CShader::Create(m_pDevice, m_pContext, TEXT("../Bin/ShaderFiles/Shader_VtxTexCube.hlsl"), VTXPOSTEXCUBE_DECL::Elements, VTXPOSTEXCUBE_DECL::iNumElements))))
 		return E_FAIL;
 
 

@@ -17,6 +17,7 @@ enum InspectorMode
 	IM_VIBUFFER,
 	IM_RENDERER,
 	IM_MODEL,
+	IM_NAVIGATION,
 
 	IM_DEFAULT,
 	IM_END
@@ -41,6 +42,7 @@ private:
 	void			Mode_Animation();
 	void			Mode_Model();
 	void			Mode_Renderer();
+	void			Mode_Navigation();
 	void			Mode_Default();
 
 	/*컴포넌트 인스펙터 창*/
@@ -65,7 +67,7 @@ private:
 	InspectorMode	m_eInspectorMode;
 	CComponent*		m_pCurComponent = { nullptr };
 	_int			selectedComponentIndex = { -1 };
-	vector<pair<const _tchar*, class CComponent*>> m_PrototypesVec;
+	vector<pair<wstring, class CComponent*>> m_PrototypesVec;
 	vector<string>			m_PrototypesStrVec;
 
 	/* 문자열 입력 버퍼들*/

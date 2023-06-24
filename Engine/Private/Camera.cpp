@@ -66,6 +66,23 @@ HRESULT CCamera::Render()
 	return S_OK;
 }
 
+void CCamera::Look_At(_fvector pos)
+{
+	XMStoreFloat4(&m_vAt, pos);
+	m_pTransform->LookAt(pos);
+}
+
+void CCamera::Set_Pos(_fvector pos)
+{
+	XMStoreFloat4(&m_vEye, pos);
+	m_pTransform->Set_Position(pos);
+}
+
+_vector CCamera::Get_Pos()
+{
+	return XMLoadFloat4(&m_vEye);
+}
+
 
 void CCamera::Free()
 {

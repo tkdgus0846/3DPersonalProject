@@ -67,7 +67,7 @@ public:
 	void Go_Right(_double TimeDelta);
 	void Go_Up(_double TimeDelta);
 	void Go_Down(_double TimeDelta);
-	void Chase(_fvector vTargetPosition, _double TimeDelta, _float fMinDistance = 0.1f);
+	_bool Chase(_fvector vTargetPosition, _double TimeDelta, class CNavigation* pNavigation = nullptr, _float fMinDistance = 0.1f);
 	void LookAt(_fvector vTargetPosition);
 	void Rotation(_fvector vAxis, _float fDegree);
 	void Rotation(AXIS eAxis, _float fDegree);
