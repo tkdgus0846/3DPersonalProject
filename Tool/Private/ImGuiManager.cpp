@@ -12,6 +12,7 @@
 #include <ObjectWindow.h>
 #include <UIWindow.h>
 #include "InspectorWindow.h"
+#include "AnimWindow.h"
 
 IMPLEMENT_SINGLETON(CImGuiManager);
 
@@ -47,6 +48,8 @@ HRESULT CImGuiManager::Initialize(ID3D11Device* pDevice, ID3D11DeviceContext* pC
 	m_WindowsMap[MAP_WINDOW_NAME] = CMapWindow::Create(WINDOWDESC(MAP_WINDOW_NAME, false, false, { -405.f,-100.f }, false, { 412.f,913.f }));
 
 	m_WindowsMap[OBJECT_WINDOW_NAME] = CObjectWindow::Create(WINDOWDESC(OBJECT_WINDOW_NAME, false, false, { -405.f,-100.f }, false, { 412.f,500.f }));
+
+	m_WindowsMap[ANIM_WINDOW_NAME] = CAnimWindow::Create(WINDOWDESC(ANIM_WINDOW_NAME, false, false, { -405.f,-100.f }, false, { 412.f,913.f }));
 
 	m_WindowsMap[INSPECTOR_WINDOW_NAME] = CInspectorWindow::Create(WINDOWDESC(INSPECTOR_WINDOW_NAME, false, false, { -405.f,400.f }, false, { 412.f,413.f }));
 

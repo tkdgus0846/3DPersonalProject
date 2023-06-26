@@ -12,7 +12,7 @@
 
 BEGIN(Engine)
 
-class CAnimation final : public CBase, public IReadable
+class ENGINE_DLL CAnimation final : public CBase, public IReadable
 {
 public:
 	CAnimation();
@@ -22,6 +22,9 @@ public:
 public:
 	HRESULT Initialize(ParsingData* pData);
 	void Invalidate_TransformationMatrix(CModel::BONES& Bones, _double TimeDelta);
+	_char* Get_Name() { return m_szName; }
+	_bool Get_Loop() const { return m_isLoop; }
+	void Set_Loop(_bool state) { m_isLoop = state; }
 
 private:
 	char						m_szName[MAX_PATH];

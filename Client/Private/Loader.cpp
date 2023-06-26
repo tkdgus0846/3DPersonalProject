@@ -135,7 +135,7 @@ HRESULT CLoader::Loading_For_GamePlay()
 	lstrcpy(m_szLoading, TEXT("모델 로딩 중."));
 	/* For.Prototype_Component_VIBuffer_Terrain */
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_VIBuffer_Terrain"),
-		CVIBuffer_Terrain::Create(m_pDevice, m_pContext, wstring(L"../../Terrains/TSETESTS.dat")))))
+		CVIBuffer_Terrain::Create(m_pDevice, m_pContext, wstring(L"../../Terrains/CEX.dat")))))
 		return E_FAIL;
 
 	_matrix PivotMatrix = XMMatrixIdentity();
@@ -149,7 +149,7 @@ HRESULT CLoader::Loading_For_GamePlay()
 	lstrcpy(m_szLoading, TEXT("네비게이션 로딩 중."));
 
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Navigation"),
-		CNavigation::Create(m_pDevice, m_pContext, L"../../NavMeshes/TSETESTS.dat"))))
+		CNavigation::Create(m_pDevice, m_pContext, L"../../NavMeshes/CEX.dat"))))
 		return E_FAIL;
 
 

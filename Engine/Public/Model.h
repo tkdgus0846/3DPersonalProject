@@ -39,6 +39,7 @@ public:
 public:
 	HRESULT Bind_Material(class CShader* pShader, const char* pConstantName, _uint iMeshIndex, aiTextureType MaterialType);
 	HRESULT Bind_BoneMatrices(class CShader* pShader, const char* pConstantName, _uint iMeshIndex);
+	vector<class CAnimation*>* Get_Animations() { return &m_Animations; }
 
 private: /* For.Meshes  */
 	_uint					m_iNumMeshes = { 0 };

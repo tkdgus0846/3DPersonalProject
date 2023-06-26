@@ -60,7 +60,9 @@ public:
 	virtual HRESULT Initialize(void* pArg);
 
 public:
+	void Change_Speed(_double fSpeed);
 	void Set_Position(_fvector vPos);
+	void Go_Dir(_fvector dir, _double TimeDelta, class CNavigation* pNavigation = nullptr);
 	void Go_Straight(_double TimeDelta, class CNavigation* pNavigation = nullptr);
 	void Go_Backward(_double TimeDelta);
 	void Go_Left(_double TimeDelta);
@@ -71,7 +73,9 @@ public:
 	void LookAt(_fvector vTargetPosition);
 	void Rotation(_fvector vAxis, _float fDegree);
 	void Rotation(AXIS eAxis, _float fDegree);
+	void Rotation(AXIS eAxis, _float fAngle, _double TimeDelta);
 	void Turn(_fvector vAxis, _double TimeDelta);
+	
 
 	void Scaled(const _float3 & vScale);
 

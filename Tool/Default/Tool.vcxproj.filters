@@ -50,6 +50,9 @@
     <Filter Include="02.GameObjects\Camera">
       <UniqueIdentifier>{f4e79a93-1518-4c1e-ae29-c1113f0b6770}</UniqueIdentifier>
     </Filter>
+    <Filter Include="IMGUI\ImguiWindows\AnimWindow">
+      <UniqueIdentifier>{5aebf4b5-ddb2-47bc-b7f3-873e6d5da4fe}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Tool.rc">
@@ -149,6 +152,9 @@
     <ClInclude Include="..\Public\Camera_Main.h">
       <Filter>02.GameObjects\Camera</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\AnimWindow.h">
+      <Filter>IMGUI\ImguiWindows\AnimWindow</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Tool.cpp">
@@ -213,6 +219,9 @@
     </ClCompile>
     <ClCompile Include="..\Private\Camera_Main.cpp">
       <Filter>02.GameObjects\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\AnimWindow.cpp">
+      <Filter>IMGUI\ImguiWindows\AnimWindow</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

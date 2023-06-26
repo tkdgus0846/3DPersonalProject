@@ -194,6 +194,7 @@
     <ClInclude Include="..\IMGUI\imstb_rectpack.h" />
     <ClInclude Include="..\IMGUI\imstb_textedit.h" />
     <ClInclude Include="..\IMGUI\imstb_truetype.h" />
+    <ClInclude Include="..\Public\AnimWindow.h" />
     <ClInclude Include="..\Public\Camera_Main.h" />
     <ClInclude Include="..\Public\DummyObject.h" />
     <ClInclude Include="..\public\ImGuiManager.h" />
@@ -221,6 +222,7 @@
     <ClCompile Include="..\IMGUI\imgui_impl_win32.cpp" />
     <ClCompile Include="..\IMGUI\imgui_tables.cpp" />
     <ClCompile Include="..\IMGUI\imgui_widgets.cpp" />
+    <ClCompile Include="..\Private\AnimWindow.cpp" />
     <ClCompile Include="..\Private\Camera_Main.cpp" />
     <ClCompile Include="..\Private\DummyObject.cpp" />
     <ClCompile Include="..\private\ImGuiManager.cpp" />

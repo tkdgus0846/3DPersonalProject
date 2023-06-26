@@ -105,7 +105,7 @@ _bool CCell::Compare_Points(_fvector vSourPoint, _fvector vDestPoint)
 	return false;
 }
 
-_bool CCell::is_In(_fvector vPosition, _int* pNeighborIndex)
+_bool CCell::is_In(_fvector vPosition, _int* pNeighborIndex, _int* neighbor)
 {
 	for (size_t i = 0; i < NEIGHBOR_END; i++)
 	{
@@ -114,11 +114,97 @@ _bool CCell::is_In(_fvector vPosition, _int* pNeighborIndex)
 
 		if (0 < XMVectorGetX(XMVector3Dot(vDir, vNormal)))
 		{
+			// 밖에 나간것.
+			if (neighbor != nullptr)
+			{
+				*neighbor = i;
+			}
+				
+
 			*pNeighborIndex = m_iNeighborIndices[i];
 			return false;
 		}
 	}
 	return true;
+}
+
+struct SlideCmpData
+{
+	_int index;
+	_float distance;
+	_float dot;
+};
+
+_int CCell::SlidingVector(_uint& index, _fvector pos, _fvector dir, _float3& slidingVector, map<_uint, _uint>& history)
+{
+	/*if (history.find(index) == history.end())
+	{
+		history[index] = 1;
+	}
+	else
+	{
+		history[index]++;
+	}*/
+	
+
+	vector<SlideCmpData> myVec;
+
+	_vector vec1, vec2, normalVec; 
+	_float distance;
+
+	NEIGHBOR eIndex;
+	_vector normal;
+	_float length;
+
+	for (int i = 0; i < 3; i++)
+	{
+		_int index = (i + 1 == 3) ? 0 : i + 1;
+		vec1 = pos - XMLoadFloat3(&m_vPoints[i]);
+		vec2 = pos - XMLoadFloat3(&m_vPoints[index]);
+		normalVec = -XMLoadFloat3(&m_vNormals[i]);
+		normalVec = XMVector3Normalize(normalVec);
+
+		distance = 0.f;
+		distance += fabsf(XMVector3Dot(vec1, normalVec).m128_f32[0]);
+		distance += fabsf(XMVector3Dot(vec2, normalVec).m128_f32[0]);
+
+		normal = -XMLoadFloat3(&m_vNormals[i]);
+		normal = XMVector3Normalize(normal);
+		length = XMVector3Dot(dir, normal).m128_f32[0];
+
+		myVec.push_back({ i, distance, length });
+	}
+
+	sort(myVec.begin(), myVec.end(),
+		[=](SlideCmpData& a, SlideCmpData& b)
+		{
+			if (a.distance < b.distance)
+			{
+				if (b.distance - a.distance < 2.f)
+				{
+					if (a.dot > b.dot)
+					{
+						return false;
+					}
+				}
+				
+			}
+			return a.distance < b.distance;
+		}
+	);
+
+	eIndex = (NEIGHBOR)myVec[0].index;
+
+	normal = -XMLoadFloat3(&m_vNormals[eIndex]);
+	normal = XMVector3Normalize(normal);
+
+	_vector myDir = dir * -1;
+	length = XMVector3Dot(myDir, normal).m128_f32[0];
+
+	normal = normal * length;
+
+	XMStoreFloat3(&slidingVector, normal - myDir);
+	return 1;
 }
 
 void CCell::Sort_Points_CW(const _float3* pPoints, _float3* sortedPoints)

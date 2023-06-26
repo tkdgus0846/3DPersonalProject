@@ -99,11 +99,11 @@ HRESULT CNavigation::Initialize(void * pArg)
 	return S_OK;
 }
 
-_bool CNavigation::is_Move(_fvector vPosition)
+_bool CNavigation::is_Move(_fvector vPosition, _int* iNeighbor)
 {
 	_int		iNeighborIndex = -1;
 
-	if (true == m_Cells[m_NaviDesc.iCurrentIndex]->is_In(vPosition, &iNeighborIndex))
+	if (true == m_Cells[m_NaviDesc.iCurrentIndex]->is_In(vPosition, &iNeighborIndex, iNeighbor))
 	{
 		return true;
 	}
@@ -113,10 +113,10 @@ _bool CNavigation::is_Move(_fvector vPosition)
 		{
 			while (true)
 			{
-				if (-1 == iNeighborIndex)
+				if (-1 == iNeighborIndex) // 이웃이 없다라면
 					return false;
 
-				if (true == m_Cells[iNeighborIndex]->is_In(vPosition, &iNeighborIndex))
+				if (true == m_Cells[iNeighborIndex]->is_In(vPosition, &iNeighborIndex, iNeighbor)) // 이웃이 있었고 다음 안에 들어온다면
 					break;
 			}
 			m_NaviDesc.iCurrentIndex = iNeighborIndex;
@@ -157,6 +157,16 @@ vector<Triangle>* CNavigation::Get_TriangleList()
 _vector CNavigation::Get_PlaneNormal(_uint iIndex)
 {
 	return m_Cells[iIndex]->Get_PlaneNormal();
+}
+
+_int CNavigation::SlidingVector(_uint& index, _fvector pos, _fvector dir, _float3& slidingVector, map<_uint, _uint>& history)
+{
+	return m_Cells[index]->SlidingVector(index, pos, dir, slidingVector, history);
+}
+
+_vector CNavigation::Get_Normal(_int neighbor)
+{
+	return m_Cells[m_NaviDesc.iCurrentIndex]->Get_Normal(neighbor);
 }
 
 #ifdef _DEBUG

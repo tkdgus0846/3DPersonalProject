@@ -18,6 +18,7 @@ class CDummyObject final : public CGameObject, public ISerializable
 	friend class CInspectorWindow;
 	friend class CObjectWindow;
 	friend class CMapWindow;
+	friend class CAnimWindow;
 
 protected:
 	CDummyObject(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);

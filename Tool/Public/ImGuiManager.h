@@ -13,6 +13,7 @@
 #define UI_WINDOW_NAME				"UI Tool"
 #define LOG_WINDOW_NAME				"Log"
 #define INSPECTOR_WINDOW_NAME		"Inspector"
+#define ANIM_WINDOW_NAME			"AnimWindow"
 
 BEGIN(Engine)
 class CComponent;

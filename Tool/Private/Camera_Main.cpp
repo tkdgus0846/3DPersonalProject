@@ -126,6 +126,16 @@ void CCamera_Main::ChooseType(TYPE type, _fmatrix matrix)
 
 		m_MatrixArr[m_eCurType] = m_pTransform->Get_WorldFloat4x4();
 	}
+	if (type == TYPE_ANIM)
+	{
+		_vector vEye = { -100.f, -10099.f, -110.f, 1.f };
+		_vector vAt = { -100.f, -10099.f, -100.f, 1.f };
+
+		m_pTransform->Set_State(CTransform::STATE_POSITION, vEye);
+		m_pTransform->LookAt(vAt);
+
+		m_MatrixArr[m_eCurType] = m_pTransform->Get_WorldFloat4x4();
+	}
 	else
 	{
 		m_pTransform->Set_WorldFloat4x4(m_MatrixArr[m_eCurType]);

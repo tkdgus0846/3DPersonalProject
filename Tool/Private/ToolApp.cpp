@@ -229,13 +229,25 @@ HRESULT CToolApp::Ready_Prototype_Component_For_Static()
 	//////////// ¾Ö´Ô ¸ðµ¨µé //////////////////////////
 
 	/* For.Prototype_Component_Model_Fiona */
+	modelPath = "../../ExtractModels/AnimModels/";
+	prototypeName = TEXT("Prototype_Component_Anim_Model_");
+	for (const directory_entry& entry : recursive_directory_iterator(modelPath))
+	{
+		if (entry.path().extension() == L".dat")
+		{
+			wstring FullName = prototypeName + entry.path().filename().stem().wstring();
+			string FullPath = modelPath.string() + "/" + entry.path().filename().stem().string() + "/" + entry.path().filename().stem().string() + ".dat";
 
+			m_pGameInstance->Add_Prototype(LEVEL_TOOL, FullName,
+				CModel::Create(m_pDevice, m_pContext, FullPath.c_str(), PivotMatrix));
+		}
+	}
 	
 
-	PivotMatrix = XMMatrixRotationY(XMConvertToRadians(180.0f));
+	/*PivotMatrix = XMMatrixRotationY(XMConvertToRadians(180.0f));
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_Model_NPCPaladin_Standard_LOD00_rig"),
 		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/AnimModels/NPCPaladin_Standard_LOD00_rig/NPCPaladin_Standard_LOD00_rig.dat", PivotMatrix))))
-		return E_FAIL;
+		return E_FAIL;*/
 
 	/*if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_TOOL, TEXT("Prototype_Component_Model_crow_final"),
 		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/AnimModels/crow_final/crow_final.dat", PivotMatrix))))

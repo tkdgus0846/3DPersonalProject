@@ -45,9 +45,70 @@ HRESULT CTransform::Initialize(void* pArg)
 	return S_OK;
 }
 
+void CTransform::Change_Speed(_double fSpeed)
+{
+	m_TransformDesc.SpeedPerSec = fSpeed;
+}
+
 void CTransform::Set_Position(_fvector vPos)
 {
 	Set_State(STATE_POSITION, vPos);
+}
+
+void CTransform::Go_Dir(_fvector dir, _double TimeDelta, CNavigation* pNavigation)
+{
+	_vector		vPosition = Get_State(STATE_POSITION);
+
+	vPosition += XMVector3Normalize(dir) * m_TransformDesc.SpeedPerSec * TimeDelta;
+
+	_bool		isMove = true;
+	_int		neighbor = -1;
+
+	if (nullptr != pNavigation)
+	{
+		isMove = pNavigation->is_Move(vPosition, &neighbor);
+	}
+		
+
+	if (true == isMove)
+		Set_State(STATE_POSITION, vPosition);
+	else if (isMove == false)
+	{
+		_vector	slidingPosition; 
+		_vector myDir = dir * -1;
+
+		while (isMove == false)
+		{
+			slidingPosition = Get_State(STATE_POSITION);
+			// 현재 내가 부딪히고 있는 선분의 노말을 가져와야 한다.
+			_vector normal = pNavigation->Get_Normal(neighbor);
+			normal = XMVector3Normalize(-normal);
+
+			// 노말 가져오는작업
+
+			myDir = myDir * 0.6f;
+			_float length = XMVector3Dot(myDir, normal).m128_f32[0];
+
+			normal = normal * length;
+			// 노말에 길이곱해서 슬라이딩 벡터구하기위함
+
+			_vector slidingVector = (normal - myDir);
+			//cout << slidingVector.m128_f32[0] << " " << slidingVector.m128_f32[1] << " " << slidingVector.m128_f32[2] << endl;
+			// 슬라이딩 벡터구함
+			slidingPosition += slidingVector * m_TransformDesc.SpeedPerSec * TimeDelta;
+
+			// 다음 위치 구함
+
+			//cout << neighbor << endl;
+			isMove = pNavigation->is_Move(slidingPosition, &neighbor);
+			
+		}
+		
+		if (true == isMove)
+		{
+			Set_State(STATE_POSITION, slidingPosition);
+		}
+	}
 }
 
 void CTransform::Go_Straight(_double TimeDelta, CNavigation* pNavigation)
@@ -210,6 +271,42 @@ void CTransform::Rotation(AXIS eAxis, _float fDegree)
 	Set_State(STATE_UP, XMVector3TransformNormal(vUp, RotationMatrix));
 	Set_State(STATE_LOOK, XMVector3TransformNormal(vLook, RotationMatrix));
 
+}
+
+void CTransform::Rotation(AXIS eAxis, _float fAngle, _double TimeDelta)
+{
+	_vector vAxis;
+	switch (eAxis)
+	{
+	case AXIS_X:
+		vAxis = { 1.f,0.f,0.f,0.f };
+		m_Rotation.x = fAngle;
+		break;
+	case AXIS_Y:
+		vAxis = { 0.f,1.f,0.f,0.f };
+		m_Rotation.y = fAngle;
+		break;
+	case AXIS_Z:
+		vAxis = { 0.f,0.f,1.f,0.f };
+		m_Rotation.z = fAngle;
+		break;
+	default:
+		break;
+	}
+
+	_float fRadian = XMConvertToRadians(fAngle);
+
+	_float3		vScaled = Get_Scaled();
+
+	_vector		vRight = XMVectorSet(1.f, 0.f, 0.f, 0.f) * vScaled.x;
+	_vector		vUp = XMVectorSet(0.f, 1.f, 0.f, 0.f) * vScaled.y;
+	_vector		vLook = XMVectorSet(0.f, 0.f, 1.f, 0.f) * vScaled.z;
+
+	_matrix		RotationMatrix = XMMatrixRotationAxis(vAxis, fRadian);
+
+	Set_State(STATE_RIGHT, XMVector3TransformNormal(vRight, RotationMatrix));
+	Set_State(STATE_UP, XMVector3TransformNormal(vUp, RotationMatrix));
+	Set_State(STATE_LOOK, XMVector3TransformNormal(vLook, RotationMatrix));
 }
 
 void CTransform::Turn(_fvector vAxis, _double TimeDelta)

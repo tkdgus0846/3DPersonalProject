@@ -33,7 +33,10 @@ public:
 
 private:
 	void Move(_double TimeDelta);
+	void PlayerRotate(_double TimeDelta);
+	void ClimbNavMesh();
 	void CameraRotate(_double TimeDelta);
+	void CameraZoom(_double TimeDelta);
 	//void AStar();
 
 private:
@@ -46,12 +49,17 @@ private:
 	CNavigation*				m_pNavigationCom = { nullptr };
 
 	_bool						m_bMove = { false };
+	_bool						m_bRotate = { false };
+	POINT						m_lastCursorPoint;
 
 	_float4						m_TargetPos = { 1.f,0.f,1.f,0.f };
 	_float						m_CurHeight = { 0.f };
 	_int						m_CurIndex = { -1 };
 
-	_float						m_fCameraRotation = { 0.f };
+	_float						m_fCameraRotationX = { 0.f };
+	_float						m_fCameraRotationY = { 0.f };
+	_float						m_fCameraZoom = { 0.f };
+	_float3						m_OriginOffset = { 0.f, 12.f, -12.f};
 
 public:
 	HRESULT Add_Components();

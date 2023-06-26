@@ -54,6 +54,14 @@ void CMainWindow::Rendering()
 
 	SameLine();
 
+	if (Button("AnimTool", BUTTON_SIZE))
+	{
+		IMGUI->HideAllWindows();
+		IMGUI->ShowWindow(ANIM_WINDOW_NAME);
+	}
+
+	SameLine();
+
 	if (Button("UI_Tool", BUTTON_SIZE))
 	{
 		IMGUI->HideAllWindows();

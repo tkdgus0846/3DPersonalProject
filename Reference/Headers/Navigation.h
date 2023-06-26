@@ -27,11 +27,16 @@ public:
 	virtual HRESULT Initialize(void* pArg);
 
 public:
-	_bool is_Move(_fvector vPosition);
+	_bool is_Move(_fvector vPosition, _int* iNeighbor = nullptr);
 	void Add_Cell(_float3* vPoints);
 	vector<Triangle>* Get_TriangleList();
 	_int Get_CurrentIndex() const { return m_NaviDesc.iCurrentIndex; }
 	_vector Get_PlaneNormal(_uint iIndex); 
+
+	// 현재 이동중인 놈의 위치와 방향을 넣어주면 슬라이딩 벡터를 뽑아준다.
+	_int SlidingVector(_uint& index, _fvector pos, _fvector dir, _float3& slidingVector, map<_uint, _uint>& history);
+	_vector Get_Normal(_int neighbor);
+	
 
 #ifdef _DEBUG
 public:

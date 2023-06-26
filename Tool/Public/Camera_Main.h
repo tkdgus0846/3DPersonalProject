@@ -9,7 +9,7 @@ class CCamera_Main final : public CCamera
 public:
 	enum TYPE
 	{
-		TYPE_MAIN, TYPE_OBJECT, TYPE_END
+		TYPE_MAIN, TYPE_OBJECT, TYPE_ANIM, TYPE_END
 	};
 	typedef struct tagFreeCameraDesc
 	{

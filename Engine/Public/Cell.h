@@ -26,12 +26,15 @@ public:
 
 	HRESULT Initialize(const _float3* pPoints, _int iIndex);
 	_bool Compare_Points(_fvector vSourPoint, _fvector vDestPoint);
-	_bool is_In(_fvector vPosition, _int* pNeighborIndex);
+	_bool is_In(_fvector vPosition, _int* pNeighborIndex, _int* neighbor = nullptr);
 	
 	void Set_Option(OPTION eOption) { m_eOption = eOption; }
 	OPTION Get_Option() const { return m_eOption; }
 
 	_vector Get_PlaneNormal() const { return XMLoadFloat3(&m_vPlaneNormal); }
+	_vector Get_Normal(_int neighbor) { return XMLoadFloat3(&m_vNormals[neighbor]); }
+	_int SlidingVector(_uint& index, _fvector pos, _fvector dir, _float3& slidingVector, map<_uint, _uint>& history);
+
 
 private:
 	void Sort_Points_CW(const _float3* pPoints, _float3* sortedPoints);
