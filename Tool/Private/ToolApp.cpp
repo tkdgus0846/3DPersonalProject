@@ -219,7 +219,7 @@ HRESULT CToolApp::Ready_Prototype_Component_For_Static()
 		if (entry.path().extension() == L".dat")
 		{
 			wstring FullName = prototypeName + entry.path().filename().stem().wstring();
-			string FullPath = modelPath.string()+ "/" + entry.path().filename().stem().string()+ "/" + entry.path().filename().stem().string() + ".dat";
+			string FullPath = modelPath.string()+ entry.path().filename().stem().string()+ "/" + entry.path().filename().stem().string() + ".dat";
 
 			m_pGameInstance->Add_Prototype(LEVEL_TOOL, FullName,
 				CModel::Create(m_pDevice, m_pContext, FullPath.c_str(), PivotMatrix));
@@ -236,7 +236,7 @@ HRESULT CToolApp::Ready_Prototype_Component_For_Static()
 		if (entry.path().extension() == L".dat")
 		{
 			wstring FullName = prototypeName + entry.path().filename().stem().wstring();
-			string FullPath = modelPath.string() + "/" + entry.path().filename().stem().string() + "/" + entry.path().filename().stem().string() + ".dat";
+			string FullPath = modelPath.string() + entry.path().filename().stem().string() + "/" + entry.path().filename().stem().string() + ".dat";
 
 			m_pGameInstance->Add_Prototype(LEVEL_TOOL, FullName,
 				CModel::Create(m_pDevice, m_pContext, FullPath.c_str(), PivotMatrix));

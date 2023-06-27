@@ -53,6 +53,7 @@ using namespace std::filesystem;
 #include "Engine_TypeDef.h"
 #include "Engine_Macro.h"
 #include "Engine_Struct.h"
+#include "Engine_Enum.h"
 
 #ifdef _DEBUG
 

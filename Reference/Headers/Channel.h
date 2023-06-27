@@ -17,6 +17,10 @@ public:
 public:
 	HRESULT Initialize(ParsingData* pData);
 	void Invalidate_TransformationMatrix(CModel::BONES& Bones, _double TimeAcc, _uint* pCurrentKeyFrameIndex);
+	_int Lerp_TransformaitionMatrix(CModel::BONES& Bones, _double duration, _double TimeAcc, _uint srcKeyFrame, KEYFRAME& dstKeyFrame);
+
+	_uint Get_BoneIndex() { return m_iBoneIndex; }
+	KEYFRAME& Get_FirstKeyFrame() { return m_KeyFrames.front(); }
 
 private:
 	char				m_szName[MAX_PATH] = "";

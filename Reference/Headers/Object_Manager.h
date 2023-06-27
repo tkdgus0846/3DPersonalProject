@@ -30,6 +30,7 @@ public:/*실제 사용할 레벨의 갯수만큼 미리 공간을 할당하낟. */
 	HRESULT Add_GameObject(_uint iLevelIndex, const wstring& pLayerTag, wstring& pObjName, CGameObject* object);
 
 	HRESULT Delete_GameObject(_uint iLevelIndex, const wstring& pLayerTag, const wstring& pObjName);
+	HRESULT Delete_GameObject_SameName(_uint iLevelIndex, const wstring& pLayerTag, const wstring& pObjName);
 
 	CGameObject* Find_GameObject(_uint iLevelIndex, const wstring& pLayerTag, const wstring& pObjName);
 

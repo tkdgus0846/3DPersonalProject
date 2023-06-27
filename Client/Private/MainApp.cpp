@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "..\Public\MainApp.h"
+#include "Engine_Enum.h"
 
 #include "GameInstance.h"
 #include "Level_Loading.h"
@@ -42,6 +43,9 @@ void CMainApp::Tick(_double TimeDelta)
 		return;
 
 	m_pGameInstance->Tick_Engine(TimeDelta);
+
+	m_pGameInstance->Check_Collision(COL_PLAYER, COL_ENEMY);
+
 }
 
 HRESULT CMainApp::Render()
@@ -54,8 +58,20 @@ HRESULT CMainApp::Render()
 	m_pGameInstance->Clear_DepthStencil_View();
 
 	m_pRenderer->Draw_RenderGroup();
+#ifdef _DEBUG
+	m_pGameInstance->Render_Collider();
+#endif
+
 
 	m_pGameInstance->Present();
+
+	return S_OK;
+}
+
+HRESULT CMainApp::PostRender()
+{
+
+	m_pGameInstance->Reset_ColGroup();
 
 	return S_OK;
 }

@@ -69,6 +69,7 @@ public: /* For.Object_Manager */
 	HRESULT Add_GameObject(_uint iLevelIndex, const wstring & pLayerTag, wstring & pObjName, CGameObject * object);
 	CGameObject* Copy_GameObject(const wstring & layerTag, wstring & objectName);
 	HRESULT Delete_GameObject(const wstring & pLayerTag, const wstring & pObjName);
+	HRESULT Delete_GameObject_SameName(const wstring & pLayerTag, const wstring & pObjName);
 	CGameObject* Find_GameObject(const wstring & pLayerTag, const wstring & pObjName);
 
 	HRESULT Save_CurLevel(const _tchar* curLevelName);
@@ -88,6 +89,19 @@ public: /* For.PipeLine */
 public: /* For. Light Manager */
 	const CLight::LIGHTDESC* Get_Light(_uint iIndex);
 	HRESULT Add_Lights(ID3D11Device * pDevice, ID3D11DeviceContext * pContext, const CLight::LIGHTDESC & LightDesc);
+
+public: /* For. Collision Manager */
+#ifdef _DEBUG
+	void	Render_Collider();
+	_bool	Get_ColliderRender();
+	void	Set_ColliderRender(_bool bRender);
+	_bool	Toggle_ColliderRender();
+#endif
+	void	Check_Collision(COLGROUP ID1, COLGROUP ID2);
+	void	Change_ColGroup(CCollider * collider, COLGROUP changeID);
+	void	Add_ColGroup(COLGROUP eID, CCollider * pCollider);
+	void	Reset_ColGroup();
+	HRESULT	Remove_Collider(CCollider * collider, COLGROUP colID);
 	
 
 private:
@@ -99,6 +113,7 @@ private:
 	class CTimer_Manager*			m_pTimer_Manager = { nullptr };
 	class CPipeLine*				m_pPipeLine = { nullptr };
 	class CLight_Manager*			m_pLight_Manager = { nullptr };
+	class CCollisionManager*		m_pCollisionManager = { nullptr };
 
 public:
 	static void Release_Engine();

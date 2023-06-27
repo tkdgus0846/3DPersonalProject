@@ -57,8 +57,16 @@ HRESULT CModel::Initialize_Prototype(const char* pModelFilePath, _fmatrix PivotM
 	strcpy(ch, pModelFilePath);*/
 	string path = pModelFilePath;
 	wstring finalPath = CConversion::StringToWstring(path);
+
+	if (path.compare("../../ExtractModels/AnimModels/VampireMale_Standard_LOD00_rig/VampireMale_Standard_LOD00_rig.dat") == 0)
+	{
+		m_IsPlayer = true;
+	}
 	
 	ModelParsingData* myData = (ModelParsingData*)CDataParsing::Load_File(finalPath.c_str(), this);
+
+	if (myData->MaterialPaths.size() > 0)
+		int i = 0;
 
 	XMStoreFloat4x4(&m_PivotMatrix, PivotMatrix);
 
@@ -101,6 +109,28 @@ HRESULT CModel::Render(_uint iMeshIndex)
 
 void CModel::Play_Animation(_double TimeDelta)
 {
+
+	if (Is_Changing_Animation())
+	{
+		m_lerpTimeAcc += TimeDelta;
+		_int result = m_Animations[m_iPrevAnimIndex]->Lerp_NextAnimation(m_Animations[m_iCurrentAnimIndex], m_Bones, 0.25, m_lerpTimeAcc);
+
+		if (result == 1)
+		{
+			m_lerpTimeAcc = 0.0;
+			m_Animations[m_iPrevAnimIndex]->Reset_Channels();
+			m_iPrevAnimIndex = m_iCurrentAnimIndex;
+		}
+		else if (result == 0)
+		{
+			for (auto& pBone : m_Bones)
+			{
+				pBone->Invalidate_CombinedTransformationMatrix(m_Bones);
+			}
+			return;
+		}
+	}
+	
 	/* 어떤 애니메이션을 재생하려고하는지?! */
 	/* 이 애니메이션은 어떤 뼈를 사용하는지?! */
 	/* 뼈들은 각각 어떤 상태(TransformationMatrix)를 취하고 있어야하는가?! */
@@ -137,6 +167,19 @@ HRESULT CModel::Bind_BoneMatrices(CShader* pShader, const char* pConstantName, _
 	pShader->Bind_Matrices(pConstantName, BoneMatrices, 256);
 
 	return S_OK;
+}
+
+void CModel::Loop_Animation(_uint iAnimIndex, _bool bLoop)
+{
+	m_Animations[iAnimIndex]->Set_Loop(bLoop);
+}
+
+void CModel::Loop_Animation(const vector<_uint>& indexVec, _bool bLoop)
+{
+	for (auto& item : indexVec)
+	{
+		m_Animations[item]->Set_Loop(bLoop);
+	}
 }
 
 
@@ -180,6 +223,58 @@ HRESULT CModel::Ready_Animations(ModelParsingData* parsingData)
 	}
 
 	return S_OK;
+}
+
+_bool CModel::Directly_Push_Material(char* newStr, _int iMatNum, _int iTextureType)
+{
+	_bool result = false;
+	if (m_IsPlayer)
+	{
+		if (iMatNum == 0)
+		{
+			if (iTextureType == aiTextureType_DIFFUSE)
+			{
+				strcpy(newStr, "../../Models/AnimModels/VampireMale_Standard_LOD00_rig/Vampire_male_bc.png");
+				result = true;
+			}
+			if (iTextureType == aiTextureType_EMISSIVE)
+			{
+				strcpy(newStr, "../../Models/AnimModels/VampireMale_Standard_LOD00_rig/Vampire_male_mask.png");
+				result = true;
+			}
+			if (iTextureType == aiTextureType_METALNESS)
+			{
+				strcpy(newStr, "../../Models/AnimModels/VampireMale_Standard_LOD00_rig/Vampire_male_m.png");
+				result = true;
+			}
+			if (iTextureType == aiTextureType_NORMALS)
+			{
+				strcpy(newStr, "../../Models/AnimModels/VampireMale_Standard_LOD00_rig/Vampire_male_n.png");
+				result = true;
+			}
+		}
+
+		if (iMatNum == 1)
+		{
+			if (iTextureType == aiTextureType_DIFFUSE)
+			{
+				strcpy(newStr, "../../Models/AnimModels/VampireMale_Standard_LOD00_rig/VampireMale_VampireLord_Cloak01_bc.png");
+				result = true;
+			}
+			if (iTextureType == aiTextureType_METALNESS)
+			{
+				strcpy(newStr, "../../Models/AnimModels/VampireMale_Standard_LOD00_rig/VampireMale_VampireLord_Cloak01_m.png");
+				result = true;
+			}
+			if (iTextureType == aiTextureType_NORMALS)
+			{
+				strcpy(newStr, "../../Models/AnimModels/VampireMale_Standard_LOD00_rig/VampireMale_VampireLord_Cloak01_n.png");
+				result = true;
+			}
+		}
+	}
+
+	return result;
 }
 
 CModel* CModel::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const char* pModelFilePath, _fmatrix PivotMatrix)
@@ -271,10 +366,15 @@ ParsingData* CModel::Load_Data(HANDLE handle, ParsingData* data)
 		{
 			ReadFile(handle, &str, sizeof(str), &dwByte, nullptr);
 
-			if (strcmp("NULL", str) == 0) continue;
+			if (strcmp("NULL", str) == 0)
+			{
+				if (Directly_Push_Material(str, i, j) == false)
+					continue;
+			}
 
 			wstring wszFullPath = CConversion::StringToWstring(str);
 
+			myData->MaterialPaths.push_back(string(str));
 			MeshMaterial.pMtrlTexture[j] = CTexture::Create(m_pDevice, m_pContext, wszFullPath.c_str(), 1);
 			if (nullptr == MeshMaterial.pMtrlTexture[j])
 				return nullptr;

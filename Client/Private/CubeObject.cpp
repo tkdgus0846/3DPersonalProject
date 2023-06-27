@@ -39,6 +39,8 @@ HRESULT CCubeObject::Initialize(void* pArg)
 void CCubeObject::Tick(_double TimeDelta)
 {
 	__super::Tick(TimeDelta);
+
+	//m_pColliderCom->Tick(m_pTransformCom->Get_WorldMatrix());
 }
 
 void CCubeObject::Late_Tick(_double TimeDelta)
@@ -47,6 +49,8 @@ void CCubeObject::Late_Tick(_double TimeDelta)
 
 	if (nullptr != m_pRendererCom)
 		m_pRendererCom->Add_RenderGroup((CRenderer::RENDERGROUP)m_eRenderGroup, this);
+	if (nullptr != m_pColliderCom)
+		m_pColliderCom->Add_ColGroup(COL_ENEMY);
 }
 
 HRESULT CCubeObject::Render()
@@ -94,6 +98,16 @@ HRESULT CCubeObject::Add_Components()
 		TEXT("Com_Texture"), (CComponent**)&m_pTextureCom)))
 		return E_FAIL;
 
+	CBounding_OBB::BOUNDINGBOX OBBDesc;
+
+	OBBDesc.vExtents = _float3(0.5f, 0.5f, 0.5f);
+	OBBDesc.vPosition = _float3(0.f, OBBDesc.vExtents.y, 0.f);
+	OBBDesc.vRotation = _float3(0.f, XMConvertToRadians(45.0f), 0.f);
+
+	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Collider_OBB"),
+		COLLIDER_W, (CComponent**)&m_pColliderCom, &OBBDesc)))
+		return E_FAIL;
+
 	return S_OK;
 }
 
@@ -117,6 +131,9 @@ HRESULT CCubeObject::SetUp_ShaderResources()
 	if (FAILED(m_pShaderCom->Bind_Matrix("g_ProjMatrix",
 		&pGameInstance->Get_TransformFloat4x4(CPipeLine::D3DTS_PROJ))))
 		return E_FAIL;
+
+	
+
 
 
 	Safe_Release(pGameInstance);
@@ -159,6 +176,7 @@ void CCubeObject::Free()
 	Safe_Release(m_pTextureCom);
 	Safe_Release(m_pVIBufferCom);
 	Safe_Release(m_pRendererCom);
+	Safe_Release(m_pColliderCom);
 
 	__super::Free();
 }

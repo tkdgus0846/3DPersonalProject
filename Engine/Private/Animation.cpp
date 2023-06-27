@@ -48,6 +48,8 @@ HRESULT CAnimation::Initialize(ParsingData* pData)
 
 void CAnimation::Invalidate_TransformationMatrix(CModel::BONES& Bones, _double TimeDelta)
 {
+	if (m_isFinished == true) return;
+
 	m_TimeAcc += m_TickPerSecond * TimeDelta;
 
 	if (m_TimeAcc >= m_Duration)
@@ -57,7 +59,11 @@ void CAnimation::Invalidate_TransformationMatrix(CModel::BONES& Bones, _double T
 			m_TimeAcc = 0.f;
 		}
 		else
+		{
 			m_isFinished = true;
+			m_TimeAcc = 0.f;
+		}
+			
 	}
 
 
@@ -73,6 +79,39 @@ void CAnimation::Invalidate_TransformationMatrix(CModel::BONES& Bones, _double T
 	}
 
 
+}
+
+_int CAnimation::Lerp_NextAnimation(CAnimation* pNextAnimation, CModel::BONES& Bones, _double Duration, _double LerpTimeAcc)
+{
+	_int iChannelIndex = 0;
+	_int iResult = 1;
+
+	for (auto& pPrevChannel : m_Channels)
+	{
+		if (nullptr == pPrevChannel) 
+			return -1;
+
+		for (auto& pNextChannel : pNextAnimation->m_Channels)
+		{
+			if (nullptr == pNextChannel) 
+				return -1;
+
+			if (pPrevChannel->Get_BoneIndex() == pNextChannel->Get_BoneIndex())
+			{
+				cout << pPrevChannel->Get_BoneIndex() << endl;
+				_int result;
+				
+				result = pPrevChannel->Lerp_TransformaitionMatrix(Bones, Duration, LerpTimeAcc, m_ChannelCurrentKeyFrames[iChannelIndex], pNextChannel->Get_FirstKeyFrame());
+
+				if (result == 0)
+					iResult = 0;
+			}
+				
+		}
+		iChannelIndex++;
+	}
+
+	return iResult;
 }
 
 CAnimation * CAnimation::Create(ParsingData* pData)

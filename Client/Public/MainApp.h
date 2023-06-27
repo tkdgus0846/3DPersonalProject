@@ -23,6 +23,7 @@ public:
 	HRESULT Initialize();
 	void Tick(_double TimeDelta);
 	HRESULT Render();
+	HRESULT PostRender();
 
 private:
 	ID3D11Device*			m_pDevice = { nullptr };

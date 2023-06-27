@@ -57,6 +57,22 @@ HRESULT CLayer::Delete_GameObject(const wstring& pObjName)
 	return E_FAIL;
 }
 
+HRESULT CLayer::Delete_GameObject_SameName(const wstring& pObjName)
+{
+	for (auto it = m_GameObjects.begin(); it != m_GameObjects.end();)
+	{
+		if ((*it)->GetName().find(pObjName) != std::wstring::npos)
+		{
+			Safe_Release(*it);
+			it = m_GameObjects.erase(it);
+			return S_OK;
+		}
+		else
+			it++;
+	}
+	return E_FAIL;
+}
+
 HRESULT CLayer::Clear_Layer()
 {
 	for (auto& obj : m_GameObjects)

@@ -22,7 +22,7 @@ HRESULT CLevel_GamePlay::Initialize()
 		return E_FAIL;
 	if (FAILED(Ready_Layer_Objects(TEXT("Layer_Object"))))
 		return E_FAIL;
-	if (FAILED(Ready_Layer_Terrain(TEXT("Layer_Object"))))
+	if (FAILED(Ready_Layer_Terrain(TEXT("Layer_Terrain"))))
 		return E_FAIL;
 
 	return S_OK;
@@ -79,11 +79,6 @@ HRESULT CLevel_GamePlay::Ready_Layer_BackGround(const _tchar* pLayerTag)
 	/*if (FAILED(pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Terrain"), pLayerTag, L"Terrain")))
 		return E_FAIL;*/
 
-
-	wstring objName = TEXT("CubeObject");
-	if (pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_CubeObject"), pLayerTag, objName) == nullptr)
-		return E_FAIL;
-
 	Safe_Release(pGameInstance);
 
 	return S_OK;
@@ -123,6 +118,10 @@ HRESULT CLevel_GamePlay::Ready_Layer_Objects(const _tchar* pLayerTag)
 
 	wstring objName = L"Player";
 	if (pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Player"), pLayerTag, objName) == nullptr)
+		return E_FAIL;
+
+	objName = L"Cube";
+	if (pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_CubeObject"), pLayerTag, objName) == nullptr)
 		return E_FAIL;
 
 	return S_OK;

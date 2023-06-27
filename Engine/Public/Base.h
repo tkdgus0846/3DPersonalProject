@@ -15,6 +15,7 @@ protected:
 public:
 	_ulong AddRef(); /* 레퍼런스 카운트를 증가시키니다 .*/
 	_ulong Release(); /* refcnt != 0 레퍼런슼 아누트를 감소시킨다. or RefCnt == 0 삭제하낟. */
+	_ulong GetRef() { return m_dwRefCnt; }
 
 protected: /* 레퍼런스 카운트 (참조갯수) */
 	_ulong			m_dwRefCnt = { 0 };

@@ -83,6 +83,14 @@ _vector CCamera::Get_Pos()
 	return XMLoadFloat4(&m_vEye);
 }
 
+void CCamera::On_Shake(SHAKE_TYPE eType, const _float& fForce, const _float& fTime)
+{
+	m_eType = eType;
+	m_bShake = true;
+	m_fShakeForce = fForce;
+	m_fShakeTime = fTime;
+}
+
 
 void CCamera::Free()
 {

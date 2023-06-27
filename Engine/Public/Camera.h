@@ -7,6 +7,12 @@ BEGIN(Engine)
 
 class ENGINE_DLL CCamera abstract : public CGameObject
 {
+	friend class CCamera_Manager;
+public:
+	enum SHAKE_TYPE
+	{
+		SHAKE_X, SHAKE_Y, SHAKE_END
+	};
 public:
 	typedef struct tagCameraDesc
 	{
@@ -31,6 +37,12 @@ public:
 	void			Set_Pos(_fvector pos);
 	_vector			Get_Pos();
 
+	void			On_Camera() { m_bCameraOn = true; }
+	void			Off_Camera() { m_bCameraOn = false; }
+
+	void			On_Shake(SHAKE_TYPE eType, const _float& fForce, const _float& fTime);
+
+
 protected:
 	class CTransform*			m_pTransform = { nullptr };
 	_float4						m_vEye, m_vAt, m_vUp;
@@ -38,6 +50,11 @@ protected:
 
 	class CPipeLine*			m_pPipeLine = { nullptr };
 
+	_bool						m_bCameraOn = { false };
+	SHAKE_TYPE					m_eType;
+	_bool						m_bShake;
+	_float						m_fShakeForce;
+	_float						m_fShakeTime;
 public:
 	virtual CGameObject* Clone(void* pArg) = 0;
 	virtual void Free() override;

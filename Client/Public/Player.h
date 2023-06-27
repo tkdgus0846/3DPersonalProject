@@ -7,7 +7,7 @@ BEGIN(Engine)
 class CModel;
 class CShader;
 class CRenderer;
-//class CCollider;
+class CCollider;
 class CTransform;
 class CNavigation;
 
@@ -37,16 +37,17 @@ private:
 	void ClimbNavMesh();
 	void CameraRotate(_double TimeDelta);
 	void CameraZoom(_double TimeDelta);
-	//void AStar();
+	void Select_MoveKey(_fvector dir);
 
 private:
 	CModel*						m_pModelCom = { nullptr };
 	CShader*					m_pShaderCom = { nullptr };	
 	CRenderer*					m_pRendererCom = { nullptr };
-	//CCollider*				m_pColliderCom[COLLIDER_END] = { nullptr };
+	CCollider*					m_pColliderCom[COLLIDER_END] = { nullptr };
 	class CCamera_Player_Main*	m_pCameraCom = { nullptr };
 	CTransform*					m_pTransformCom = { nullptr };
 	CNavigation*				m_pNavigationCom = { nullptr };
+	
 
 	_bool						m_bMove = { false };
 	_bool						m_bRotate = { false };
@@ -59,7 +60,11 @@ private:
 	_float						m_fCameraRotationX = { 0.f };
 	_float						m_fCameraRotationY = { 0.f };
 	_float						m_fCameraZoom = { 0.f };
+	_float						m_fCurCameraZoom = { 0.f };
 	_float3						m_OriginOffset = { 0.f, 12.f, -12.f};
+
+	unordered_map<string, vector<_uint>> m_AnimationKey;
+	_uint Key(const string& name, _int index = 0) { return m_AnimationKey[name][index]; }
 
 public:
 	HRESULT Add_Components();

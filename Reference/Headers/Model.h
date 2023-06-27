@@ -20,7 +20,7 @@ public:
 
 public:
 	void Set_AnimIndex(_uint iAnimIndex) {
-		if (iAnimIndex >= m_iNumAnimations)
+		if (iAnimIndex >= m_iNumAnimations || Is_Changing_Animation())
 			return;
 		m_iCurrentAnimIndex = iAnimIndex;
 	}
@@ -30,7 +30,7 @@ public:
 	virtual HRESULT Initialize_Prototype(const char* pModelFilePath, _fmatrix PivotMatrix);
 	virtual HRESULT Initialize(void* pArg);
 
-public:
+	virtual void Tick(_double TimeDelta) {};
 	virtual HRESULT Render(_uint iMeshIndex);
 
 public:
@@ -39,7 +39,10 @@ public:
 public:
 	HRESULT Bind_Material(class CShader* pShader, const char* pConstantName, _uint iMeshIndex, aiTextureType MaterialType);
 	HRESULT Bind_BoneMatrices(class CShader* pShader, const char* pConstantName, _uint iMeshIndex);
+	void Loop_Animation(_uint iAnimIndex, _bool bLoop); 
+	void Loop_Animation(const vector<_uint>& indexVec, _bool bLoop);
 	vector<class CAnimation*>* Get_Animations() { return &m_Animations; }
+	_bool Is_Changing_Animation() const { return m_iPrevAnimIndex != m_iCurrentAnimIndex; }
 
 private: /* For.Meshes  */
 	_uint					m_iNumMeshes = { 0 };
@@ -58,8 +61,14 @@ public:
 
 private:
 	_uint							m_iCurrentAnimIndex = { 0 };
+	_uint							m_iPrevAnimIndex = { 0 };
+	_double							m_lerpTimeAcc = { 0.0 };
+
 	_uint							m_iNumAnimations = { 0 };
 	vector<class CAnimation*>		m_Animations;
+
+	/* 플레이어 모델 추출이 안되어서 직접 텍스쳐 경로를 넣어주는 작업을 한다.. */
+	_bool							m_IsPlayer = { false };
 
 private:
 	_float4x4						m_PivotMatrix;
@@ -69,6 +78,8 @@ private:
 	/*HRESULT Ready_Materials(ModelParsingData* parsingData);*/
 	HRESULT Ready_Bones(ModelParsingData* parsingData);
 	HRESULT Ready_Animations(ModelParsingData* parsingData);
+
+	_bool Directly_Push_Material(char* newStr, _int iMatNum, _int iTextureType);
 
 
 public:

@@ -90,7 +90,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		}
 
         if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) 
-            PostQuitMessage(0);;
+            PostQuitMessage(0);
 
 		pGameInstance->Set_Timer(TEXT("Timer_Default"));
 		TimerAcc += pGameInstance->Get_Timer(TEXT("Timer_Default"));
@@ -102,6 +102,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 			pMainApp->Tick(pGameInstance->Get_Timer(TEXT("Timer_60")));
 			pMainApp->Render();
+            pMainApp->PostRender();
 
 			TimerAcc = { 0.0 };
 		}

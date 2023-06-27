@@ -4,6 +4,7 @@
 #include "Object_Manager.h"
 #include "Timer_Manager.h"
 #include "Component_Manager.h"
+#include "CollisionManager.h"
 #include "DataParsing.h"
 
 #include "Layer.h"
@@ -20,7 +21,9 @@ CGameInstance::CGameInstance()
 	, m_pPipeLine { CPipeLine::GetInstance() }
 	, m_pInput_Device{ CInput_Device::GetInstance() }
 	, m_pLight_Manager{ CLight_Manager::GetInstance() }
+	, m_pCollisionManager{ CCollisionManager::GetInstance()}
 {
+	Safe_AddRef(m_pCollisionManager);
 	Safe_AddRef(m_pLight_Manager);
 	Safe_AddRef(m_pPipeLine);
 	Safe_AddRef(m_pComponent_Manager);
@@ -29,6 +32,7 @@ CGameInstance::CGameInstance()
 	Safe_AddRef(m_pLevel_Manager);
 	Safe_AddRef(m_pGraphic_Device);
 	Safe_AddRef(m_pInput_Device);
+
 }
 
 HRESULT CGameInstance::Initialize_Engine(HINSTANCE hInst, _uint iNumLevels, const GRAPHICDESC& GraphicDesc, ID3D11Device** ppDevice, ID3D11DeviceContext** ppContext)
@@ -293,6 +297,16 @@ HRESULT CGameInstance::Delete_GameObject(const wstring& pLayerTag, const wstring
 	return m_pObject_Manager->Delete_GameObject(m_pLevel_Manager->Get_CurLevelIndex(), pLayerTag, pObjName);
 }
 
+HRESULT CGameInstance::Delete_GameObject_SameName(const wstring& pLayerTag, const wstring& pObjName)
+{
+	if (nullptr == m_pObject_Manager)
+		return E_FAIL;
+	if (nullptr == m_pLevel_Manager)
+		return E_FAIL;
+
+	return m_pObject_Manager->Delete_GameObject_SameName(m_pLevel_Manager->Get_CurLevelIndex(), pLayerTag, pObjName);
+}
+
 CGameObject* CGameInstance::Find_GameObject(const wstring& pLayerTag, const wstring& pObjName)
 {
 	if (nullptr == m_pObject_Manager)
@@ -404,11 +418,78 @@ HRESULT CGameInstance::Add_Lights(ID3D11Device* pDevice, ID3D11DeviceContext* pC
 	return m_pLight_Manager->Add_Lights(pDevice, pContext, LightDesc);
 }
 
+#ifdef _DEBUG
+void CGameInstance::Render_Collider()
+{
+	if (nullptr == m_pCollisionManager) return;
+
+	m_pCollisionManager->Render_Colliders();
+}
+
+_bool CGameInstance::Get_ColliderRender()
+{
+	if (nullptr == m_pCollisionManager) return false;
+
+	return m_pCollisionManager->GetIsRender();
+}
+
+void CGameInstance::Set_ColliderRender(_bool bRender)
+{
+	if (nullptr == m_pCollisionManager) return;
+
+	return m_pCollisionManager->Set_ColliderRender(bRender);
+}
+
+_bool CGameInstance::Toggle_ColliderRender()
+{
+	if (nullptr == m_pCollisionManager) return false;
+
+	return m_pCollisionManager->Toggle_ColliderRender();
+}
+#endif
+
+void CGameInstance::Check_Collision(COLGROUP ID1, COLGROUP ID2)
+{
+	if (nullptr == m_pCollisionManager) return;
+
+	m_pCollisionManager->Check_Collision(ID1, ID2);
+}
+
+void CGameInstance::Change_ColGroup(CCollider* collider, COLGROUP changeID)
+{
+	if (nullptr == m_pCollisionManager) return;
+
+	m_pCollisionManager->Change_ColGroup(collider, changeID);
+}
+
+void CGameInstance::Add_ColGroup(COLGROUP eID, CCollider* pCollider)
+{
+	if (nullptr == m_pCollisionManager) return;
+
+	m_pCollisionManager->Add_ColGroup(eID, pCollider);
+}
+
+void CGameInstance::Reset_ColGroup()
+{
+	if (nullptr == m_pCollisionManager) return;
+
+	m_pCollisionManager->Reset_ColGroup();
+}
+
+HRESULT CGameInstance::Remove_Collider(CCollider* collider, COLGROUP colID)
+{
+	if (nullptr == m_pCollisionManager) return E_FAIL;
+
+	return m_pCollisionManager->Remove_Collider(collider, colID);
+}
+
 void CGameInstance::Release_Engine()
 {	
 	CGameInstance::GetInstance()->DestroyInstance();
 
 	CPipeLine::GetInstance()->DestroyInstance();
+
+	CCollisionManager::GetInstance()->DestroyInstance();
 
 	CObject_Manager::GetInstance()->DestroyInstance();
 
@@ -428,6 +509,7 @@ void CGameInstance::Release_Engine()
 void CGameInstance::Free()
 {
 	Safe_Release(m_pLight_Manager);
+	Safe_Release(m_pCollisionManager);
 	Safe_Release(m_pPipeLine);
 	Safe_Release(m_pComponent_Manager);
 	Safe_Release(m_pTimer_Manager);

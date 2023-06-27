@@ -47,6 +47,9 @@ public:
 	_matrix Get_WorldMatrix_Inverse() const {
 		return XMMatrixInverse(nullptr, XMLoadFloat4x4(&m_WorldMatrix));
 	}
+	_matrix Get_WorldMatrix() const {
+		return XMLoadFloat4x4(&m_WorldMatrix);
+	}
 
 	void Set_State(STATE _eState, _fvector _vState);
 	void Set_Desc(const TRANSFORMDESC & TransformDesc) {

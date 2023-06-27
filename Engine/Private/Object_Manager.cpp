@@ -119,6 +119,22 @@ HRESULT CObject_Manager::Delete_GameObject(_uint iLevelIndex, const wstring& pLa
 	return hr;
 }
 
+HRESULT CObject_Manager::Delete_GameObject_SameName(_uint iLevelIndex, const wstring& pLayerTag, const wstring& pObjName)
+{
+	CGameObject* resultObject = nullptr;
+	HRESULT hr = E_FAIL;
+
+	CLayer* pLayer = Find_Layer(iLevelIndex, pLayerTag);
+
+	if (nullptr != pLayer)
+	{
+		hr = pLayer->Delete_GameObject_SameName(pObjName);
+		//Decrease_Object_Name(pObjName);
+
+	}
+	return hr;
+}
+
 CGameObject* CObject_Manager::Find_GameObject(_uint iLevelIndex, const wstring& pLayerTag, const wstring& pObjName)
 {
 	CGameObject* resultObject = nullptr;

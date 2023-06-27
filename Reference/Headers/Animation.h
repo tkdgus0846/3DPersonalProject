@@ -22,9 +22,19 @@ public:
 public:
 	HRESULT Initialize(ParsingData* pData);
 	void Invalidate_TransformationMatrix(CModel::BONES& Bones, _double TimeDelta);
-	_char* Get_Name() { return m_szName; }
-	_bool Get_Loop() const { return m_isLoop; }
-	void Set_Loop(_bool state) { m_isLoop = state; }
+	_int Lerp_NextAnimation(CAnimation* pNextAnimation, CModel::BONES & Bones, _double Duration, _double LerpTimeAcc);
+	void Reset_Channels()
+	{
+		for (int i = 0; i < m_ChannelCurrentKeyFrames.size(); i++)
+			m_ChannelCurrentKeyFrames[i] = 0;
+
+		m_TimeAcc = 0.f;
+	}
+
+	_char*	Get_Name() { return m_szName; }
+	_bool	Get_Loop() const { return m_isLoop; }
+	void	Set_Loop(_bool state) { m_isLoop = state; }
+	_bool	Get_Finished() { return m_isFinished; }
 
 private:
 	char						m_szName[MAX_PATH];

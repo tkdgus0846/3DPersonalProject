@@ -10,6 +10,11 @@
 #include "VIBuffer_Terrain.h"
 #include "VIBuffer_Cube.h"
 #include "Navigation.h"
+#include "Collider.h"
+
+#include "Bounding_AABB.h"
+#include "Bounding_OBB.h"
+#include "Bounding_Sphere.h"
 
 
 BEGIN(Engine)

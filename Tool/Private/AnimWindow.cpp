@@ -88,7 +88,8 @@ void CAnimWindow::Show_ModelPrototypes()
 				wstring name = L"AnimDummy";
 				CGameInstance* pGameInstance = CGameInstance::GetInstance();
 
-				pGameInstance->Delete_GameObject(L"Layer_Object", name);
+				pGameInstance->Delete_GameObject_SameName(L"Layer_Object", name);
+				Safe_Release(m_DummyObject);
 
 				m_DummyObject = (CDummyObject*)pGameInstance->Add_GameObject(LEVEL_TOOL, TEXT("Prototype_GameObject_DummyObject"), TEXT("Layer_Object"), name);
 

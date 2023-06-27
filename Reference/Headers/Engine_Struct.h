@@ -2,6 +2,26 @@
 
 namespace Engine
 {
+	class Collision
+	{
+	public:
+		Collision() :
+			MyCollider(nullptr),
+			OtherCollider(nullptr),
+			OtherGameObject(nullptr),
+			intersectBouding()
+		{}
+
+		// 내 콜라이더
+		class CCollider* MyCollider;
+		// 상대 콜라이더
+		class CCollider* OtherCollider;
+		// 상대 게임오브젝트
+		class CGameObject* OtherGameObject;
+		// 충돌한 지점
+		class CBounding* intersectBouding;
+	};
+
 	typedef struct tagGraphicDesc
 	{
 		enum WINMODE { WM_FULL, WM_WIN, WM_END };
@@ -207,7 +227,7 @@ namespace Engine
 		_uint				iNumBones;
 
 		///////////////// 텍스쳐 경로들 저장 ////////////
-		vector<char*>		MaterialPaths;
+		vector<string>		MaterialPaths;
 
 		/////////////////// 메쉬 저장 //////////////////////
 		vector<MeshParsingData> MeshDatas;

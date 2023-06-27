@@ -68,6 +68,38 @@ void CChannel::Invalidate_TransformationMatrix(CModel::BONES& Bones, _double Tim
 	Bones[m_iBoneIndex]->Set_TransformationMatrix(TransformationMatrix);
 }
 
+_int CChannel::Lerp_TransformaitionMatrix(CModel::BONES& Bones, _double duration, _double TimeAcc, _uint srcKeyFrame, KEYFRAME& dstKeyFrame)
+{
+	_float3			vScale;
+	_float4			vRotation;
+	_float3			vTranslation;
+
+	_double		Ratio = TimeAcc/duration;
+
+	if (Ratio >= 1.f) 
+		return 1;
+
+	_float3		vSourScale = m_KeyFrames[srcKeyFrame].vScale;
+	_float4		vSourRotation = m_KeyFrames[srcKeyFrame].vRotation;
+	_float3		vSourTranslation = m_KeyFrames[srcKeyFrame].vTranslation;
+
+	_float3		vDestScale = dstKeyFrame.vScale;
+	_float4		vDestRotation = dstKeyFrame.vRotation;
+	_float3		vDestTranslation = dstKeyFrame.vTranslation;
+
+	XMStoreFloat3(&vScale, XMVectorLerp(XMLoadFloat3(&vSourScale), XMLoadFloat3(&vDestScale), (_float)Ratio));
+	XMStoreFloat4(&vRotation, XMQuaternionSlerp(XMLoadFloat4(&vSourRotation), XMLoadFloat4(&vDestRotation), (_float)Ratio));
+	XMStoreFloat3(&vTranslation, XMVectorLerp(XMLoadFloat3(&vSourTranslation), XMLoadFloat3(&vDestTranslation), (_float)Ratio));
+
+	/* 진행된 시간에 맞는 뼈의 행렬을 만들어낸다. */
+	_matrix		TransformationMatrix = XMMatrixAffineTransformation(XMLoadFloat3(&vScale), XMVectorSet(0.f, 0.f, 0.f, 1.f), XMLoadFloat4(&vRotation), XMLoadFloat3(&vTranslation));
+
+	/* 같은 이름을 가진 모델이 들고 있는 뼈에게 전달해준다. */
+	Bones[m_iBoneIndex]->Set_TransformationMatrix(TransformationMatrix);
+
+	return 0;
+}
+
 CChannel * CChannel::Create(ParsingData* pData)
 {
 	CChannel*	pInstance = new CChannel();

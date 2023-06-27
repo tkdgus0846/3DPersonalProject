@@ -9,6 +9,7 @@ class CTexture;
 class CRenderer;
 class CTransform;
 class CVIBuffer_Terrain;
+class CCollider;
 END
 
 BEGIN(Client)
@@ -29,12 +30,17 @@ public:
 	virtual void Late_Tick(_double TimeDelta) override;
 	virtual HRESULT Render() override;
 
+	virtual void OnCollisionEnter(const Collision* collision) { cout << "Cube Object Enter!" << endl; }
+	virtual void OnCollisionStay(const Collision* collision) { cout << "Cube Object Stay!" << endl; }
+	virtual void OnCollisionExit(const Collision* collision) { cout << "Cube Object Exit!" << endl; }
+
 private:
 	CShader*				m_pShaderCom = { nullptr };
 	CTexture*				m_pTextureCom = { nullptr };
 	CRenderer*				m_pRendererCom = { nullptr };	
 	CTransform*				m_pTransformCom = { nullptr };
 	CVIBuffer_Terrain*		m_pVIBufferCom = { nullptr };
+	CCollider*				m_pColliderCom = { nullptr };
 
 public:
 	HRESULT Add_Components();

@@ -35,7 +35,35 @@ HRESULT CPlayer::Initialize(void* pArg)
 		return E_FAIL;	
 
 	m_pTransformCom->Set_State(CTransform::STATE_POSITION, XMVectorSet(1.f, 1.f, 1.f, 1.f));
-	m_pModelCom->Set_AnimIndex(3);
+
+	m_AnimationKey["N_Walk"].push_back(0);
+	m_AnimationKey["NE_Walk"].push_back(1);
+	m_AnimationKey["SE_Walk"].push_back(2);
+	m_AnimationKey["S_Walk"].push_back(3);
+	m_AnimationKey["SW_Walk"].push_back(4);
+	m_AnimationKey["NW_Walk"].push_back(5);
+	m_AnimationKey["W_Walk"].push_back(6);
+	m_AnimationKey["E_Walk"].push_back(7);
+	m_AnimationKey["Idle"].push_back(8);
+
+	m_AnimationKey["Slashers_Combo01"].push_back(440);
+	m_AnimationKey["Slashers_Combo01"].push_back(441);
+	m_AnimationKey["Slashers_Combo01"].push_back(442);
+
+	m_pModelCom->Loop_Animation(m_AnimationKey["Slashers_Combo01"], false);
+
+	m_AnimationKey["Slashers_Combo02"].push_back(443);
+	m_AnimationKey["Slashers_Combo02"].push_back(444);
+	m_AnimationKey["Slashers_Combo02"].push_back(445);
+
+	m_pModelCom->Loop_Animation(m_AnimationKey["Slashers_Combo02"], false);
+
+	m_AnimationKey["Slashers_Combo03"].push_back(446);
+	m_AnimationKey["Slashers_Combo03"].push_back(447);
+	m_AnimationKey["Slashers_Combo03"].push_back(448);
+
+	m_pModelCom->Loop_Animation(m_AnimationKey["Slashers_Combo03"], false);
+	//m_pModelCom->Set_AnimIndex(3);
 
 	return S_OK;
 }
@@ -44,6 +72,10 @@ void CPlayer::Tick(_double TimeDelta)
 {
  	__super::Tick(TimeDelta);
 
+#ifdef _DEBUG
+	if (CGameInstance::GetInstance()->Key_Down(DIK_C))
+		CGameInstance::GetInstance()->Toggle_ColliderRender();
+#endif
 	CameraRotate(TimeDelta);
 	PlayerRotate(TimeDelta);
 	Move(TimeDelta);
@@ -52,9 +84,8 @@ void CPlayer::Tick(_double TimeDelta)
 	m_CurIndex = m_pNavigationCom->Get_CurrentIndex();
 
 	if (m_bMove == false)
-		m_pModelCom->Set_AnimIndex(61);
-	else
-		m_pModelCom->Set_AnimIndex(74);
+		m_pModelCom->Set_AnimIndex(Key("Idle"));
+
 
 
 	m_pModelCom->Play_Animation(TimeDelta);
@@ -64,16 +95,19 @@ void CPlayer::Tick(_double TimeDelta)
 		if (nullptr != pCollider)
 			pCollider->Tick(m_pTransformCom->Get_WorldMatrix());
 	}*/
+
+	//m_pColliderCom[COLLIDER_OBB]->Tick(m_pTransformCom->Get_WorldMatrix());
+	
 }
 
 void CPlayer::Late_Tick(_double TimeDelta)
 {
-	__super::Late_Tick(TimeDelta);
-
-	
+	__super::Late_Tick(TimeDelta);	
 
 	if (nullptr != m_pRendererCom)
 		m_pRendererCom->Add_RenderGroup(CRenderer::RENDER_NONBLEND, this);
+	if (nullptr != m_pColliderCom)
+		m_pColliderCom[COLLIDER_OBB]->Add_ColGroup(COL_PLAYER);
 }
 
 HRESULT CPlayer::Render()
@@ -100,16 +134,10 @@ HRESULT CPlayer::Render()
 		m_pModelCom->Render(i);
 	}
 
+
+
 #ifdef _DEBUG
 	m_pNavigationCom->Render_Navigation();
-
-	/*for (auto& pCollider : m_pColliderCom)
-	{
-		if(nullptr != pCollider)
-			pCollider->Render();
-	}*/
-	
-
 #endif
 
 	
@@ -175,18 +203,25 @@ void CPlayer::Move(_double TimeDelta)
 	if (m_bMove)
 	{
 		_vector resultDir = { 0.f,0.f,0.f,0.f };
+		vector<_uint> keyStateVec;
+
+		
 		for (int i = 0; i < 4; i++)
 		{
 			if (keyState[i] == true)
 			{
 				resultDir += XMVector3Normalize(dir[i]);
+				keyStateVec.push_back(i);
 			}
 		}
 
+		Select_MoveKey(XMVector3Normalize(resultDir));
+
 		m_pTransformCom->Go_Dir(resultDir, TimeDelta, m_pNavigationCom);
 
-		ClimbNavMesh();
+		
 	}
+	ClimbNavMesh();
 
 
 	//if (CGameInstance::GetInstance()->Mouse_Pressing(CInput_Device::DIMK_LBUTTON))
@@ -265,6 +300,8 @@ void CPlayer::PlayerRotate(_double TimeDelta)
 
 void CPlayer::ClimbNavMesh()
 {
+	if (m_CurIndex == -1) return;
+
 	_vector myPos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
 
 	vector<Triangle>* vec = m_pNavigationCom->Get_TriangleList();
@@ -296,6 +333,7 @@ void CPlayer::CameraRotate(_double TimeDelta)
 	{
 		m_bRotate = false;
 		ShowCursor(true);
+		ClientToScreen(g_hWnd, &m_lastCursorPoint);
 		SetCursorPos(m_lastCursorPoint.x, m_lastCursorPoint.y);
 		
 	}
@@ -305,6 +343,7 @@ void CPlayer::CameraRotate(_double TimeDelta)
 
 		POINT	ptMouse{}, ptCursor{};
 		GetCursorPos(&ptMouse);	
+		ScreenToClient(g_hWnd, &ptMouse);
 
 		if (m_bRotate == false)
 		{
@@ -312,8 +351,6 @@ void CPlayer::CameraRotate(_double TimeDelta)
 			ShowCursor(false);
 			m_lastCursorPoint = ptMouse;
 		}
-
-		ScreenToClient(g_hWnd, &ptMouse);
 
 		/*RECT clientRect;
 		GetClientRect(g_hWnd, &clientRect);
@@ -420,26 +457,97 @@ void CPlayer::CameraZoom(_double TimeDelta)
 		if (m_fCameraZoom < 0.f)
 		{
 			m_fCameraZoom = 0.f;
-			return;
 		}
 		else if (m_fCameraZoom > 10.f)
 		{
 			m_fCameraZoom = 10.f;
-			return;
 		}
-
-		_vector offsetVec = m_pCameraCom->Get_Offset();
-
-		_float originDis = XMVector3Length(XMLoadFloat3(&m_OriginOffset)).m128_f32[0];
-		//_float distance = XMVector3Length(offsetVec).m128_f32[0];
-
-		_vector dirVec = XMVector3Normalize(offsetVec);
-
-		_vector zoomResult = dirVec * (originDis - m_fCameraZoom);
-		
-		m_pCameraCom->Set_Offset(zoomResult);
 	}
 
+	// 오프셋을 뽑아와
+	_vector offsetVec = m_pCameraCom->Get_Offset();
+
+	_float originDis = XMVector3Length(XMLoadFloat3(&m_OriginOffset)).m128_f32[0];
+
+	_vector dirVec = XMVector3Normalize(offsetVec);
+
+		// 원래의 오프셋의 길이 originDis 에다가 카메라의 줌을 빼준다?
+		// 카메라의 줌이 0이라면 원래의 오프셋길이일것이고 10이면 원래의 오프셋길이의 -10 만큼 가까워 질것이다.
+	
+	//cout << m_fCurCameraZoom << " " << m_fCameraZoom << endl;
+
+	if (m_fCurCameraZoom < m_fCameraZoom)
+	{
+		m_fCurCameraZoom += 10.f * TimeDelta;
+		if (m_fCurCameraZoom >= m_fCameraZoom)
+		{
+			m_fCurCameraZoom = m_fCameraZoom;
+		}
+			
+
+	}
+	else if (m_fCurCameraZoom > m_fCameraZoom)
+	{
+		m_fCurCameraZoom -= 10.f * TimeDelta;
+		if (m_fCurCameraZoom < m_fCameraZoom)
+		{
+			m_fCurCameraZoom = m_fCameraZoom;
+		}	
+	}
+	_vector zoomResult = dirVec * (originDis - m_fCurCameraZoom);
+
+	m_pCameraCom->Set_Offset(zoomResult);
+
+}
+
+void CPlayer::Select_MoveKey(_fvector dir)
+{
+	_vector lookVec = m_pTransformCom->Get_State(CTransform::STATE_LOOK);
+
+	//// 룩벡터와 이동방향을 기반으로 계산하자
+	//_float angle = XMConvertToDegrees(XMVector3AngleBetweenNormals(dir, lookVec).m128_f32[0]);
+
+	_float angle = XMConvertToDegrees(XMVector3AngleBetweenNormals(dir, lookVec).m128_f32[0]);
+	XMVECTOR cross = XMVector3Cross(dir, lookVec);
+	if (XMVectorGetX(XMVector3Dot(cross, {0.f,1.f,0.f,0.f})) > 0)
+		angle = 360 - angle;
+
+	//cout << angle << endl;
+
+	
+
+	if (337.5 <= angle || 22.5 >= angle)
+	{
+		m_pModelCom->Set_AnimIndex(Key("N_Walk"));
+	}
+	else if (22.5 <= angle && 67.5 >= angle)
+	{
+		m_pModelCom->Set_AnimIndex(Key("NE_Walk"));
+	}
+	else if (67.5 <= angle && 112.5 >= angle)
+	{
+		m_pModelCom->Set_AnimIndex(Key("E_Walk"));
+	}
+	else if (112.5 <= angle && 157.5 >= angle)
+	{
+		m_pModelCom->Set_AnimIndex(Key("SE_Walk"));
+	}
+	else if (157.5 <= angle && 202.5 >= angle)
+	{
+		m_pModelCom->Set_AnimIndex(Key("S_Walk"));
+	}
+	else if (202.5 <= angle && 247.5 >= angle)
+	{
+		m_pModelCom->Set_AnimIndex(Key("SW_Walk"));
+	}
+	else if (247.5 <= angle && 292.5 >= angle)
+	{
+		m_pModelCom->Set_AnimIndex(Key("W_Walk"));
+	}
+	else if (292.5 <= angle && 337.5 >= angle)
+	{
+		m_pModelCom->Set_AnimIndex(Key("NW_Walk"));
+	}
 }
 
 HRESULT CPlayer::Add_Components()
@@ -487,6 +595,17 @@ HRESULT CPlayer::Add_Components()
 	CameraMainPlayerDesc.CameraDesc.TransformDesc.RotationPerSec = XMConvertToRadians(90.0f);
 
 	if (FAILED(__super::Add_Component(L"Prototype_GameObject_Camera_Player_Main", L"Camera_Player_Main", (CGameObject**)&m_pCameraCom, &CameraMainPlayerDesc)))
+		return E_FAIL;
+
+	/* For.Com_Navigation */
+	CBounding_OBB::BOUNDINGBOX OBBDesc;
+
+	OBBDesc.vExtents = _float3(0.5f, 0.5f, 0.5f);
+	OBBDesc.vPosition = _float3(0.f, OBBDesc.vExtents.y, 0.f);
+	OBBDesc.vRotation = _float3(0.f, XMConvertToRadians(0.0f), 0.f);
+
+	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Collider_OBB"),
+		COLLIDER_W, (CComponent**)&m_pColliderCom[COLLIDER_OBB], &OBBDesc)))
 		return E_FAIL;
 
 	m_pCameraCom->Set_Offset(XMLoadFloat3(&m_OriginOffset));
@@ -590,5 +709,6 @@ void CPlayer::Free()
 	Safe_Release(m_pModelCom);
 	Safe_Release(m_pRendererCom);
 	Safe_Release(m_pCameraCom);
+	Safe_Release(m_pColliderCom[COLLIDER_OBB]);
 
 }
