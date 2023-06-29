@@ -24,6 +24,8 @@ public:
 public:
 	virtual HRESULT Initialize_Prototype(CModel::TYPE eType, const CModel::BONES& Bones, ParsingData* pData, _fmatrix PivotMatrix);
 	virtual HRESULT Initialize(void* pArg) override;
+	char* GetszName() { return m_szName; }
+	_uint GetBoneNum() const { return m_iNumBones; }
 
 private:
 	char			m_szName[MAX_PATH] = "";

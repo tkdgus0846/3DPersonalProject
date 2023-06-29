@@ -10,13 +10,13 @@ CAssimpModel::CAssimpModel()
 
 CAssimpModel::~CAssimpModel()
 {
-	for (auto& Material : m_MaterialPaths)
+	/*for (auto& Material : m_MaterialPaths)
 	{
 		for (auto& pPath : m_MaterialPaths)
 			Safe_Delete(pPath);
 	}
 
-	m_MaterialPaths.clear();
+	m_MaterialPaths.clear();*/
 
 	for (auto& pMesh : m_Meshes)
 		Safe_Delete(pMesh);
@@ -108,13 +108,14 @@ HRESULT CAssimpModel::Ready_Materials(const char* pModelFilePath)
 			char		szExt[MAX_PATH] = "";
 			_splitpath_s(strPath.data, nullptr, 0, nullptr, 0, szFileName, MAX_PATH, szExt, MAX_PATH);
 
-			char* szFullPath = new char[MAX_PATH]; 
+			char szFullPath[MAX_PATH]; 
 			strcpy(szFullPath, szDrive);
 			strcat(szFullPath, szDirectory);
 			strcat(szFullPath, szFileName);
 			strcat(szFullPath, szExt);
 
 			m_MaterialPaths[i* AI_TEXTURE_TYPE_MAX + j] = (szFullPath);
+
 		}
 	}
 
@@ -221,10 +222,10 @@ ParsingData* CAssimpModel::Save_Data(HANDLE handle, ParsingData* data)
 	///////// 텍스쳐 경로 저장///////////////
 	for (auto path : modelParsingData->MaterialPaths)
 	{
-		if (path == nullptr)
+		if (path.compare("") == 0)
 			strcpy(str, "NULL");
 		else				
-			strcpy(str, path);
+			strcpy(str, path.c_str());
 
 		WriteFile(handle, &str, sizeof(str), &dwByte, nullptr);
 	}

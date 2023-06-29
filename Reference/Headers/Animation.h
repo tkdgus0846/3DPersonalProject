@@ -14,6 +14,7 @@ BEGIN(Engine)
 
 class ENGINE_DLL CAnimation final : public CBase, public IReadable
 {
+	friend class CAnimInstance;
 public:
 	CAnimation();
 	CAnimation(const CAnimation& rhs);
@@ -29,12 +30,18 @@ public:
 			m_ChannelCurrentKeyFrames[i] = 0;
 
 		m_TimeAcc = 0.f;
+		m_isFinished = false;
 	}
 
 	_char*	Get_Name() { return m_szName; }
 	_bool	Get_Loop() const { return m_isLoop; }
 	void	Set_Loop(_bool state) { m_isLoop = state; }
 	_bool	Get_Finished() { return m_isFinished; }
+	void	Erase_LastFrame_Animation();
+	void	Erase_Frames_LessTime(_double time);
+	void	Set_ControlManual(_bool state) { m_isControlManual = state; }
+	void	Set_TimeAcc(_double time) { m_TimeAcc = time; }
+	_double Get_Duration() const { return m_Duration; }
 
 private:
 	char						m_szName[MAX_PATH];
@@ -47,6 +54,7 @@ private:
 
 	_bool						m_isFinished = { false };
 	_bool						m_isLoop = { false };
+	_bool						m_isControlManual = { false };
 
 public:
 	static CAnimation* Create(ParsingData* pData);

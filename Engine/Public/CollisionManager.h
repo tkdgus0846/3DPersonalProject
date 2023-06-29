@@ -6,6 +6,7 @@ BEGIN(Engine)
 class CCollider;
 class CGameObject;
 
+// Æ½¿¡¼­ Add ÇØÁÖ°í Æ÷½ºÆ®·»´õ¿¡¼­ »©ÁÜ.
 class CCollisionManager : public CBase
 {
 	DECLARE_SINGLETON(CCollisionManager)

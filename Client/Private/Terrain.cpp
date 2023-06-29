@@ -39,14 +39,16 @@ HRESULT CTerrain::Initialize(void* pArg)
 void CTerrain::Tick(_double TimeDelta)
 {
 	__super::Tick(TimeDelta);
+
+
+	if (nullptr != m_pRendererCom)
+		m_pRendererCom->Add_RenderGroup((CRenderer::RENDERGROUP)m_eRenderGroup, this);
 }
 
 void CTerrain::Late_Tick(_double TimeDelta)
 {
 	__super::Late_Tick(TimeDelta);
 
-	if (nullptr != m_pRendererCom)
-		m_pRendererCom->Add_RenderGroup((CRenderer::RENDERGROUP)m_eRenderGroup, this);
 }
 
 HRESULT CTerrain::Render()

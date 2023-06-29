@@ -4,6 +4,10 @@
 
 #include "Calculator.h"
 #include "Camera_Player_Main.h"
+#include "PlayerHead.h"
+#include "Mace.h"
+#include "Axe.h"
+#include "Slasher.h"
 
 CPlayer::CPlayer(ID3D11Device * pDevice, ID3D11DeviceContext * pContext)
 	: CGameObject(pDevice, pContext)
@@ -32,38 +36,15 @@ HRESULT CPlayer::Initialize(void* pArg)
 		return E_FAIL;
 
 	if (FAILED(Add_Components()))
-		return E_FAIL;	
+		return E_FAIL;
+
+	Add_Animations();
 
 	m_pTransformCom->Set_State(CTransform::STATE_POSITION, XMVectorSet(1.f, 1.f, 1.f, 1.f));
 
-	m_AnimationKey["N_Walk"].push_back(0);
-	m_AnimationKey["NE_Walk"].push_back(1);
-	m_AnimationKey["SE_Walk"].push_back(2);
-	m_AnimationKey["S_Walk"].push_back(3);
-	m_AnimationKey["SW_Walk"].push_back(4);
-	m_AnimationKey["NW_Walk"].push_back(5);
-	m_AnimationKey["W_Walk"].push_back(6);
-	m_AnimationKey["E_Walk"].push_back(7);
-	m_AnimationKey["Idle"].push_back(8);
+	m_pModelCom->Remove_Mesh("Cape03Bot_GEO", 16);
 
-	m_AnimationKey["Slashers_Combo01"].push_back(440);
-	m_AnimationKey["Slashers_Combo01"].push_back(441);
-	m_AnimationKey["Slashers_Combo01"].push_back(442);
-
-	m_pModelCom->Loop_Animation(m_AnimationKey["Slashers_Combo01"], false);
-
-	m_AnimationKey["Slashers_Combo02"].push_back(443);
-	m_AnimationKey["Slashers_Combo02"].push_back(444);
-	m_AnimationKey["Slashers_Combo02"].push_back(445);
-
-	m_pModelCom->Loop_Animation(m_AnimationKey["Slashers_Combo02"], false);
-
-	m_AnimationKey["Slashers_Combo03"].push_back(446);
-	m_AnimationKey["Slashers_Combo03"].push_back(447);
-	m_AnimationKey["Slashers_Combo03"].push_back(448);
-
-	m_pModelCom->Loop_Animation(m_AnimationKey["Slashers_Combo03"], false);
-	//m_pModelCom->Set_AnimIndex(3);
+	Change_Weapon();
 
 	return S_OK;
 }
@@ -72,42 +53,47 @@ void CPlayer::Tick(_double TimeDelta)
 {
  	__super::Tick(TimeDelta);
 
+	if (m_pCameraCom->Is_On_Camera() == true)
+	{
 #ifdef _DEBUG
-	if (CGameInstance::GetInstance()->Key_Down(DIK_C))
-		CGameInstance::GetInstance()->Toggle_ColliderRender();
+		if (CGameInstance::GetInstance()->Key_Down(DIK_C))
+			CGameInstance::GetInstance()->Toggle_ColliderRender();
 #endif
-	CameraRotate(TimeDelta);
-	PlayerRotate(TimeDelta);
-	Move(TimeDelta);
-	CameraZoom(TimeDelta);
+		CameraRotate(TimeDelta);
+		PlayerRotate(TimeDelta);
+		Select_Weapon();
+		Skills(TimeDelta);
+		Dash(TimeDelta);
+		ClimbNavMesh();
+		Move(TimeDelta);
+		Attack_Combo();
+		AttackMove(TimeDelta);
+		CameraZoom(TimeDelta);
+	}
 
 	m_CurIndex = m_pNavigationCom->Get_CurrentIndex();
 
-	if (m_bMove == false)
-		m_pModelCom->Set_AnimIndex(Key("Idle"));
 
-
+	// 애니메이션 관련된 변수 조작은 이 위에서
+	Select_AnimationKey();
 
 	m_pModelCom->Play_Animation(TimeDelta);
 
-	/*for (auto& pCollider : m_pColliderCom)
-	{
-		if (nullptr != pCollider)
-			pCollider->Tick(m_pTransformCom->Get_WorldMatrix());
-	}*/
-
-	//m_pColliderCom[COLLIDER_OBB]->Tick(m_pTransformCom->Get_WorldMatrix());
 	
+	if (nullptr != m_pRendererCom)
+		m_pRendererCom->Add_RenderGroup(CRenderer::RENDER_NONBLEND, this);
 }
 
 void CPlayer::Late_Tick(_double TimeDelta)
 {
 	__super::Late_Tick(TimeDelta);	
 
-	if (nullptr != m_pRendererCom)
-		m_pRendererCom->Add_RenderGroup(CRenderer::RENDER_NONBLEND, this);
-	if (nullptr != m_pColliderCom)
-		m_pColliderCom[COLLIDER_OBB]->Add_ColGroup(COL_PLAYER);
+	
+	if (CGameInstance::GetInstance()->Key_Down(DIK_1))
+		CGameInstance::GetInstance()->On_Camera(L"CameraFree");
+
+	if (CGameInstance::GetInstance()->Key_Down(DIK_2))
+		CGameInstance::GetInstance()->On_Camera(L"Camera_Player_Main");
 }
 
 HRESULT CPlayer::Render()
@@ -147,6 +133,8 @@ HRESULT CPlayer::Render()
 
 void CPlayer::Move(_double TimeDelta)
 {
+	if (m_bDash == true) return;
+
 	m_bMove = false;
 	_bool keyState[4] = { false, false, false, false };
 	_vector dir[4];
@@ -202,26 +190,28 @@ void CPlayer::Move(_double TimeDelta)
 
 	if (m_bMove)
 	{
-		_vector resultDir = { 0.f,0.f,0.f,0.f };
-		vector<_uint> keyStateVec;
-
-		
-		for (int i = 0; i < 4; i++)
+		if (m_bAttack == false)
 		{
-			if (keyState[i] == true)
+			_vector resultDir = { 0.f,0.f,0.f,0.f };
+
+
+			for (int i = 0; i < 4; i++)
 			{
-				resultDir += XMVector3Normalize(dir[i]);
-				keyStateVec.push_back(i);
+				if (keyState[i] == true)
+				{
+					resultDir += XMVector3Normalize(dir[i]);
+				}
 			}
+
+			XMStoreFloat3(&m_MoveDir, resultDir);
+
+			m_pTransformCom->Go_Dir(resultDir, TimeDelta, m_pNavigationCom);
 		}
-
-		Select_MoveKey(XMVector3Normalize(resultDir));
-
-		m_pTransformCom->Go_Dir(resultDir, TimeDelta, m_pNavigationCom);
-
 		
 	}
-	ClimbNavMesh();
+
+	// 지형 타는거 원래 최적화를 위해서 여기 뒀었다.
+	// ClimbNavMesh();
 
 
 	//if (CGameInstance::GetInstance()->Mouse_Pressing(CInput_Device::DIMK_LBUTTON))
@@ -273,6 +263,8 @@ void CPlayer::Move(_double TimeDelta)
 
 void CPlayer::PlayerRotate(_double TimeDelta)
 {
+	if (m_bDash == true) return;
+
 	POINT	ptMouse{};
 	GetCursorPos(&ptMouse);
 
@@ -293,9 +285,18 @@ void CPlayer::PlayerRotate(_double TimeDelta)
 
 	degree -= m_fCameraRotationX;
 
-	//cout << degree << endl;
+
 
 	m_pTransformCom->Rotation(CTransform::AXIS_Y, degree);
+}
+
+void CPlayer::AttackMove(_double TimeDelta)
+{
+	if (m_bAttack == false || m_bMove == false) return;
+
+	_vector playerDir = m_pTransformCom->Get_State(CTransform::STATE_LOOK);
+
+	m_pTransformCom->Go_Dir(playerDir, TimeDelta*2.f, m_pNavigationCom);
 }
 
 void CPlayer::ClimbNavMesh()
@@ -474,7 +475,7 @@ void CPlayer::CameraZoom(_double TimeDelta)
 		// 원래의 오프셋의 길이 originDis 에다가 카메라의 줌을 빼준다?
 		// 카메라의 줌이 0이라면 원래의 오프셋길이일것이고 10이면 원래의 오프셋길이의 -10 만큼 가까워 질것이다.
 	
-	//cout << m_fCurCameraZoom << " " << m_fCameraZoom << endl;
+	
 
 	if (m_fCurCameraZoom < m_fCameraZoom)
 	{
@@ -500,54 +501,564 @@ void CPlayer::CameraZoom(_double TimeDelta)
 
 }
 
-void CPlayer::Select_MoveKey(_fvector dir)
+void CPlayer::Dash(_double TimeDelta)
+{
+	if (m_bDash == false)
+	{
+		if (CGameInstance::GetInstance()->Key_Down(DIK_SPACE))
+		{
+			m_bDash = true;
+
+			m_pAnimInstance->Apply_Animation("Dash");
+			
+			XMStoreFloat3(&m_DashDir, m_pTransformCom->Get_State(CTransform::STATE_LOOK));
+			m_DashTimeAcc = 0.0;
+		}
+	}
+	
+
+	if (m_bDash == true)
+	{
+		m_DashTimeAcc += TimeDelta;
+		
+		m_pTransformCom->Go_Dir(XMLoadFloat3(&m_DashDir), m_DashInitSpeed, m_DashAccel, m_DashTimeAcc/4.0, m_pNavigationCom);
+	}
+
+	
+
+}
+
+void CPlayer::Select_ChangingWeaponKey()
+{
+	//if (m_eWeaponType == WEAPON_HAND) return;
+
+	// 맨 손 무기같은 경우에는 교체 애니메이션이 없으므로 무시한다.
+	if (m_pAnimInstance->Animation_Finished() || m_eWeaponType == WEAPON_HAND)
+	{
+		m_ePrevWeaponType = m_eWeaponType;
+		return;
+	}
+
+	switch (m_eWeaponType)
+	{
+	case WEAPON_AXE:
+		m_pAnimInstance->Apply_Animation("Axe_Equip");
+		break;
+	default:
+		break;
+	}
+}
+
+void CPlayer::Select_MoveKey()
 {
 	_vector lookVec = m_pTransformCom->Get_State(CTransform::STATE_LOOK);
 
 	//// 룩벡터와 이동방향을 기반으로 계산하자
 	//_float angle = XMConvertToDegrees(XMVector3AngleBetweenNormals(dir, lookVec).m128_f32[0]);
+	_vector dir = XMLoadFloat3(&m_MoveDir);
 
 	_float angle = XMConvertToDegrees(XMVector3AngleBetweenNormals(dir, lookVec).m128_f32[0]);
 	XMVECTOR cross = XMVector3Cross(dir, lookVec);
 	if (XMVectorGetX(XMVector3Dot(cross, {0.f,1.f,0.f,0.f})) > 0)
 		angle = 360 - angle;
 
-	//cout << angle << endl;
+
 
 	
-
 	if (337.5 <= angle || 22.5 >= angle)
 	{
-		m_pModelCom->Set_AnimIndex(Key("N_Walk"));
+		switch (m_eWeaponType)
+		{
+		case WEAPON_HAND:
+			m_pAnimInstance->Apply_Animation("N_Walk");
+			break;
+		case WEAPON_AXE:
+			m_pAnimInstance->Apply_Animation("Axe_N_Walk");
+			break;
+		}	
 	}
 	else if (22.5 <= angle && 67.5 >= angle)
 	{
-		m_pModelCom->Set_AnimIndex(Key("NE_Walk"));
+		switch (m_eWeaponType)
+		{
+		case WEAPON_HAND:
+			m_pAnimInstance->Apply_Animation("NE_Walk");
+			break;
+		case WEAPON_AXE:
+			m_pAnimInstance->Apply_Animation("Axe_NE_Walk");
+			break;
+		}
 	}
 	else if (67.5 <= angle && 112.5 >= angle)
 	{
-		m_pModelCom->Set_AnimIndex(Key("E_Walk"));
+		switch (m_eWeaponType)
+		{
+		case WEAPON_HAND:
+			m_pAnimInstance->Apply_Animation("E_Walk");
+			break;
+		case WEAPON_AXE:
+			m_pAnimInstance->Apply_Animation("Axe_E_Walk");
+			break;
+		}
 	}
 	else if (112.5 <= angle && 157.5 >= angle)
 	{
-		m_pModelCom->Set_AnimIndex(Key("SE_Walk"));
+		switch (m_eWeaponType)
+		{
+		case WEAPON_HAND:
+			m_pAnimInstance->Apply_Animation("SE_Walk");
+			break;
+		case WEAPON_AXE:
+			m_pAnimInstance->Apply_Animation("Axe_SE_Walk");
+			break;
+		}
 	}
 	else if (157.5 <= angle && 202.5 >= angle)
 	{
-		m_pModelCom->Set_AnimIndex(Key("S_Walk"));
+		switch (m_eWeaponType)
+		{
+		case WEAPON_HAND:
+			m_pAnimInstance->Apply_Animation("S_Walk");
+			break;
+		case WEAPON_AXE:
+			m_pAnimInstance->Apply_Animation("Axe_S_Walk");
+			break;
+		}
 	}
 	else if (202.5 <= angle && 247.5 >= angle)
 	{
-		m_pModelCom->Set_AnimIndex(Key("SW_Walk"));
+		switch (m_eWeaponType)
+		{
+		case WEAPON_HAND:
+			m_pAnimInstance->Apply_Animation("SW_Walk");
+			break;
+		case WEAPON_AXE:
+			m_pAnimInstance->Apply_Animation("Axe_SW_Walk");
+			break;
+		}
 	}
 	else if (247.5 <= angle && 292.5 >= angle)
 	{
-		m_pModelCom->Set_AnimIndex(Key("W_Walk"));
+		switch (m_eWeaponType)
+		{
+		case WEAPON_HAND:
+			m_pAnimInstance->Apply_Animation("W_Walk");
+			break;
+		case WEAPON_AXE:
+			m_pAnimInstance->Apply_Animation("Axe_W_Walk");
+			break;
+		}
 	}
 	else if (292.5 <= angle && 337.5 >= angle)
 	{
-		m_pModelCom->Set_AnimIndex(Key("NW_Walk"));
+		switch (m_eWeaponType)
+		{
+		case WEAPON_HAND:
+			m_pAnimInstance->Apply_Animation("NW_Walk");
+			break;
+		case WEAPON_AXE:
+			m_pAnimInstance->Apply_Animation("Axe_NW_Walk");
+			break;
+		}
 	}
+
+	
+}
+
+void CPlayer::Select_DashKey()
+{
+	if (m_bDash == false) return;
+
+	if (m_pAnimInstance->Animation_Finished())
+	{
+		m_bDash = false;
+	}
+}
+
+void CPlayer::Select_AttackKey()
+{
+	
+}
+
+void CPlayer::Select_IdleKey()
+{
+	switch (m_eWeaponType)
+	{
+	case WEAPON_HAND:
+		m_pAnimInstance->Apply_Animation("Idle");
+		break;
+	case WEAPON_AXE:
+		m_pAnimInstance->Apply_Animation("Axe_Idle");
+		break;
+	}
+}
+
+void CPlayer::Attack_Combo()
+{
+	
+	if (m_bAttack == true)
+	{
+		if (m_pAnimInstance->Animation_Finished())
+		{
+			if (m_Combo > m_PrevCombo)
+			{
+				//cout << m_ClawCombo << endl;
+				_bool bNext = m_pAnimInstance->Next_Animation();
+				if (bNext == false)
+				{
+					m_bAttack = false;
+					m_Combo = 0;
+					m_PrevCombo = 0;
+					//m_bAttackMove = false;
+					return;
+				}
+				else
+				{
+					/*if (m_bMove)
+					{
+						m_bAttackMove = true;
+					}
+					else
+					{
+						m_bAttackMove = false;
+					}*/
+					m_PrevCombo += 1;
+				}
+				
+			}
+			else
+			{
+				m_bAttack = false;
+				m_Combo = 0;
+				m_PrevCombo = 0;
+			}
+				
+		}
+	}
+	// 공격이 끝나기 전 선입력을 하면... 콤보가 쌓이게끔.
+	if (CGameInstance::GetInstance()->Mouse_Down(CInput_Device::DIMK_LBUTTON))
+	{
+		if (m_bAttack == true)
+		{
+			m_PrevCombo = m_Combo;
+			m_Combo++;
+		}
+
+		if (m_bAttack == false)
+		{
+			switch (m_eWeaponType)
+			{
+			case WEAPON_HAND:
+				m_pAnimInstance->Apply_Animation("Claw_Right");
+				break;
+			case WEAPON_AXE:
+				m_pAnimInstance->Apply_Animation("Axe_Right");
+				break;
+			}
+			m_bAttack = true;
+		}
+			
+		/*if (m_pAnimInstance->Animation_Finished())
+		m_ClawCombo */
+	}
+}
+
+void CPlayer::Add_Animations()
+{
+	AnimNode node;
+
+	////////////// 맨손 애니메이션들 //////////////
+	node.bLoop = true;
+
+	node.AnimIndices = { 0 };
+	m_pAnimInstance->Push_Animation("N_Walk", node);
+	node.AnimIndices = { 1 };
+	m_pAnimInstance->Push_Animation("NE_Walk", node);
+	node.AnimIndices = { 2 };
+	m_pAnimInstance->Push_Animation("SE_Walk", node);
+	node.AnimIndices = { 3 };
+	m_pAnimInstance->Push_Animation("S_Walk", node);
+	node.AnimIndices = { 4 };
+	m_pAnimInstance->Push_Animation("SW_Walk", node);
+	node.AnimIndices = { 5 };
+	m_pAnimInstance->Push_Animation("NW_Walk", node);
+	node.AnimIndices = { 6 };
+	m_pAnimInstance->Push_Animation("W_Walk", node);
+	node.AnimIndices = { 7 };
+	m_pAnimInstance->Push_Animation("E_Walk", node);
+	node.AnimIndices = { 8 };
+	m_pAnimInstance->Push_Animation("Idle", node);
+
+	node.bLoop = false;
+	
+	node.AnimIndices = {486, 487, 488 };
+	node.eraseLessTime = { 0.05, 0.05, 0.04 };
+	m_pAnimInstance->Push_Animation("Claw_Right", node, "Claw_Left");
+
+	node.AnimIndices = { 489, 490, 491 };
+	m_pAnimInstance->Push_Animation("Claw_Right_Standing", node, "Claw_Left_Standing");
+
+	node.AnimIndices = { 492, 493, 494 };
+	node.eraseLessTime = { 0.05, 0.05, 0.04 };
+	m_pAnimInstance->Push_Animation("Claw_Left", node, "Claw_Smash");
+
+	node.AnimIndices = { 495, 496, 497 };
+	m_pAnimInstance->Push_Animation("Claw_Left_Standing", node, "Claw_Smash");
+
+	node.AnimIndices = { 498, 499, 500 };
+	node.eraseLessTime = { 0.06, 0.05, 0.3 };
+	m_pAnimInstance->Push_Animation("Claw_Smash", node);
+
+	node.AnimIndices = { 198, 199, 200 };
+	node.eraseLessTime = { 0.06, 0.06, 0.07 };
+	m_pAnimInstance->Push_Animation("Dash", node);
+
+	////////////// 도끼 애니메이션들 //////////////
+
+	node.bLoop = true;
+	node.eraseLessTime = {};
+	node.AnimIndices = { 84 };
+	m_pAnimInstance->Push_Animation("Axe_N_Walk", node);
+	node.AnimIndices = { 85 };
+	m_pAnimInstance->Push_Animation("Axe_NE_Walk", node);
+	node.AnimIndices = { 86 };
+	m_pAnimInstance->Push_Animation("Axe_SE_Walk", node);
+	node.AnimIndices = { 87 };
+	m_pAnimInstance->Push_Animation("Axe_S_Walk", node);
+	node.AnimIndices = { 88 };
+	m_pAnimInstance->Push_Animation("Axe_SW_Walk", node);
+	node.AnimIndices = { 89 };
+	m_pAnimInstance->Push_Animation("Axe_NW_Walk", node);
+	node.AnimIndices = { 90 };
+	m_pAnimInstance->Push_Animation("Axe_W_Walk", node);
+	node.AnimIndices = { 91 };
+	m_pAnimInstance->Push_Animation("Axe_E_Walk", node);
+	node.AnimIndices = { 92 };
+	m_pAnimInstance->Push_Animation("Axe_Idle", node);
+
+	node.bLoop = false;
+
+	node.AnimIndices = { 138, 139, 143 };
+	node.eraseLessTime = { 0.03, 0.05, 0.04 };
+	m_pAnimInstance->Push_Animation("Axe_Right", node, "Axe_Left");
+
+	node.AnimIndices = { 144, 145, 149 };
+	node.eraseLessTime = { 0.05, 0.05, 0.04 };
+	m_pAnimInstance->Push_Animation("Axe_Left", node, "Axe_Smash");
+
+	node.AnimIndices = { 150, 151, 155 };
+	node.eraseLessTime = { 0.06, 0.05, 0.3 };
+	m_pAnimInstance->Push_Animation("Axe_Smash", node);
+
+	node.AnimIndices = { 156, 157, 158 };
+	node.eraseLessTime = { 0.06, 0.06, 0.09 };
+	m_pAnimInstance->Push_Animation("Axe_Dash", node);
+
+	node.AnimIndices = { 159, 160, 161, 162 };
+	node.eraseLessTime = { 0.0001, 0.0001, 0.00001, 0.4 };
+	m_pAnimInstance->Push_Animation("Axe_Throw", node);
+
+	node.AnimIndices = { 94 };
+	node.eraseLessTime = { 0.1 };
+	m_pAnimInstance->Push_Animation("Axe_Equip", node);
+}
+
+void CPlayer::Skills(const _double& TimeDelta)
+{
+	if (m_eWeaponType == WEAPON_HAND) return;
+
+	Skill_Q(TimeDelta);
+	Skill_C(TimeDelta);
+	Skill_R(TimeDelta);
+	Skill_E(TimeDelta);
+	Skill_T(TimeDelta);
+}
+
+void CPlayer::Skill_Q(const _double& TimeDelta)
+{
+	if (m_bSkillQ)
+	{
+		if (m_pAnimInstance->Animation_Finished())
+		{
+			m_bSkillQ = false;
+			return;
+		}
+
+		switch (m_eWeaponType)
+		{
+		case WEAPON_AXE:
+		{
+			m_AxeDashTimeAcc += TimeDelta;
+
+			m_pTransformCom->Go_Dir(XMLoadFloat3(&m_DashDir), m_AxeDashInitSpeed, m_AxeDashAccel, m_AxeDashTimeAcc, m_pNavigationCom);
+		}
+			break;
+		default:
+			break;
+		}
+	}
+
+	if (CGameInstance::GetInstance()->Key_Down(DIK_Q))
+	{
+		m_bSkillQ = true;
+
+		switch (m_eWeaponType)
+		{
+		case WEAPON_AXE:
+			XMStoreFloat3(&m_DashDir, m_pTransformCom->Get_State(CTransform::STATE_LOOK));
+			m_AxeDashTimeAcc = 0.0;
+			m_pAnimInstance->Apply_Animation("Axe_Dash");
+			break;
+		default:
+			break;
+		}
+	}
+	
+}
+
+void CPlayer::Skill_C(const _double& TimeDelta)
+{
+	if (m_bSkillC)
+	{
+		if (m_pAnimInstance->Animation_Finished())
+		{
+			m_bSkillC = false;
+			return;
+		}
+
+		switch (m_eWeaponType)
+		{
+		case WEAPON_AXE:
+		{
+
+		}
+		break;
+		default:
+			break;
+		}
+	}
+
+	if (CGameInstance::GetInstance()->Key_Down(DIK_C))
+	{
+		m_bSkillC = true;
+
+		switch (m_eWeaponType)
+		{
+		case WEAPON_AXE:
+			m_pAnimInstance->Apply_Animation("Axe_Throw");
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+void CPlayer::Skill_R(const _double& TimeDelta)
+{
+	if (CGameInstance::GetInstance()->Key_Down(DIK_R))
+	{
+		m_bSkillR = true;
+	}
+}
+
+void CPlayer::Skill_E(const _double& TimeDelta)
+{
+	if (CGameInstance::GetInstance()->Key_Down(DIK_E))
+	{
+		m_bSkillE = true;
+	}
+}
+
+void CPlayer::Skill_T(const _double& TimeDelta)
+{
+	if (CGameInstance::GetInstance()->Key_Down(DIK_T))
+	{
+		m_bSkillT = true;
+	}
+}
+
+void CPlayer::Select_Weapon()
+{
+	if (CGameInstance::GetInstance()->Key_Down(DIK_X))
+	{
+		m_ePrevWeaponType = m_eWeaponType;
+		m_eWeaponType = (WEAPONTYPE)(m_eWeaponType + 1) ;
+		m_eWeaponType = m_eWeaponType >= WEAPON_END ? (WEAPONTYPE)0 : m_eWeaponType;
+		Change_Weapon();
+	}
+	if (CGameInstance::GetInstance()->Key_Down(DIK_Z))
+	{
+		m_ePrevWeaponType = m_eWeaponType;
+		m_eWeaponType = (WEAPONTYPE)(m_eWeaponType - 1);
+		m_eWeaponType = m_eWeaponType <= -1 ? (WEAPONTYPE)(WEAPON_END-1): m_eWeaponType;
+		Change_Weapon();
+	}
+}
+
+void CPlayer::Change_Weapon()
+{
+	for (int i = 0; i < WEAPON_END; i++)
+	{
+		for (auto& weapon : m_Weapons[i])
+		{
+			if (weapon != nullptr)
+			{
+				if (i == m_eWeaponType)
+				{
+					weapon->Set_Enabled(true);
+				}
+				else
+				{
+					weapon->Set_Enabled(false);
+				}
+
+			}
+		}
+	}
+
+	
+}
+
+void CPlayer::Select_AnimationKey()
+{
+	// 우선순위			1. 공격		2. 움직임		3. IDLE
+
+	if (m_bSkillQ == true || m_bSkillC == true || 
+		m_bSkillR == true || m_bSkillE == true || 
+		m_bSkillT == true)
+	{
+		return;
+	}
+
+	if (m_ePrevWeaponType != m_eWeaponType)
+	{
+		Select_ChangingWeaponKey();
+		return;
+	}
+
+	if (m_bDash == true)
+	{
+		Select_DashKey();
+		return;
+	}
+
+	if (m_bAttack == true)
+	{
+		// 공격과 관련된 키 설정 함수
+		Select_AttackKey();
+		return;
+	}
+
+	if (m_bMove == true)
+	{
+		cout << "MoveKey!!!" << endl;
+		Select_MoveKey();
+		return;
+	}
+	
+	Select_IdleKey();
+	
+	
 }
 
 HRESULT CPlayer::Add_Components()
@@ -597,9 +1108,12 @@ HRESULT CPlayer::Add_Components()
 	if (FAILED(__super::Add_Component(L"Prototype_GameObject_Camera_Player_Main", L"Camera_Player_Main", (CGameObject**)&m_pCameraCom, &CameraMainPlayerDesc)))
 		return E_FAIL;
 
+	CGameInstance::GetInstance()->On_Camera(m_pCameraCom);
+
 	/* For.Com_Navigation */
 	CBounding_OBB::BOUNDINGBOX OBBDesc;
 
+	OBBDesc.eColGroup = COL_PLAYER;
 	OBBDesc.vExtents = _float3(0.5f, 0.5f, 0.5f);
 	OBBDesc.vPosition = _float3(0.f, OBBDesc.vExtents.y, 0.f);
 	OBBDesc.vRotation = _float3(0.f, XMConvertToRadians(0.0f), 0.f);
@@ -612,36 +1126,120 @@ HRESULT CPlayer::Add_Components()
 	m_fCameraRotationX = 270.f;
 	m_fCameraRotationY = 45.f;
 
-	///* For.Com_Collider_Sphere */
-	//CBounding_Sphere::BOUNDINGSPHERE		SphereDesc;
+	CGameInstance* pGameInstance = CGameInstance::GetInstance();
+	Safe_AddRef(pGameInstance);
 
-	//SphereDesc.fRadius = 0.5f;
-	//SphereDesc.vPosition = _float3(0.f, SphereDesc.fRadius * 0.5f, 0.f);
+	/////////////////// 플레이어 머리///////////////////////////
+	CPlayerHead::PARENTDESC		ParentDesc;
+	ZeroMemory(&ParentDesc, sizeof ParentDesc);
 
-	//if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Collider_Sphere"),
-	//	TEXT("Com_Collider_Sphere"), (CComponent**)&m_pColliderCom[COLLIDER_SPHERE], &SphereDesc)))
+	const CBone* pBone = m_pModelCom->Get_Bone("MagicaHeadColliderOffset");
+	if (nullptr == pBone)
+		return E_FAIL;
+
+	ParentDesc.OffsetMatrix = pBone->Get_OffsetMatrix();
+	ParentDesc.pCombindTransformationMatrix = pBone->Get_CombinedTransformationMatrixPtr();
+	ParentDesc.PivotMatrix = m_pModelCom->Get_PivotMatrix();
+	ParentDesc.pParentWorldMatrix = m_pTransformCom->Get_WorldFloat4x4Ptr();
+
+	if (FAILED(__super::Add_Component(TEXT("Prototype_GameObject_PlayerHead"), L"PlayerHead", nullptr, &ParentDesc)))
+		return E_FAIL;
+
+	///////////// 손 이라는 무기는 없음 ~~~ ///////////
+
+	m_Weapons[WEAPON_HAND].push_back(nullptr);
+
+
+	//////////////////////// 도끼1 ///////////////////////////////////
+	CAxe::PARENTDESC		ParentDescAxe;
+	ZeroMemory(&ParentDescAxe, sizeof ParentDescAxe);
+
+	pBone = m_pModelCom->Get_Bone("Weapon01_JNT");
+	if (nullptr == pBone)
+		return E_FAIL;
+
+	ParentDescAxe.OffsetMatrix = pBone->Get_OffsetMatrix();
+	ParentDescAxe.pCombindTransformationMatrix = pBone->Get_CombinedTransformationMatrixPtr();
+	ParentDescAxe.PivotMatrix = m_pModelCom->Get_PivotMatrix();
+	ParentDescAxe.pParentWorldMatrix = m_pTransformCom->Get_WorldFloat4x4Ptr();
+
+	m_Weapons[WEAPON_AXE].push_back(nullptr);
+	if (FAILED(__super::Add_Component(TEXT("Prototype_GameObject_Axe"), L"Axe", (CGameObject**)&m_Weapons[WEAPON_AXE][0], &ParentDescAxe)))
+		return E_FAIL;
+
+	//////////////////////// 도끼2 ///////////////////////////////////
+	CAxe::PARENTDESC		ParentDescAxe2;
+	ZeroMemory(&ParentDescAxe2, sizeof ParentDescAxe2);
+
+	pBone = m_pModelCom->Get_Bone("Weapon02_JNT");
+	if (nullptr == pBone)
+		return E_FAIL;
+
+	ParentDescAxe2.OffsetMatrix = pBone->Get_OffsetMatrix();
+	ParentDescAxe2.pCombindTransformationMatrix = pBone->Get_CombinedTransformationMatrixPtr();
+	ParentDescAxe2.PivotMatrix = m_pModelCom->Get_PivotMatrix();
+	ParentDescAxe2.pParentWorldMatrix = m_pTransformCom->Get_WorldFloat4x4Ptr();
+
+	m_Weapons[WEAPON_AXE].push_back(nullptr);
+	if (FAILED(__super::Add_Component(TEXT("Prototype_GameObject_Axe2"), L"Axe2", (CGameObject**)&m_Weapons[WEAPON_AXE][1], &ParentDescAxe2)))
+		return E_FAIL;
+
+	////////////////////////// 슬래셔1 /////////////////////////
+	CSlasher::PARENTDESC		ParentDescSlahser;
+	ZeroMemory(&ParentDescSlahser, sizeof ParentDescSlahser);
+
+	pBone = m_pModelCom->Get_Bone("Weapon01_JNT");
+	if (nullptr == pBone)
+		return E_FAIL;
+
+	ParentDescSlahser.OffsetMatrix = pBone->Get_OffsetMatrix();
+	ParentDescSlahser.pCombindTransformationMatrix = pBone->Get_CombinedTransformationMatrixPtr();
+	ParentDescSlahser.PivotMatrix = m_pModelCom->Get_PivotMatrix();
+	ParentDescSlahser.pParentWorldMatrix = m_pTransformCom->Get_WorldFloat4x4Ptr();
+
+	m_Weapons[WEAPON_SLASHER].push_back(nullptr);
+	if (FAILED(__super::Add_Component(TEXT("Prototype_GameObject_Slasher"), L"Slasher", (CGameObject**)&m_Weapons[WEAPON_SLASHER][0], &ParentDescSlahser)))
+		return E_FAIL;
+
+	////////////////////////// 슬래셔2 /////////////////////////
+	CSlasher::PARENTDESC		ParentDescSlahser2;
+	ZeroMemory(&ParentDescSlahser2, sizeof ParentDescSlahser2);
+
+	pBone = m_pModelCom->Get_Bone("Weapon02_JNT");
+	if (nullptr == pBone)
+		return E_FAIL;
+
+	ParentDescSlahser2.OffsetMatrix = pBone->Get_OffsetMatrix();
+	ParentDescSlahser2.pCombindTransformationMatrix = pBone->Get_CombinedTransformationMatrixPtr();
+	ParentDescSlahser2.PivotMatrix = m_pModelCom->Get_PivotMatrix();
+	ParentDescSlahser2.pParentWorldMatrix = m_pTransformCom->Get_WorldFloat4x4Ptr();
+
+	m_Weapons[WEAPON_SLASHER].push_back(nullptr);
+	if (FAILED(__super::Add_Component(TEXT("Prototype_GameObject_Slasher"), L"Slasher2", (CGameObject**)&m_Weapons[WEAPON_SLASHER][1], &ParentDescSlahser2)))
+		return E_FAIL;
+
+	//////////////////////////// 메이스 ///////////////////////////
+	//CMace::PARENTDESC		ParentDescMace;
+	//ZeroMemory(&ParentDescMace, sizeof ParentDescMace);
+
+	//pBone = m_pModelCom->Get_Bone("Weapon01_JNT");
+	//if (nullptr == pBone)
 	//	return E_FAIL;
 
-	///* For.Com_Collider_AABB */
-	//CBounding_AABB::BOUNDINGBOX AABBDesc;
+	//ParentDescMace.OffsetMatrix = pBone->Get_OffsetMatrix();
+	//ParentDescMace.pCombindTransformationMatrix = pBone->Get_CombinedTransformationMatrixPtr();
+	//ParentDescMace.PivotMatrix = m_pModelCom->Get_PivotMatrix();
+	//ParentDescMace.pParentWorldMatrix = m_pTransformCom->Get_WorldFloat4x4Ptr();
 
-	//AABBDesc.vExtents = _float3(0.5f, 1.f, 0.5f);
-	//AABBDesc.vPosition = _float3(0.f, AABBDesc.vExtents.y, 0.f);
-
-	//if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Collider_AABB"),
-	//	TEXT("Com_Collider_AABB"), (CComponent**)&m_pColliderCom[COLLIDER_AABB], &AABBDesc)))
+	//if (FAILED(__super::Add_Component(TEXT("Prototype_GameObject_Mace"), L"Mace", nullptr, &ParentDescMace)))
 	//	return E_FAIL;
 
-	///* For.Com_Collider_OBB */
-	//CBounding_OBB::BOUNDINGBOX OBBDesc;
 
-	//OBBDesc.vExtents = _float3(0.5f, 0.5f, 0.5f);
-	//OBBDesc.vPosition = _float3(0.f, OBBDesc.vExtents.y, 0.f);
-	//OBBDesc.vRotation = _float3(0.f, XMConvertToRadians(45.0f), 0.f);
+	////////////////////////// 애님 인스턴스 ///////////////
+	if (FAILED(__super::Add_Component(LEVEL_STATIC, TEXT("Prototype_Component_AnimInstance"), L"AnimInstance", (CComponent**)&m_pAnimInstance, m_pModelCom)))
+		return E_FAIL;
 
-	//if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Collider_OBB"),
-	//	TEXT("Com_Collider_OBB"), (CComponent**)&m_pColliderCom[COLLIDER_OBB], &OBBDesc)))
-	//	return E_FAIL;
+	Safe_Release(pGameInstance);
 	
 	return S_OK;
 }
@@ -703,6 +1301,15 @@ void CPlayer::Free()
 	/*for (auto& pCollider : m_pColliderCom)
 		Safe_Release(pCollider);*/
 
+	for (_int i = 0; i < WEAPON_END; i++)
+	{
+		for (auto& weapon : m_Weapons[i])
+		{
+			Safe_Release(weapon);
+		}
+	}
+
+	Safe_Release(m_pAnimInstance);
 	Safe_Release(m_pNavigationCom);
 	Safe_Release(m_pTransformCom);
 	Safe_Release(m_pShaderCom);	

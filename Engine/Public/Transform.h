@@ -42,6 +42,9 @@ public:
 	_float4x4 Get_WorldFloat4x4() const {
 		return m_WorldMatrix;
 	}
+	const _float4x4* Get_WorldFloat4x4Ptr() const {
+		return &m_WorldMatrix;
+	}
 	void Set_WorldFloat4x4(const _float4x4& matrix) { m_WorldMatrix = matrix; }
 
 	_matrix Get_WorldMatrix_Inverse() const {
@@ -66,6 +69,7 @@ public:
 	void Change_Speed(_double fSpeed);
 	void Set_Position(_fvector vPos);
 	void Go_Dir(_fvector dir, _double TimeDelta, class CNavigation* pNavigation = nullptr);
+	void Go_Dir(_fvector dir, const _double& InitSpeed, const _double& Accel, const _double& TimeAcc, class CNavigation* pNavigation = nullptr);
 	void Go_Straight(_double TimeDelta, class CNavigation* pNavigation = nullptr);
 	void Go_Backward(_double TimeDelta);
 	void Go_Left(_double TimeDelta);

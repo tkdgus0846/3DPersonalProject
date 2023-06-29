@@ -72,6 +72,7 @@ HRESULT CMainApp::PostRender()
 {
 
 	m_pGameInstance->Reset_ColGroup();
+	m_pGameInstance->Reset_Camera();
 
 	return S_OK;
 }

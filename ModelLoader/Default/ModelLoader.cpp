@@ -58,7 +58,7 @@ void Close()
 
 int main()
 {
-    Load("../../Models/AnimModels/", L"../../ExtractModels/AnimModels/", CAssimpModel::TYPE_ANIM);
+   // Load("../../Models/AnimModels/", L"../../ExtractModels/AnimModels/", CAssimpModel::TYPE_ANIM);
     Load("../../Models/NonAnimModels/", L"../../ExtractModels/NonAnimModels/", CAssimpModel::TYPE_NONANIM);
     Close();
     return 0;

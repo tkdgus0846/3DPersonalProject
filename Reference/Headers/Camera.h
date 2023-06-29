@@ -42,6 +42,8 @@ public:
 
 	void			On_Shake(SHAKE_TYPE eType, const _float& fForce, const _float& fTime);
 
+	_bool			Is_On_Camera() const { return m_bCameraOn; }
+
 
 protected:
 	class CTransform*			m_pTransform = { nullptr };

@@ -40,17 +40,13 @@ void CCubeObject::Tick(_double TimeDelta)
 {
 	__super::Tick(TimeDelta);
 
-	//m_pColliderCom->Tick(m_pTransformCom->Get_WorldMatrix());
+	if (nullptr != m_pRendererCom)
+		m_pRendererCom->Add_RenderGroup((CRenderer::RENDERGROUP)m_eRenderGroup, this);
 }
 
 void CCubeObject::Late_Tick(_double TimeDelta)
 {
 	__super::Late_Tick(TimeDelta);
-
-	if (nullptr != m_pRendererCom)
-		m_pRendererCom->Add_RenderGroup((CRenderer::RENDERGROUP)m_eRenderGroup, this);
-	if (nullptr != m_pColliderCom)
-		m_pColliderCom->Add_ColGroup(COL_ENEMY);
 }
 
 HRESULT CCubeObject::Render()
@@ -100,6 +96,7 @@ HRESULT CCubeObject::Add_Components()
 
 	CBounding_OBB::BOUNDINGBOX OBBDesc;
 
+	OBBDesc.eColGroup = COL_ENEMY;
 	OBBDesc.vExtents = _float3(0.5f, 0.5f, 0.5f);
 	OBBDesc.vPosition = _float3(0.f, OBBDesc.vExtents.y, 0.f);
 	OBBDesc.vRotation = _float3(0.f, XMConvertToRadians(45.0f), 0.f);

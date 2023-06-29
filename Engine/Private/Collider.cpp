@@ -67,6 +67,8 @@ HRESULT CCollider::Initialize_Prototype(TYPE eColliderType)
 HRESULT CCollider::Initialize(CBounding* pBounding, void * pArg)
 {
 	/* 원형객체를 복사하여 생성한다. */
+
+	m_eColGroup = ((CBounding::BOUNDINGDESC*)pArg)->eColGroup;
 	
 	m_pBounding = pBounding->Clone(pArg);
 	if (nullptr == m_pBounding)
@@ -95,8 +97,12 @@ void CCollider::OnCollisionExit(const Collision* collision)
 
 void CCollider::Tick(_double TimeDelta)
 {
+	if (m_bEnabled == false) return;
 	if (nullptr == m_pBounding)
 		return;
+
+	__super::Tick(TimeDelta);
+	CGameInstance::GetInstance()->Add_ColGroup(m_eColGroup, this);
 
 	if (m_pOwnerObject == nullptr)
 	{
@@ -108,15 +114,20 @@ void CCollider::Tick(_double TimeDelta)
 		m_pBounding->Tick(m_pOwnerTransform->Get_WorldMatrix());
 }
 
-void CCollider::Add_ColGroup(COLGROUP eGroup)
+void CCollider::Late_Tick(_double TimeDelta)
 {
-	CGameInstance::GetInstance()->Add_ColGroup(eGroup, this);
+	if (m_bEnabled == false) return;
+
+	__super::Late_Tick(TimeDelta);
+
 }
 
 #ifdef _DEBUG
 
 HRESULT CCollider::Render()
 {
+	if (m_bEnabled == false) return S_OK;
+
 	if (nullptr == m_pBatch)
 		return E_FAIL;
 

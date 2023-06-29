@@ -70,6 +70,9 @@ HRESULT CToolApp::Render()
 	IMGUI->Render();
 
 	m_pGameInstance->Present();
+
+
+	m_pGameInstance->Reset_Camera();
 	
 	
 

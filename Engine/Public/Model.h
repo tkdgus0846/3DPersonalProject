@@ -6,6 +6,7 @@ BEGIN(Engine)
 
 class ENGINE_DLL CModel final : public CComponent, public IReadable
 {
+	friend class CAnimInstance;
 public:
 	enum TYPE { TYPE_NONANIM, TYPE_ANIM, TYPE_END };
 private:
@@ -18,10 +19,17 @@ public:
 		return m_iNumMeshes;
 	}
 
+	_float4x4 Get_PivotMatrix() {
+		return m_PivotMatrix;
+	}
+
+	const class CBone* Get_Bone(const char* pBoneName);
+
 public:
 	void Set_AnimIndex(_uint iAnimIndex) {
 		if (iAnimIndex >= m_iNumAnimations || Is_Changing_Animation())
 			return;
+		// 위에 잠깐만 주석
 		m_iCurrentAnimIndex = iAnimIndex;
 	}
 	_uint Get_NumAnimations() const { return m_iNumAnimations; }
@@ -43,6 +51,9 @@ public:
 	void Loop_Animation(const vector<_uint>& indexVec, _bool bLoop);
 	vector<class CAnimation*>* Get_Animations() { return &m_Animations; }
 	_bool Is_Changing_Animation() const { return m_iPrevAnimIndex != m_iCurrentAnimIndex; }
+	void Erase_LastFrame_Animation(_uint iIndex);
+	void Erase_Frames_LessTime(_uint iIndex, _double time);
+	void Remove_Mesh(const string& name, _uint iBoneNum);
 
 private: /* For.Meshes  */
 	_uint					m_iNumMeshes = { 0 };

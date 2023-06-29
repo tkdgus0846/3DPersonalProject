@@ -100,6 +100,38 @@ _int CChannel::Lerp_TransformaitionMatrix(CModel::BONES& Bones, _double duration
 	return 0;
 }
 
+_double CChannel::Erase_LastFrame()
+{
+	if (m_KeyFrames.size() < 1) return 0.0;
+
+	m_KeyFrames.erase(m_KeyFrames.end() - 1);
+	m_iNumKeyFrames -= 1;
+
+	if (m_KeyFrames.empty())
+	{
+		m_iNumKeyFrames = 0;
+		return 0.0;
+	}
+	return m_KeyFrames.back().Time;
+}
+
+_double CChannel::Erase_Frames_LessTime(_double time)
+{
+	
+	for (auto it = m_KeyFrames.rbegin(); it != m_KeyFrames.rend();)
+	{
+		if (time < it->Time)
+		{
+			it = reverse_iterator(m_KeyFrames.erase(std::next(it).base()));
+			m_iNumKeyFrames -= 1;
+		}
+		else
+			break;
+		
+	}
+	return m_KeyFrames.back().Time;
+}
+
 CChannel * CChannel::Create(ParsingData* pData)
 {
 	CChannel*	pInstance = new CChannel();

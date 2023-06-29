@@ -4,6 +4,7 @@
 #include "PipeLine.h"
 #include "Input_Device.h"
 #include "Light_Manager.h"
+#include "Camera_Manager.h"
 
 /* 0. 클라이언트 엔진의 연결 역활한다. */
 /* 0.0 게임인스턴스라는 객체를 통해서 엔진의다양한기능을 활요앟ㄹ 수 있게 한다. */
@@ -103,6 +104,15 @@ public: /* For. Collision Manager */
 	void	Reset_ColGroup();
 	HRESULT	Remove_Collider(CCollider * collider, COLGROUP colID);
 	
+public: /* For. Camera Manager*/
+	CCamera* Find_Camera(const wstring & pCamTag);
+	void Add_Camera(const wstring & pCamTag, CCamera * pCamera);
+	void Reset_Camera();
+	CCamera* Get_CurCamera();
+	void On_Camera(const wstring & pCamTag);
+	void On_Camera(CCamera * pCamera);
+	_bool Is_On_Camera(const wstring & pCamTag);
+	void On_Shake(CCamera::SHAKE_TYPE eType, const _float & fForce = 1.5f, const _float & fTime = 5.f);
 
 private:
 	class CGraphic_Device*			m_pGraphic_Device = { nullptr };
@@ -114,6 +124,7 @@ private:
 	class CPipeLine*				m_pPipeLine = { nullptr };
 	class CLight_Manager*			m_pLight_Manager = { nullptr };
 	class CCollisionManager*		m_pCollisionManager = { nullptr };
+	class CCamera_Manager*			m_pCameraManager = { nullptr };
 
 public:
 	static void Release_Engine();

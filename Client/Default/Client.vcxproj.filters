@@ -52,6 +52,9 @@
     <Filter Include="02.GameObjects\Camera\PlayerCam">
       <UniqueIdentifier>{db3325dd-2c02-4e36-aaaa-0e280a398ae3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02.GameObjects\Player\Parts">
+      <UniqueIdentifier>{cb42d30d-702e-4f84-93de-d734bb6aae7f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -105,6 +108,21 @@
     <ClInclude Include="..\public\Camera_Player_Main.h">
       <Filter>02.GameObjects\Camera\PlayerCam</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\PlayerHead.h">
+      <Filter>02.GameObjects\Player\Parts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Axe.h">
+      <Filter>02.GameObjects\Player\Parts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Mace.h">
+      <Filter>02.GameObjects\Player\Parts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Slasher.h">
+      <Filter>02.GameObjects\Player\Parts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Axe2.h">
+      <Filter>02.GameObjects\Player\Parts</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp">
@@ -145,6 +163,21 @@
     </ClCompile>
     <ClCompile Include="..\private\Camera_Player_Main.cpp">
       <Filter>02.GameObjects\Camera\PlayerCam</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\PlayerHead.cpp">
+      <Filter>02.GameObjects\Player\Parts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Mace.cpp">
+      <Filter>02.GameObjects\Player\Parts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Slasher.cpp">
+      <Filter>02.GameObjects\Player\Parts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Axe.cpp">
+      <Filter>02.GameObjects\Player\Parts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Axe2.cpp">
+      <Filter>02.GameObjects\Player\Parts</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

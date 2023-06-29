@@ -24,6 +24,10 @@ public:
 		return m_CombinedTransformationMatrix;
 	}
 
+	const _float4x4* Get_CombinedTransformationMatrixPtr() const {
+		return &m_CombinedTransformationMatrix;
+	}
+
 	void Set_OffsetMatrix(const _float4x4& OffsetMatrix) {
 		m_OffsetMatrix = OffsetMatrix;
 	}

@@ -12,6 +12,7 @@ class CBounding abstract : public CBase
 public:
 	typedef struct tagColliderDesc
 	{
+		COLGROUP	eColGroup;
 		_float3		vPosition;
 	}BOUNDINGDESC;
 

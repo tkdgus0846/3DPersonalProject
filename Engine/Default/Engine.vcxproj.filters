@@ -127,6 +127,9 @@
     <Filter Include="01.Utility\03.Components\Collider\Manager">
       <UniqueIdentifier>{3b5b614c-bde8-479d-885c-fa60f04da711}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Utility\03.Components\ActorComponent">
+      <UniqueIdentifier>{b6719d06-e68e-4a32-9174-21827f25f48e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\public\Base.h">
@@ -280,6 +283,9 @@
     <ClInclude Include="..\public\AnimInstance.h">
       <Filter>01.Utility\03.Components\Model\Animation</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\ActorComponent.h">
+      <Filter>01.Utility\03.Components\ActorComponent</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\private\Base.cpp">
@@ -416,6 +422,9 @@
     </ClCompile>
     <ClCompile Include="..\private\AnimInstance.cpp">
       <Filter>01.Utility\03.Components\Model\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\ActorComponent.cpp">
+      <Filter>01.Utility\03.Components\ActorComponent</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

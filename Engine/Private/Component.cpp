@@ -187,11 +187,14 @@ HRESULT CComposite::Add_Component(const wstring& PrototypeTag, const wstring& Ob
 
 	resultObj->SetOwner(this);
 	
-	*ppOut = resultObj;
+	if (ppOut != nullptr)
+	{
+		*ppOut = resultObj;
+		Safe_AddRef(resultObj);
+	}
+		
 
 	m_Components[ObjectName] = (CComponent*)resultObj;
-
-	Safe_AddRef(resultObj);
 
 	Safe_Release(pGameInstance);
 

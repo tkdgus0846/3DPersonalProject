@@ -48,9 +48,13 @@ HRESULT CAnimation::Initialize(ParsingData* pData)
 
 void CAnimation::Invalidate_TransformationMatrix(CModel::BONES& Bones, _double TimeDelta)
 {
+	
 	if (m_isFinished == true) return;
 
-	m_TimeAcc += m_TickPerSecond * TimeDelta;
+	
+	
+	if (m_isControlManual == false)
+		m_TimeAcc += m_TickPerSecond * TimeDelta;
 
 	if (m_TimeAcc >= m_Duration)
 	{
@@ -98,7 +102,7 @@ _int CAnimation::Lerp_NextAnimation(CAnimation* pNextAnimation, CModel::BONES& B
 
 			if (pPrevChannel->Get_BoneIndex() == pNextChannel->Get_BoneIndex())
 			{
-				cout << pPrevChannel->Get_BoneIndex() << endl;
+				
 				_int result;
 				
 				result = pPrevChannel->Lerp_TransformaitionMatrix(Bones, Duration, LerpTimeAcc, m_ChannelCurrentKeyFrames[iChannelIndex], pNextChannel->Get_FirstKeyFrame());
@@ -112,6 +116,30 @@ _int CAnimation::Lerp_NextAnimation(CAnimation* pNextAnimation, CModel::BONES& B
 	}
 
 	return iResult;
+}
+
+void CAnimation::Erase_LastFrame_Animation()
+{
+	_double lastTime = -1.f;
+	for (auto& channel : m_Channels)
+	{
+		_double tmpTime = channel->Erase_LastFrame();
+		if (lastTime < tmpTime)
+			lastTime = tmpTime;
+	}
+	m_Duration = lastTime;
+}
+
+void CAnimation::Erase_Frames_LessTime(_double time)
+{
+	_double lastTime = -1.f;
+	for (auto& channel : m_Channels)
+	{
+		_double tmpTime = channel->Erase_Frames_LessTime(time);
+		if (lastTime < tmpTime)
+			lastTime = tmpTime;
+	}
+	m_Duration = lastTime;
 }
 
 CAnimation * CAnimation::Create(ParsingData* pData)

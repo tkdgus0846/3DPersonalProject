@@ -22,6 +22,7 @@ CGameInstance::CGameInstance()
 	, m_pInput_Device{ CInput_Device::GetInstance() }
 	, m_pLight_Manager{ CLight_Manager::GetInstance() }
 	, m_pCollisionManager{ CCollisionManager::GetInstance()}
+	, m_pCameraManager{ CCamera_Manager::GetInstance()}
 {
 	Safe_AddRef(m_pCollisionManager);
 	Safe_AddRef(m_pLight_Manager);
@@ -32,6 +33,7 @@ CGameInstance::CGameInstance()
 	Safe_AddRef(m_pLevel_Manager);
 	Safe_AddRef(m_pGraphic_Device);
 	Safe_AddRef(m_pInput_Device);
+	Safe_AddRef(m_pCameraManager);
 
 }
 
@@ -483,11 +485,69 @@ HRESULT CGameInstance::Remove_Collider(CCollider* collider, COLGROUP colID)
 	return m_pCollisionManager->Remove_Collider(collider, colID);
 }
 
+CCamera* CGameInstance::Find_Camera(const wstring& pCamTag)
+{
+	if (nullptr == m_pCameraManager) return nullptr;
+
+	return m_pCameraManager->Find_Camera(pCamTag);
+}
+
+void CGameInstance::Add_Camera(const wstring& pCamTag, CCamera* pCamera)
+{
+	if (nullptr == m_pCameraManager) return;
+
+	m_pCameraManager->Add_Camera(pCamTag, pCamera);
+}
+
+void CGameInstance::Reset_Camera()
+{
+	if (nullptr == m_pCameraManager) return;
+
+	m_pCameraManager->Reset_Camera();
+}
+
+CCamera* CGameInstance::Get_CurCamera()
+{
+	if (nullptr == m_pCameraManager) return nullptr;
+
+	m_pCameraManager->Get_CurCamera();
+}
+
+void CGameInstance::On_Camera(const wstring& pCamTag)
+{
+	if (nullptr == m_pCameraManager) return;
+
+	m_pCameraManager->On_Camera(pCamTag);
+}
+
+void CGameInstance::On_Camera(CCamera* pCamera)
+{
+	if (nullptr == m_pCameraManager) return;
+
+	m_pCameraManager->On_Camera(pCamera);
+}
+
+_bool CGameInstance::Is_On_Camera(const wstring& pCamTag)
+{
+	if (nullptr == m_pCameraManager) return false;
+
+	return m_pCameraManager->Is_On_Camera(pCamTag);
+}
+
+void CGameInstance::On_Shake(CCamera::SHAKE_TYPE eType, const _float& fForce, const _float& fTime)
+{
+	if (nullptr == m_pCameraManager) return;
+
+	m_pCameraManager->On_Shake(eType, fForce, fTime);
+}
+
 void CGameInstance::Release_Engine()
 {	
 	CGameInstance::GetInstance()->DestroyInstance();
 
 	CPipeLine::GetInstance()->DestroyInstance();
+
+	CCamera_Manager::GetInstance()->DestroyInstance();
 
 	CCollisionManager::GetInstance()->DestroyInstance();
 
@@ -508,6 +568,7 @@ void CGameInstance::Release_Engine()
 
 void CGameInstance::Free()
 {
+	Safe_Release(m_pCameraManager);
 	Safe_Release(m_pLight_Manager);
 	Safe_Release(m_pCollisionManager);
 	Safe_Release(m_pPipeLine);

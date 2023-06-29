@@ -1,5 +1,6 @@
 #include "..\Public\Camera.h"
 #include "PipeLine.h"
+#include "GameInstance.h"
 
 
 CCamera::CCamera(ID3D11Device * pDevice, ID3D11DeviceContext * pContext)
@@ -53,12 +54,22 @@ HRESULT CCamera::Initialize(void * pArg)
 
 void CCamera::Tick(_double TimeDelta)
 {
+	CGameInstance::GetInstance()->Add_Camera(GetName(), this);
+
+	if (m_bCameraOn == false) return;
+
+	__super::Tick(TimeDelta);
+
+	// Add_Camera
+
 	m_pPipeLine->Set_Transform(CPipeLine::D3DTS_VIEW, m_pTransform->Get_WorldMatrix_Inverse());
 	m_pPipeLine->Set_Transform(CPipeLine::D3DTS_PROJ, XMMatrixPerspectiveFovLH(m_fFovy, m_fAspect, m_fNear, m_fFar));
+
 }
 
 void CCamera::Late_Tick(_double TimeDelta)
 {
+	__super::Late_Tick(TimeDelta);
 }
 
 HRESULT CCamera::Render()

@@ -1,6 +1,10 @@
 #pragma once
 #include "ImGuiWindow.h"
 
+BEGIN(Engine)
+class CAnimation;
+END
+
 class CAnimWindow : public CImGuiWindow
 {
 public:
@@ -26,6 +30,8 @@ private:
 
 	class CDummyObject* m_DummyObject = { nullptr };
 	_int			m_CurAnimationIndex = { -1 };
+
+	CAnimation*		m_pCurAnim = { nullptr };
 	
 
 };

@@ -20,6 +20,7 @@ public:
 	virtual HRESULT Initialize(class CBounding* pBounding, void* pArg);
 
 	virtual void Tick(_double TimeDelta) override;
+	virtual void Late_Tick(_double TimeDelta) override;
 
 	void OnCollisionEnter(const Collision* collision);
 	void OnCollisionStay(const Collision* collision);
@@ -29,7 +30,7 @@ public:
 	void Set_Enable(_bool bEnabled) { m_bEnabled = bEnabled; }
 	_bool Get_Enable() const { return m_bEnabled; }
 
-	void Add_ColGroup(COLGROUP eGroup);
+	void Change_ColGroup(COLGROUP eGroup) { m_eColGroup = eGroup; }
 	
 
 #ifdef _DEBUG
@@ -55,6 +56,7 @@ private:
 	class CGameObject*				m_pOwnerObject = { nullptr };
 
 	unordered_map<CCollider*, Collision>	m_CollisionList;
+	COLGROUP						m_eColGroup = { COL_END };
 
 
 

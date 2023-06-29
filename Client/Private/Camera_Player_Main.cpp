@@ -39,6 +39,13 @@ HRESULT CCamera_Player_Main::Initialize(void* pArg)
 
 void CCamera_Player_Main::Tick(_double TimeDelta)
 {
+	
+	__super::Tick(TimeDelta);
+	
+
+	if (m_bCameraOn == false)
+		return;
+
 	CGameInstance* pGameInstance = CGameInstance::GetInstance();
 	Safe_AddRef(pGameInstance);
 
@@ -49,8 +56,6 @@ void CCamera_Player_Main::Tick(_double TimeDelta)
 
 
 	Safe_Release(pGameInstance);
-
-	__super::Tick(TimeDelta);
 }
 
 void CCamera_Player_Main::Late_Tick(_double TimeDelta)

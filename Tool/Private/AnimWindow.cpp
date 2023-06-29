@@ -120,6 +120,8 @@ void CAnimWindow::Show_Animations()
 
 	vector<class CAnimation*>* animations = m_DummyObject->m_pModelCom->Get_Animations();
 
+	ImGui::BeginChild("Animations", ImVec2(0, 300), true, ImGuiWindowFlags_HorizontalScrollbar);
+
 	//ImGui::Begin("Table");
 	ImGui::Columns(3, "myColumns"); // 3개의 열 생성
 
@@ -149,12 +151,16 @@ void CAnimWindow::Show_Animations()
 		
 
 	_int index = 0;
+	
 	for (CAnimation* anim : (*animations))
 	{
 		if (ImGui::Selectable(to_string(index).c_str(), index == m_CurAnimationIndex))
 		{
+			//m_DummyObject->m_pModelCom->Loop_Animation(index, false);
 			m_CurAnimationIndex = index;
 			m_DummyObject->m_pModelCom->Set_AnimIndex(index);
+			anim->Set_ControlManual(true);
+			m_pCurAnim = anim;
 		}
 		//ImGui::Separator();
 
@@ -171,6 +177,20 @@ void CAnimWindow::Show_Animations()
 		ImGui::NextColumn();
 		index++;
 	}
+
+	ImGui::EndChild();
+
+
+	if (m_pCurAnim != nullptr)
+	{
+		static _float dragValue = 0.0f;
+
+		m_pCurAnim->Set_TimeAcc((_double)dragValue);
+		ImGui::DragFloat("Progress", &dragValue, 0.005f, 0.0f, (_float)m_pCurAnim->Get_Duration());
+		ImGui::ProgressBar(dragValue, ImVec2(-1, 0), "Progress Bar");
+	}
+	
+
 	//ImGui::End();
 	
 	//m_ModelPrototypesVec[selectedModelIndex]

@@ -32,6 +32,7 @@ HRESULT CCamera_Main::Initialize(void * pArg)
 			return E_FAIL;
 
 		//ChooseType(TYPE_MAIN);
+		CGameInstance::GetInstance()->On_Camera(this);
 	}
 
 	

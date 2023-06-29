@@ -39,6 +39,22 @@ CModel::CModel(const CModel& rhs)
 	}
 }
 
+const CBone* CModel::Get_Bone(const char* pBoneName)
+{
+	auto	iter = find_if(m_Bones.begin(), m_Bones.end(), [&](CBone* pBone)
+		{
+			if (!strcmp(pBoneName, pBone->Get_Name()))
+				return true;
+			else
+				return false;
+		});
+
+	if (iter == m_Bones.end())
+		return nullptr;
+
+	return (*iter);
+}
+
 HRESULT CModel::Initialize_Prototype(const char* pModelFilePath, _fmatrix PivotMatrix)
 {
 	//_uint		iFlag = 0;
@@ -113,7 +129,7 @@ void CModel::Play_Animation(_double TimeDelta)
 	if (Is_Changing_Animation())
 	{
 		m_lerpTimeAcc += TimeDelta;
-		_int result = m_Animations[m_iPrevAnimIndex]->Lerp_NextAnimation(m_Animations[m_iCurrentAnimIndex], m_Bones, 0.25, m_lerpTimeAcc);
+		_int result = m_Animations[m_iPrevAnimIndex]->Lerp_NextAnimation(m_Animations[m_iCurrentAnimIndex], m_Bones, 0.2, m_lerpTimeAcc);
 
 		if (result == 1)
 		{
@@ -131,6 +147,7 @@ void CModel::Play_Animation(_double TimeDelta)
 		}
 	}
 	
+	//cout << m_iCurrentAnimIndex << endl;
 	/* 어떤 애니메이션을 재생하려고하는지?! */
 	/* 이 애니메이션은 어떤 뼈를 사용하는지?! */
 	/* 뼈들은 각각 어떤 상태(TransformationMatrix)를 취하고 있어야하는가?! */
@@ -179,6 +196,30 @@ void CModel::Loop_Animation(const vector<_uint>& indexVec, _bool bLoop)
 	for (auto& item : indexVec)
 	{
 		m_Animations[item]->Set_Loop(bLoop);
+	}
+}
+
+void CModel::Erase_LastFrame_Animation(_uint iIndex)
+{
+	m_Animations[iIndex]->Erase_LastFrame_Animation();
+}
+
+void CModel::Erase_Frames_LessTime(_uint iIndex, _double time)
+{
+	m_Animations[iIndex]->Erase_Frames_LessTime(time);
+}
+
+void CModel::Remove_Mesh(const string& name, _uint iBoneNum)
+{
+	for (auto iter = m_Meshes.begin(); iter != m_Meshes.end(); iter++)
+	{
+		if (name.compare((*iter)->GetszName()) == 0 && (*iter)->GetBoneNum() == iBoneNum)
+		{
+			Safe_Release(*iter);
+			m_Meshes.erase(iter);
+			m_iNumMeshes--;
+			return;
+		}
 	}
 }
 

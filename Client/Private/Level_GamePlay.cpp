@@ -103,7 +103,7 @@ HRESULT CLevel_GamePlay::Ready_Layer_Camera(const _tchar * pLayerTag)
 	CameraFreeDesc.CameraDesc.TransformDesc.RotationPerSec = XMConvertToRadians(90.0f);
 
 
-	wstring objName = L"Camera_Free";
+	wstring objName = L"CameraFree";
 	if (pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Camera_Free"), pLayerTag, objName, & CameraFreeDesc) == nullptr)
 		return E_FAIL;
 

@@ -33,7 +33,7 @@ private: /* For.Meshes  */
 
 private: /* For.Materials */
 	_uint					m_iNumMaterials = { 0 };
-	vector<_char*>	m_MaterialPaths;
+	vector<string>	m_MaterialPaths;
 
 private: /* For.Bones*/
 	vector<class CAssimpBone*>			m_Bones;

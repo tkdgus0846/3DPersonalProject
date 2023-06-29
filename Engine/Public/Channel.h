@@ -21,6 +21,8 @@ public:
 
 	_uint Get_BoneIndex() { return m_iBoneIndex; }
 	KEYFRAME& Get_FirstKeyFrame() { return m_KeyFrames.front(); }
+	_double Erase_LastFrame();
+	_double Erase_Frames_LessTime(_double time);
 
 private:
 	char				m_szName[MAX_PATH] = "";

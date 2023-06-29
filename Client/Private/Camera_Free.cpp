@@ -39,6 +39,12 @@ HRESULT CCamera_Free::Initialize(void * pArg)
 
 void CCamera_Free::Tick(_double TimeDelta)
 {
+	__super::Tick(TimeDelta);
+
+	
+	if (m_bCameraOn == false)
+		return;
+
 	if (GetKeyState('W') & 0x8000)
 	{
 		m_pTransform->Go_Straight(TimeDelta);
@@ -74,7 +80,7 @@ void CCamera_Free::Tick(_double TimeDelta)
 
 	_long		MouseMove = { 0 };
 
-	/*if (MouseMove = pGameInstance->Get_DIMouseMove(CInput_Device::DIMM_X))
+	if (MouseMove = pGameInstance->Get_DIMouseMove(CInput_Device::DIMM_X))
 	{
 		m_pTransform->Turn(XMVectorSet(0.f, 1.f, 0.f, 0.f), MouseMove * TimeDelta * 0.2f);
 	}
@@ -82,11 +88,9 @@ void CCamera_Free::Tick(_double TimeDelta)
 	if (MouseMove = pGameInstance->Get_DIMouseMove(CInput_Device::DIMM_Y))
 	{
 		m_pTransform->Turn(m_pTransform->Get_State(CTransform::STATE_RIGHT), MouseMove * TimeDelta * 0.2f);
-	}*/
+	}
 
 	Safe_Release(pGameInstance);
-	
-	__super::Tick(TimeDelta);
 }
 
 void CCamera_Free::Late_Tick(_double TimeDelta)
