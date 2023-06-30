@@ -48,10 +48,8 @@ HRESULT CAnimation::Initialize(ParsingData* pData)
 
 void CAnimation::Invalidate_TransformationMatrix(CModel::BONES& Bones, _double TimeDelta)
 {
-	
+	// 끝났으면 무조건 리턴하게 하면 안된다. 끝나고 포즈를 유지해야하는 경우가 있기 때문이다.
 	if (m_isFinished == true) return;
-
-	
 	
 	if (m_isControlManual == false)
 		m_TimeAcc += m_TickPerSecond * TimeDelta;
@@ -70,8 +68,6 @@ void CAnimation::Invalidate_TransformationMatrix(CModel::BONES& Bones, _double T
 			
 	}
 
-
-
 	/* 현재 재생된 시간에 맞도록 모든 뼈의 상태를 키프레임정보를 기반으로하여 갱신한다. */
 	_uint		iChannelIndex = 0;
 	for (auto& pChannel : m_Channels)
@@ -81,8 +77,84 @@ void CAnimation::Invalidate_TransformationMatrix(CModel::BONES& Bones, _double T
 
 		pChannel->Invalidate_TransformationMatrix(Bones, m_TimeAcc, &m_ChannelCurrentKeyFrames[iChannelIndex++]);
 	}
+}
 
+void CAnimation::Invalidate_TransformationMatrix_Upper(CModel::BONES& Bones, _double TimeDelta, const unordered_set<_int>& UpperSet)
+{
+	// 끝났으면 무조건 리턴하게 하면 안된다. 끝나고 포즈를 유지해야하는 경우가 있기 때문이다.
+	if (m_isFinished == true) return;
 
+	if (m_isControlManual == false)
+		m_TimeAcc += m_TickPerSecond * TimeDelta;
+
+	if (m_TimeAcc >= m_Duration)
+	{
+		if (true == m_isLoop)
+		{
+			m_TimeAcc = 0.f;
+		}
+		else
+		{
+			m_isFinished = true;
+			m_TimeAcc = 0.f;
+		}
+
+	}
+
+	/* 현재 재생된 시간에 맞도록 모든 뼈의 상태를 키프레임정보를 기반으로하여 갱신한다. */
+	_uint		iChannelIndex = 0;
+	for (auto& pChannel : m_Channels)
+	{
+		if (nullptr == pChannel)
+			return;
+
+		_uint boneIndex = pChannel->Get_BoneIndex();
+
+		// 상체 인덱스에 대해서만 Invalidate 함수 부른다.
+		if (UpperSet.find(boneIndex) != UpperSet.end())
+		{
+			pChannel->Invalidate_TransformationMatrix(Bones, m_TimeAcc, &m_ChannelCurrentKeyFrames[iChannelIndex++]);
+		}
+	}
+}
+
+void CAnimation::Invalidate_TransformationMatrix_Lower(CModel::BONES& Bones, _double TimeDelta, const unordered_set<_int>& LowerSet)
+{
+	// 끝났으면 무조건 리턴하게 하면 안된다. 끝나고 포즈를 유지해야하는 경우가 있기 때문이다.
+	if (m_isFinished == true) return;
+
+	if (m_isControlManual == false)
+		m_TimeAcc += m_TickPerSecond * TimeDelta;
+
+	if (m_TimeAcc >= m_Duration)
+	{
+		if (true == m_isLoop)
+		{
+			m_TimeAcc = 0.f;
+		}
+		else
+		{
+			m_isFinished = true;
+			m_TimeAcc = 0.f;
+		}
+
+	}
+
+	/* 현재 재생된 시간에 맞도록 모든 뼈의 상태를 키프레임정보를 기반으로하여 갱신한다. */
+	_uint		iChannelIndex = 0;
+	for (auto& pChannel : m_Channels)
+	{
+		if (nullptr == pChannel)
+			return;
+
+		_uint boneIndex = pChannel->Get_BoneIndex();
+
+		// 하체 인덱스에 대해서만 Invalidate 함수 부른다.
+		if (LowerSet.find(boneIndex) != LowerSet.end())
+		{
+			pChannel->Invalidate_TransformationMatrix(Bones, m_TimeAcc, &m_ChannelCurrentKeyFrames[iChannelIndex++]);
+		}
+	}
 }
 
 _int CAnimation::Lerp_NextAnimation(CAnimation* pNextAnimation, CModel::BONES& Bones, _double Duration, _double LerpTimeAcc)

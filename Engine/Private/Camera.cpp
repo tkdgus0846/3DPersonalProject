@@ -60,11 +60,13 @@ void CCamera::Tick(_double TimeDelta)
 
 	__super::Tick(TimeDelta);
 
+	if (m_bShake == true)
+		Shake(TimeDelta);
+
 	// Add_Camera
 
 	m_pPipeLine->Set_Transform(CPipeLine::D3DTS_VIEW, m_pTransform->Get_WorldMatrix_Inverse());
 	m_pPipeLine->Set_Transform(CPipeLine::D3DTS_PROJ, XMMatrixPerspectiveFovLH(m_fFovy, m_fAspect, m_fNear, m_fFar));
-
 }
 
 void CCamera::Late_Tick(_double TimeDelta)
@@ -93,15 +95,6 @@ _vector CCamera::Get_Pos()
 {
 	return XMLoadFloat4(&m_vEye);
 }
-
-void CCamera::On_Shake(SHAKE_TYPE eType, const _float& fForce, const _float& fTime)
-{
-	m_eType = eType;
-	m_bShake = true;
-	m_fShakeForce = fForce;
-	m_fShakeTime = fTime;
-}
-
 
 void CCamera::Free()
 {

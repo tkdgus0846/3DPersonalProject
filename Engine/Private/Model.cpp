@@ -55,6 +55,26 @@ const CBone* CModel::Get_Bone(const char* pBoneName)
 	return (*iter);
 }
 
+void CModel::Set_AnimIndex(_uint iAnimIndex, ANIMTYPE eType)
+{
+	if (iAnimIndex >= m_iNumAnimations || Is_Changing_Animation(eType)) return;
+
+
+	switch (eType)
+	{
+	case ANIM_ALLBODY:
+		m_iCurrentAnimIndex = iAnimIndex;
+		break;
+	case ANIM_UPPERBODY:
+		m_iUpperCurrentAnimIndex = iAnimIndex;
+		break;
+	case ANIM_LOWERBODY:
+		m_iLowerCurrentAnimIndex = iAnimIndex;
+		break;
+	}
+	
+}
+
 HRESULT CModel::Initialize_Prototype(const char* pModelFilePath, _fmatrix PivotMatrix)
 {
 	//_uint		iFlag = 0;
@@ -146,16 +166,74 @@ void CModel::Play_Animation(_double TimeDelta)
 			return;
 		}
 	}
-	
-	//cout << m_iCurrentAnimIndex << endl;
-	/* 어떤 애니메이션을 재생하려고하는지?! */
-	/* 이 애니메이션은 어떤 뼈를 사용하는지?! */
-	/* 뼈들은 각각 어떤 상태(TransformationMatrix)를 취하고 있어야하는가?! */
 
 	/* 현재 애니메이션에서 사용하는 뼈들을 찾아서 해당 뼈들의 TransformationMatrix를 갱신한다. */
 	m_Animations[m_iCurrentAnimIndex]->Invalidate_TransformationMatrix(m_Bones, TimeDelta);
 
 	/* 모델에 표현되어있는 모든 뼈들의 CombinedTransformationMatrix */
+	//  모델의 모든 뼈를 돌면서 자기 부모의 컴바인드 . 이 컴바인드를 만들어주는 
+	for (auto& pBone : m_Bones)
+	{
+		pBone->Invalidate_CombinedTransformationMatrix(m_Bones);
+	}
+}
+
+void CModel::Play_UpperBody_Animation(_double TimeDelta)
+{
+	if (Is_Changing_Animation(ANIM_UPPERBODY))
+	{
+		m_UpperLerpTimeAcc += TimeDelta;
+		_int result = m_Animations[m_iUpperPrevAnimIndex]->Lerp_NextAnimation(m_Animations[m_iUpperCurrentAnimIndex], m_Bones, 0.2, m_UpperLerpTimeAcc);
+
+		if (result == 1)
+		{
+			m_UpperLerpTimeAcc = 0.0;
+			m_Animations[m_iUpperPrevAnimIndex]->Reset_Channels();
+			m_iUpperPrevAnimIndex = m_iUpperCurrentAnimIndex;
+		}
+		else if (result == 0)
+		{
+			for (auto& pBone : m_Bones)
+			{
+				pBone->Invalidate_CombinedTransformationMatrix(m_Bones);
+			}
+			return;
+		}
+	}
+
+	m_Animations[m_iUpperCurrentAnimIndex]->Invalidate_TransformationMatrix_Upper(m_Bones, TimeDelta, m_UpperBodyBoneIndex);
+ 
+	for (auto& pBone : m_Bones)
+	{
+		pBone->Invalidate_CombinedTransformationMatrix(m_Bones);
+	}
+}
+
+void CModel::Play_LowerBody_Animation(_double TimeDelta)
+{
+	if (Is_Changing_Animation(ANIM_LOWERBODY))
+	{
+		m_LowerLerpTimeAcc += TimeDelta;
+		_int result = m_Animations[m_iLowerPrevAnimIndex]->Lerp_NextAnimation(m_Animations[m_iLowerCurrentAnimIndex], m_Bones, 0.2, m_LowerLerpTimeAcc);
+
+		if (result == 1)
+		{
+			m_LowerLerpTimeAcc = 0.0;
+			m_Animations[m_iLowerPrevAnimIndex]->Reset_Channels();
+			m_iLowerPrevAnimIndex = m_iLowerCurrentAnimIndex;
+		}
+		else if (result == 0)
+		{
+			for (auto& pBone : m_Bones)
+			{
+				pBone->Invalidate_CombinedTransformationMatrix(m_Bones);
+			}
+			return;
+		}
+	}
+
+	m_Animations[m_iLowerCurrentAnimIndex]->Invalidate_TransformationMatrix_Lower(m_Bones, TimeDelta, m_LowerBodyBoneIndex);
+
 	for (auto& pBone : m_Bones)
 	{
 		pBone->Invalidate_CombinedTransformationMatrix(m_Bones);
@@ -178,6 +256,7 @@ HRESULT CModel::Bind_BoneMatrices(CShader* pShader, const char* pConstantName, _
 	_float4x4		BoneMatrices[256];
 	ZeroMemory(BoneMatrices, sizeof(_float4x4) * 256);
 
+	
 	/* iMeshIndex번째 메시가 사용하느 ㄴ뼈들의 행려을 가져와서 BoneMatrices에 넣어준다. */
 	m_Meshes[iMeshIndex]->Get_Matrices(m_Bones, BoneMatrices, XMLoadFloat4x4(&m_PivotMatrix));
 
@@ -199,9 +278,36 @@ void CModel::Loop_Animation(const vector<_uint>& indexVec, _bool bLoop)
 	}
 }
 
+_bool CModel::Is_Changing_Animation(ANIMTYPE eType)
+{
+	if (eType == ANIM_ALLBODY)
+	{
+		if (m_iPrevAnimIndex == -1)
+			m_iPrevAnimIndex = m_iCurrentAnimIndex;
+
+		return m_iPrevAnimIndex != m_iCurrentAnimIndex;
+	}
+	else if (eType == ANIM_UPPERBODY)
+	{
+		if (m_iUpperPrevAnimIndex == -1)
+			m_iUpperPrevAnimIndex = m_iUpperCurrentAnimIndex;
+
+		return m_iUpperPrevAnimIndex != m_iUpperCurrentAnimIndex;
+	}
+	else
+	{
+		if (m_iLowerPrevAnimIndex == -1)
+			m_iLowerPrevAnimIndex = m_iLowerCurrentAnimIndex;
+
+		return m_iLowerPrevAnimIndex != m_iLowerCurrentAnimIndex;
+	}	
+}
+
 void CModel::Erase_LastFrame_Animation(_uint iIndex)
 {
 	m_Animations[iIndex]->Erase_LastFrame_Animation();
+
+
 }
 
 void CModel::Erase_Frames_LessTime(_uint iIndex, _double time)
@@ -223,6 +329,73 @@ void CModel::Remove_Mesh(const string& name, _uint iBoneNum)
 	}
 }
 
+unordered_set<_int>	TmpBodyBoneIndex;
+
+void CModel::Collect_BodyBones_UpperLower(_int iUpperIndex, _int iLowerIndex)
+{
+	/// for문 돌면서 싹다 체크
+	for (_int i = m_Bones.size() - 1; i > iUpperIndex; i--)
+	{
+		_bool bSuccess = Collect_UpperBodyBones_ByParentIndex(i, iUpperIndex);
+
+		if (bSuccess)
+		{
+			m_UpperBodyBoneIndex.insert(TmpBodyBoneIndex.begin(), TmpBodyBoneIndex.end());
+		}
+		
+		TmpBodyBoneIndex.clear();
+	}
+
+	for (_int i = m_Bones.size() - 1; i > iLowerIndex; i--)
+	{
+		_bool bSuccess = Collect_LowerBodyBones_ByParentIndex(i, iLowerIndex);
+
+		if (bSuccess)
+		{
+			m_LowerBodyBoneIndex.insert(TmpBodyBoneIndex.begin(), TmpBodyBoneIndex.end());
+		}
+		
+		TmpBodyBoneIndex.clear();
+	}
+
+	m_UpperBodyBoneIndex.insert(iUpperIndex);
+	m_LowerBodyBoneIndex.insert(iLowerIndex);
+
+	cout << "//////////////Upper Body Bones////////////// " << endl;
+	for (auto& item : m_UpperBodyBoneIndex)
+	{
+		string str = m_Bones[item]->Get_Name();
+		cout << str << endl;
+	}
+	cout << "\n\n//////////////Lower Body Bones////////////// " << endl;
+	for (auto& item : m_LowerBodyBoneIndex)
+	{
+		string str = m_Bones[item]->Get_Name();
+		cout << str << endl;
+	}
+	
+}
+
+_bool CModel::Collect_UpperBodyBones_ByParentIndex(_int iCurIndex, _int iParentIndex)
+{
+	if (iCurIndex == iParentIndex) return true;
+	if (iCurIndex < iParentIndex || iCurIndex < 0) return false;
+
+	TmpBodyBoneIndex.insert(iCurIndex);
+	return Collect_UpperBodyBones_ByParentIndex(m_Bones[iCurIndex]->Get_ParentIndex(), iParentIndex);
+}
+
+_bool CModel::Collect_LowerBodyBones_ByParentIndex(_int iCurIndex, _int iParentIndex)
+{
+	if (iCurIndex == iParentIndex) return true;
+	if (iCurIndex < iParentIndex || iCurIndex < 0) return false;
+
+	if (m_UpperBodyBoneIndex.find(iCurIndex) != m_UpperBodyBoneIndex.end())
+		return false;
+
+	TmpBodyBoneIndex.insert(iCurIndex);
+	return Collect_LowerBodyBones_ByParentIndex(m_Bones[iCurIndex]->Get_ParentIndex(), iParentIndex);
+}
 
 HRESULT CModel::Ready_Meshes(ModelParsingData* parsingData,  TYPE eType, _fmatrix PivotMatrix)
 {

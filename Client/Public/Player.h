@@ -20,7 +20,7 @@ BEGIN(Client)
 class CPlayer final : public CGameObject
 {
 public:
-	enum COLLIDER { COLLIDER_AABB, COLLIDER_OBB, COLLIDER_SPHERE, COLLIDER_END };
+	enum COLLIDER { COLLIDER_PLAYER, COLLIDER_ATTACK, COLLIDER_SPHERE, COLLIDER_END };
 	enum WEAPONTYPE { WEAPON_HAND, WEAPON_AXE, WEAPON_SLASHER, WEAPON_MACE, WEAPON_END};
 
 protected:
@@ -35,11 +35,16 @@ public:
 	virtual void Late_Tick(_double TimeDelta) override;
 	virtual HRESULT Render() override;
 
+	virtual void OnCollisionEnter(const Collision* collision) override;
+	virtual void OnCollisionStay(const Collision* collision) override;
+	virtual void OnCollisionExit(const Collision* collision) override;
+
 private:
 	void Move(_double TimeDelta);
 	void PlayerRotate(_double TimeDelta);
 	void AttackMove(_double TimeDelta);
 	void ClimbNavMesh();
+	_float Compute_NavMesh_Height();
 	void CameraRotate(_double TimeDelta);
 	void CameraZoom(_double TimeDelta);
 	void Dash(_double TimeDelta);
@@ -83,13 +88,14 @@ private:
 	_bool						m_bMove = { false };
 	_bool						m_bRotate = { false };
 	_bool						m_bAttack = { false };
-	_bool						m_bAttackMove = { false };
 	_bool						m_bDash = { false };
+
 	_bool						m_bSkillQ = { false };
 	_bool						m_bSkillC = { false };
 	_bool						m_bSkillR = { false };
 	_bool						m_bSkillE = { false };
 	_bool						m_bSkillT = { false };
+	_bool						m_bSkill = { false };
 
 	// 카메라 제어 관련 변수들
 	POINT						m_lastCursorPoint;
@@ -98,11 +104,13 @@ private:
 	_float						m_fCameraZoom = { 0.f };
 	_float						m_fCurCameraZoom = { 0.f };
 	_float3						m_OriginOffset = { 0.f, 12.f, -12.f };
+	_double						m_ObjectAttack_CameraShake_TimeAcc = { 0.0 };
 
 	// 이동 관련 변수들
 	_float						m_CurHeight = { 0.f };
 	_int						m_CurIndex = { -1 };
 	_float3						m_MoveDir;
+	_bool						m_bClimbNavMesh = { true };
 	
 	// 무기에 관한 정보들
 	WEAPONTYPE					m_eWeaponType = { WEAPON_HAND };
@@ -116,15 +124,47 @@ private:
 	_int						m_PrevCombo = { 0 };
 	const _int					m_ComboMax = { 3 };
 
+	// 움직이면서 공격하는 것에 대한 변수들
+	_int						m_MoveAttackCheckCombo = { 0 };
+	_double						m_MoveAttackTimeAcc = { 0.0 };
+	const _double				m_MoveAttackAccel = { -1.7 };
+	const _double				m_MoveAttackInitSpeed = { 0.5 };
+	_bool						m_bAttackMove = { false };
+
 	// Dash 관련 변수들
 	_float3						m_DashDir;
 	_double						m_DashTimeAcc = { 0.0 };
-	const _double				m_DashAccel = { 4.7 };
-	const _double				m_DashInitSpeed = { -0.2 };
+	const _double				m_DashAccel = { 5.7 };
+	const _double				m_DashInitSpeed = { -0.01 };
 
+	// 도끼 Q 스킬 변수들
 	_double						m_AxeDashTimeAcc = { 0.0 };
-	const _double				m_AxeDashAccel = { -2.1 };
-	const _double				m_AxeDashInitSpeed = { 1.01 };
+	const _double				m_AxeDashAccel = { -4.1 };
+	const _double				m_AxeDashInitSpeed = { 1.21 };
+	_bool						m_bAxeDashFinished = { false };
+
+	// 슬래셔 Q 스킬 변수들
+	_double						m_SlasherDashTimeAcc = { 0.0 };
+	const _double				m_SlasherDashAccel = { -4.1 };
+	const _double				m_SlasherDashInitSpeed = { 1.41 };
+	_float4						m_SlasherDashOriginPos;
+	_bool						m_bSlasherDashFinished = { false };
+	_bool						m_bSlasherDashStarted = { false };
+
+	// 메이스 Q 스킬 변수들
+	_double						m_MaceDashTimeAcc = { 0.0 };
+	const _double				m_MaceDashAccel = { -0.01 };
+	const _double				m_MaceDashInitSpeed = { 0.2 };
+
+	const _double				m_MaceDashJumpSpeed = { 6.0 };
+	const _double				m_MaceDashJumpGravity = { 10.5 };
+	_double						m_MaceDashJumpOriginHeight = { 0.0 };
+
+	_bool						m_bMaceDashFinished = { false };
+
+
+	// 현재 마우스 방향으로 뛰어야한다.
+	// h = h0 + (v0 * t) - (0.5 * g * t^2)
 
 public:
 	HRESULT Add_Components();

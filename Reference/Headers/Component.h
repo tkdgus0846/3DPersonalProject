@@ -44,6 +44,8 @@ protected:
 	CComposite*						m_pOwner = { nullptr };
 	wstring							m_pName = { L"" };
 
+	_bool							m_bTick = { true };
+
 public:
 	virtual CComponent* Clone(void* pArg) PURE;
 	virtual void Free() override;

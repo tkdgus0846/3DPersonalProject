@@ -35,6 +35,11 @@ HRESULT CBone::Initialize(ParsingData* pData)
 	m_iParentIndex = data->iParentIndex;
 	m_iIndex = data->iIndex;
 
+	string str = m_szName;
+
+	if (str.find("Pelvis") != std::string::npos)
+		int i = 0;
+
 	return S_OK;
 }
 

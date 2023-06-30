@@ -31,6 +31,9 @@ HRESULT CCubeObject::Initialize(void* pArg)
 	if (FAILED(Add_Components()))
 		return E_FAIL;
 
+	m_pTransformCom->Set_Position({ 10.f,2.f,10.f,1.f });
+	m_pTransformCom->Scaled({ 4.f,4.f,4.f });
+
 	m_eRenderGroup = CRenderer::RENDER_NONBLEND;
 
 	return S_OK;
@@ -75,7 +78,7 @@ HRESULT CCubeObject::Add_Components()
 
 	/* For.Com_Transform */
 	if (FAILED(__super::Add_Component(LEVEL_STATIC, TEXT("Prototype_Component_Transform"),
-		TEXT("Com_Transform"), (CComponent**)&m_pTransformCom, &CTransform::TRANSFORMDESC(7.0, XMConvertToRadians(90.0f)))))
+		TRANSFORM_W, (CComponent**)&m_pTransformCom, &CTransform::TRANSFORMDESC(7.0, XMConvertToRadians(90.0f)))))
 		return E_FAIL;
 
 	/* For.Com_VIBuffer */
@@ -98,8 +101,8 @@ HRESULT CCubeObject::Add_Components()
 
 	OBBDesc.eColGroup = COL_ENEMY;
 	OBBDesc.vExtents = _float3(0.5f, 0.5f, 0.5f);
-	OBBDesc.vPosition = _float3(0.f, OBBDesc.vExtents.y, 0.f);
-	OBBDesc.vRotation = _float3(0.f, XMConvertToRadians(45.0f), 0.f);
+	OBBDesc.vPosition = _float3(0.f, 0.f, 0.f);
+	OBBDesc.vRotation = _float3(0.f, XMConvertToRadians(0.0f), 0.f);
 
 	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Collider_OBB"),
 		COLLIDER_W, (CComponent**)&m_pColliderCom, &OBBDesc)))

@@ -35,6 +35,8 @@ public:
 		XMStoreFloat4x4(&m_TransformationMatrix, TransformationMatrix);
 	}
 
+	_int Get_ParentIndex() const { return m_iParentIndex; }
+
 public:
 	HRESULT Initialize(ParsingData* pData);
 	void Invalidate_CombinedTransformationMatrix(const CModel::BONES& Bones);

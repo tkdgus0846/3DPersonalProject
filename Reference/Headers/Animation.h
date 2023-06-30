@@ -23,6 +23,9 @@ public:
 public:
 	HRESULT Initialize(ParsingData* pData);
 	void Invalidate_TransformationMatrix(CModel::BONES& Bones, _double TimeDelta);
+	void Invalidate_TransformationMatrix_Upper(CModel::BONES & Bones, _double TimeDelta, const unordered_set<_int>& UpperSet);
+	void Invalidate_TransformationMatrix_Lower(CModel::BONES & Bones, _double TimeDelta, const unordered_set<_int>& LowerSet);
+
 	_int Lerp_NextAnimation(CAnimation* pNextAnimation, CModel::BONES & Bones, _double Duration, _double LerpTimeAcc);
 	void Reset_Channels()
 	{

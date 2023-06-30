@@ -27,61 +27,24 @@ HRESULT CAnimInstance::Initialize(void* pArg)
 
 void CAnimInstance::Tick(_double TimeDelta)
 {
-	if (m_pCurAnimNode == nullptr) return;
+	//if (m_pCurAnimNode == nullptr) return;
 	//if (m_bAnimationFinished == true) return;
 
 	__super::Tick(TimeDelta);
 
-	AnimNode* node = m_pCurAnimNode;
+	///* 지울것 */
+	//if (m_pCurLowerAnimNode)
+	//	Play_LowerBody_Animation(TimeDelta, m_pCurLowerAnimNode);
 
-	_uint* iCurIndex = &node->iCurIndex;
-
-	CAnimation* anim = m_pModel->m_Animations[node->AnimIndices[*iCurIndex]];
-	if (m_pModel->Is_Changing_Animation())
+	if (m_pCurUpperAnimNode && m_pCurLowerAnimNode)
 	{
-		return;
+		Play_UpperBody_Animation(TimeDelta, m_pCurUpperAnimNode);
+		Play_LowerBody_Animation(TimeDelta, m_pCurLowerAnimNode);
 	}
-
-	// 혼자 알아서 쭉 진행되는 놈이냐.
-	if (node->bProceedSelf == true)
+	else if (m_pCurAnimNode)
 	{
-		if (anim->Get_Finished())
-		{
-			*iCurIndex += 1;
-			if (*iCurIndex >= node->AnimIndices.size())
-			{
-				if (node->bLoop == true)
-					*iCurIndex = 0;
-				else
-				{
-					if (node->nextAnimNode.compare("") != 0)
-					{
-						
-					}
-
-					m_bAnimationFinished = true;
-
-					// 애니메이션이 끝나기 전에 입력이 있었다라면 넘겨주는것이 필요하다. 생각해보자.
-					Reset_Animation(m_pCurAnimationName);
-					//Apply_Animation(node->nextAnimNode);
-					return;
-					
-				}	
-			}
-		}
-
-		m_pModel->Set_AnimIndex(node->AnimIndices[*iCurIndex]);
-	}
-	// 내가 직접 진행을 불러줘야 하는놈이냐.
-	else
-	{
-		if (m_bProceed == true)
-		{
-			
-		}
-	}
-	
-
+		Play_Animation(TimeDelta, m_pCurAnimNode);
+	}		
 }
 
 void CAnimInstance::Push_Animation(const string& name, const AnimNode& animNode, string nextAnimNode, string retAnimNode)
@@ -113,25 +76,135 @@ void CAnimInstance::Proceed_Animation()
 	m_bProceed = true;
 }
 
-void CAnimInstance::Apply_Animation(const string& name)
+void CAnimInstance::Apply_Animation(const string& name, ANIMTYPE eType)
 {
-	m_pCurAnimationName = name;
-	m_pCurAnimNode = &m_AnimationNode[m_pCurAnimationName];
-	m_bAnimationFinished = false;
-	m_pModel->Set_AnimIndex(m_pCurAnimNode->AnimIndices[m_pCurAnimNode->iCurIndex]);
+	if (eType == ANIM_ALLBODY)
+	{
+		/*if (m_pCurAnimationName.compare("") != 0)
+				Reset_Animation(m_pCurAnimationName);*/
+
+		m_pCurAnimationName = name;
+		m_pCurAnimNode = &m_AnimationNode[m_pCurAnimationName];
+		m_bAnimationFinished = false;
+		m_pModel->Set_AnimIndex(m_pCurAnimNode->AnimIndices[m_pCurAnimNode->iCurIndex]);
+
+		if (m_pCurAnimNode->bMotionCancel == true)
+			m_pModel->Motion_Cancel();
+
+		
+		if (m_pCurLowerAnimNode != nullptr && m_pCurUpperAnimNode != nullptr)
+		{
+			Reset_Animation(m_pCurUpperAnimationName);
+			Reset_Animation(m_pCurLowerAnimationName);
+			m_pCurUpperAnimationName = m_pCurLowerAnimationName = "";
+			m_pCurUpperAnimNode = nullptr;
+			m_pCurLowerAnimNode = nullptr;
+		}
+		
+	}
+	
+	if (eType == ANIM_LOWERBODY)
+	{
+		/*if (m_pCurAnimationName.compare("") != 0)
+				Reset_Animation(m_pCurAnimationName);*/
+
+		m_pCurLowerAnimationName = name;
+		m_pCurLowerAnimNode = &m_AnimationNode[m_pCurLowerAnimationName];
+		m_bLowerAnimationFinished = false;
+		m_pModel->Set_AnimIndex(m_pCurLowerAnimNode->AnimIndices[m_pCurLowerAnimNode->iCurIndex], eType);
+
+		if (m_pCurLowerAnimNode->bMotionCancel == true)
+			m_pModel->Motion_Cancel();
+
+		if (m_pCurAnimNode != nullptr)
+		{
+			Reset_Animation(m_pCurAnimationName);
+			m_pCurAnimationName = "";
+			m_pCurAnimNode = nullptr;
+		}
+	}
+
+	if (eType == ANIM_UPPERBODY)
+	{
+		/*if (m_pCurAnimationName.compare("") != 0)
+				Reset_Animation(m_pCurAnimationName);*/
+
+		m_pCurUpperAnimationName = name;
+		m_pCurUpperAnimNode = &m_AnimationNode[m_pCurUpperAnimationName];
+		m_bUpperAnimationFinished = false;
+		m_pModel->Set_AnimIndex(m_pCurUpperAnimNode->AnimIndices[m_pCurUpperAnimNode->iCurIndex], eType);
+
+		if (m_pCurUpperAnimNode->bMotionCancel == true)
+			m_pModel->Motion_Cancel();
+
+		if (m_pCurAnimNode != nullptr)
+		{
+			Reset_Animation(m_pCurAnimationName);
+			m_pCurAnimationName = "";
+			m_pCurAnimNode = nullptr;
+		}
+	}
+	
 }
 
-_bool CAnimInstance::Next_Animation()
+_bool CAnimInstance::Next_Animation(ANIMTYPE eType)
 {
-	if (m_pCurAnimNode->nextAnimNode.compare("") == 0) return false;
+	switch (eType)
+	{
+		case ANIM_ALLBODY:
+		{
+			if (m_pCurAnimNode->nextAnimNode.compare("") == 0)
+				return false;
 
-	Apply_Animation(m_pCurAnimNode->nextAnimNode);
-	return true;
+			Apply_Animation(m_pCurAnimNode->nextAnimNode, eType);
+			return true;
+		}
+		case ANIM_UPPERBODY:
+		{
+			if (m_pCurUpperAnimNode->nextAnimNode.compare("") == 0)
+				return false;
+
+			Apply_Animation(m_pCurUpperAnimNode->nextAnimNode, eType);
+			return true;
+		}
+		case ANIM_LOWERBODY:
+		{
+			if (m_pCurLowerAnimNode->nextAnimNode.compare("") == 0)
+				return false;
+
+			Apply_Animation(m_pCurLowerAnimNode->nextAnimNode, eType);
+			return true;
+		}
+	}
+
+	
 }
 
-_bool CAnimInstance::Animation_Finished()
+_bool CAnimInstance::Animation_Finished(ANIMTYPE eType)
 {
-	return m_bAnimationFinished;
+	switch (eType)
+	{
+	case ANIM_ALLBODY:
+		return m_bAnimationFinished;
+	case ANIM_UPPERBODY:
+		return m_bUpperAnimationFinished;
+	case ANIM_LOWERBODY:
+		return m_bLowerAnimationFinished;
+	}
+}
+
+const string& CAnimInstance::Get_NextNode_Name(ANIMTYPE eType)
+{
+	switch (eType)
+	{
+	case ANIM_ALLBODY:
+		return m_pCurAnimNode->nextAnimNode;
+	case ANIM_UPPERBODY:
+		return m_pCurUpperAnimNode->nextAnimNode;
+	case ANIM_LOWERBODY:
+		return m_pCurLowerAnimNode->nextAnimNode;
+	}
+	
 }
 
 void CAnimInstance::Reset_Animation(const string& name)
@@ -142,6 +215,143 @@ void CAnimInstance::Reset_Animation(const string& name)
 	}
 	m_AnimationNode[name].iCurIndex = 0;
 	// m_bAnimationFinished = false;
+}
+
+void CAnimInstance::Play_Animation(_double TimeDelta, AnimNode* node)
+{
+	m_pModel->Play_Animation(TimeDelta);
+
+	_uint* iCurIndex = &node->iCurIndex;
+
+	CAnimation* anim = m_pModel->m_Animations[node->AnimIndices[*iCurIndex]];
+	if (m_pModel->Is_Changing_Animation())
+	{
+		return;
+	}
+
+	// 혼자 알아서 쭉 진행되는 놈이냐.
+	if (node->bProceedSelf == true)
+	{
+		if (anim->Get_Finished())
+		{
+			*iCurIndex += 1;
+			if (*iCurIndex >= node->AnimIndices.size())
+			{
+				if (node->bLoop == true)
+					*iCurIndex = 0;
+				else
+				{
+					*iCurIndex -= 1;
+
+					m_bAnimationFinished = true;
+
+					// 애니메이션이 끝나기 전에 입력이 있었다라면 넘겨주는것이 필요하다. 생각해보자.
+
+					if (node->bResetAfterFinish)
+						Reset_Animation(m_pCurAnimationName);
+					//Apply_Animation(node->nextAnimNode);
+					return;
+
+				}
+			}
+		}
+
+		m_pModel->Set_AnimIndex(node->AnimIndices[*iCurIndex]);
+	}
+	// 내가 직접 진행을 불러줘야 하는놈이냐.
+	else
+	{
+		if (m_bProceed == true)
+		{
+
+		}
+	}
+}
+
+void CAnimInstance::Play_UpperBody_Animation(_double TimeDelta, AnimNode* node)
+{
+	m_pModel->Play_UpperBody_Animation(TimeDelta);
+
+	_uint* iCurIndex = &node->iCurIndex;
+
+	CAnimation* anim = m_pModel->m_Animations[node->AnimIndices[*iCurIndex]];
+	if (m_pModel->Is_Changing_Animation(ANIM_UPPERBODY))
+	{
+		return;
+	}
+
+	// 혼자 알아서 쭉 진행되는 놈이냐.
+	if (node->bProceedSelf == true)
+	{
+		if (anim->Get_Finished())
+		{
+			*iCurIndex += 1;
+			if (*iCurIndex >= node->AnimIndices.size())
+			{
+				if (node->bLoop == true)
+					*iCurIndex = 0;
+				else
+				{
+					*iCurIndex -= 1;
+
+					m_bUpperAnimationFinished = true;
+
+					// 애니메이션이 끝나기 전에 입력이 있었다라면 넘겨주는것이 필요하다. 생각해보자.
+
+					if (node->bResetAfterFinish)
+						Reset_Animation(m_pCurUpperAnimationName);
+					//Apply_Animation(node->nextAnimNode);
+					return;
+
+				}
+			}
+		}
+
+		m_pModel->Set_AnimIndex(node->AnimIndices[*iCurIndex], ANIM_UPPERBODY);
+	}
+}
+
+void CAnimInstance::Play_LowerBody_Animation(_double TimeDelta, AnimNode* node)
+{
+	m_pModel->Play_LowerBody_Animation(TimeDelta);
+
+	_uint* iCurIndex = &node->iCurIndex;
+
+	CAnimation* anim = m_pModel->m_Animations[node->AnimIndices[*iCurIndex]];
+	if (m_pModel->Is_Changing_Animation(ANIM_LOWERBODY))
+	{
+		return;
+	}
+
+	// 혼자 알아서 쭉 진행되는 놈이냐.
+	if (node->bProceedSelf == true)
+	{
+		if (anim->Get_Finished())
+		{
+			*iCurIndex += 1;
+			if (*iCurIndex >= node->AnimIndices.size())
+			{
+				if (node->bLoop == true)
+					*iCurIndex = 0;
+				else
+				{
+					*iCurIndex -= 1;
+
+					m_bLowerAnimationFinished = true;
+
+					// 애니메이션이 끝나기 전에 입력이 있었다라면 넘겨주는것이 필요하다. 생각해보자.
+
+					if (node->bResetAfterFinish)
+						Reset_Animation(m_pCurLowerAnimationName);
+					//Apply_Animation(node->nextAnimNode);
+					return;
+
+				}
+			}
+		}
+
+		m_pModel->Set_AnimIndex(node->AnimIndices[*iCurIndex], ANIM_LOWERBODY);
+	}
 }
 
 CAnimInstance* CAnimInstance::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)

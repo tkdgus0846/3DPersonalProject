@@ -43,7 +43,8 @@ HRESULT CPlayer::Initialize(void* pArg)
 	m_pTransformCom->Set_State(CTransform::STATE_POSITION, XMVectorSet(1.f, 1.f, 1.f, 1.f));
 
 	m_pModelCom->Remove_Mesh("Cape03Bot_GEO", 16);
-
+	m_pModelCom->Remove_Mesh("Cape03Bot_GEO", 8);
+	m_pModelCom->Collect_BodyBones_UpperLower(51, 17);
 	Change_Weapon();
 
 	return S_OK;
@@ -67,6 +68,8 @@ void CPlayer::Tick(_double TimeDelta)
 		ClimbNavMesh();
 		Move(TimeDelta);
 		Attack_Combo();
+
+		
 		AttackMove(TimeDelta);
 		CameraZoom(TimeDelta);
 	}
@@ -77,7 +80,6 @@ void CPlayer::Tick(_double TimeDelta)
 	// 애니메이션 관련된 변수 조작은 이 위에서
 	Select_AnimationKey();
 
-	m_pModelCom->Play_Animation(TimeDelta);
 
 	
 	if (nullptr != m_pRendererCom)
@@ -94,6 +96,9 @@ void CPlayer::Late_Tick(_double TimeDelta)
 
 	if (CGameInstance::GetInstance()->Key_Down(DIK_2))
 		CGameInstance::GetInstance()->On_Camera(L"Camera_Player_Main");
+
+	/*if (CGameInstance::GetInstance()->Key_Down(DIK_3))
+		CGameInstance::GetInstance()->On_Shake();*/
 }
 
 HRESULT CPlayer::Render()
@@ -131,9 +136,46 @@ HRESULT CPlayer::Render()
 	return S_OK;
 }
 
+void CPlayer::OnCollisionEnter(const Collision* collision)
+{
+	
+}
+
+void CPlayer::OnCollisionStay(const Collision* collision)
+{
+	CGameInstance* pGameInstance = CGameInstance::GetInstance();
+
+	// 객체를 때렸을때 카메라 쉐이크를 넣기위함이다.
+	if (collision->MyCollider == m_pColliderCom[COLLIDER_ATTACK])
+	{
+		m_ObjectAttack_CameraShake_TimeAcc += pGameInstance->Get_Timer(TEXT("Timer_60"));
+
+		if (m_ObjectAttack_CameraShake_TimeAcc >= 0.5f)
+		{
+			if (pGameInstance->Is_Shacking() == true) return;
+
+			CCamera_Player_Main::MAINCAMERASHAKE desc;
+
+			m_ObjectAttack_CameraShake_TimeAcc = 0.0;
+			desc.fShakeMagnitude = 0.08f;
+			desc.fShakeDuration = 0.25f;
+			pGameInstance->On_Shake(&desc);
+		}
+
+		
+		
+		
+	}
+}
+
+void CPlayer::OnCollisionExit(const Collision* collision)
+{
+}
+
 void CPlayer::Move(_double TimeDelta)
 {
 	if (m_bDash == true) return;
+	if (m_bSkill == true) return;
 
 	m_bMove = false;
 	_bool keyState[4] = { false, false, false, false };
@@ -190,6 +232,7 @@ void CPlayer::Move(_double TimeDelta)
 
 	if (m_bMove)
 	{
+
 		if (m_bAttack == false)
 		{
 			_vector resultDir = { 0.f,0.f,0.f,0.f };
@@ -265,6 +308,7 @@ void CPlayer::PlayerRotate(_double TimeDelta)
 {
 	if (m_bDash == true) return;
 
+
 	POINT	ptMouse{};
 	GetCursorPos(&ptMouse);
 
@@ -292,17 +336,38 @@ void CPlayer::PlayerRotate(_double TimeDelta)
 
 void CPlayer::AttackMove(_double TimeDelta)
 {
-	if (m_bAttack == false || m_bMove == false) return;
+	
+	if (m_bAttackMove == false) return;
+
+	
+
+	m_MoveAttackTimeAcc += TimeDelta;
+
+	if ((m_MoveAttackInitSpeed + (m_MoveAttackAccel * m_MoveAttackTimeAcc)) < 0.f)
+	{
+		m_bAttackMove = false;
+		return;
+	}
 
 	_vector playerDir = m_pTransformCom->Get_State(CTransform::STATE_LOOK);
 
-	m_pTransformCom->Go_Dir(playerDir, TimeDelta*2.f, m_pNavigationCom);
+	m_pTransformCom->Go_Dir(playerDir, m_MoveAttackInitSpeed, m_MoveAttackAccel, m_MoveAttackTimeAcc, m_pNavigationCom);
+
+	
 }
 
 void CPlayer::ClimbNavMesh()
 {
-	if (m_CurIndex == -1) return;
+	if (m_CurIndex == -1 || m_bClimbNavMesh == false) return;
 
+	_vector myPos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
+	myPos.m128_f32[1] = Compute_NavMesh_Height();
+
+	m_pTransformCom->Set_Position(myPos);
+}
+
+_float CPlayer::Compute_NavMesh_Height()
+{
 	_vector myPos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
 
 	vector<Triangle>* vec = m_pNavigationCom->Get_TriangleList();
@@ -323,9 +388,7 @@ void CPlayer::ClimbNavMesh()
 	// 평면 위로의 이동량 계산
 	_float offsetY = (-A * x - C * z - D) / B;
 
-	myPos.m128_f32[1] = offsetY;
-
-	m_pTransformCom->Set_Position(myPos);
+	return offsetY;
 }
 
 void CPlayer::CameraRotate(_double TimeDelta)
@@ -517,11 +580,19 @@ void CPlayer::Dash(_double TimeDelta)
 	}
 	
 
-	if (m_bDash == true)
+	if (m_bDash == true && m_pAnimInstance->Animation_Finished())
 	{
 		m_DashTimeAcc += TimeDelta;
+
+		if (m_DashTimeAcc > 0.5f)
+		{
+			m_bDash = false;
+			return;
+		}
+
+		m_pTransformCom->Go_Dir(XMLoadFloat3(&m_DashDir), m_DashInitSpeed, m_DashAccel, m_DashTimeAcc / 4.0, m_pNavigationCom);
 		
-		m_pTransformCom->Go_Dir(XMLoadFloat3(&m_DashDir), m_DashInitSpeed, m_DashAccel, m_DashTimeAcc/4.0, m_pNavigationCom);
+		
 	}
 
 	
@@ -543,6 +614,12 @@ void CPlayer::Select_ChangingWeaponKey()
 	{
 	case WEAPON_AXE:
 		m_pAnimInstance->Apply_Animation("Axe_Equip");
+		break;
+	case WEAPON_SLASHER:
+		m_pAnimInstance->Apply_Animation("Slasher_Equip");
+		break;
+	case WEAPON_MACE:
+		m_pAnimInstance->Apply_Animation("Mace_Equip");
 		break;
 	default:
 		break;
@@ -570,10 +647,17 @@ void CPlayer::Select_MoveKey()
 		switch (m_eWeaponType)
 		{
 		case WEAPON_HAND:
-			m_pAnimInstance->Apply_Animation("N_Walk");
+			m_pAnimInstance->Apply_Animation("N_Walk", ANIM_UPPERBODY);
+			//m_pAnimInstance->Apply_Animation("S_Walk", ANIM_LOWERBODY);
 			break;
 		case WEAPON_AXE:
 			m_pAnimInstance->Apply_Animation("Axe_N_Walk");
+			break;
+		case WEAPON_SLASHER:
+			m_pAnimInstance->Apply_Animation("Slasher_N_Walk");
+			break;
+		case WEAPON_MACE:
+			m_pAnimInstance->Apply_Animation("Mace_N_Walk");
 			break;
 		}	
 	}
@@ -587,6 +671,12 @@ void CPlayer::Select_MoveKey()
 		case WEAPON_AXE:
 			m_pAnimInstance->Apply_Animation("Axe_NE_Walk");
 			break;
+		case WEAPON_SLASHER:
+			m_pAnimInstance->Apply_Animation("Slasher_NE_Walk");
+			break;
+		case WEAPON_MACE:
+			m_pAnimInstance->Apply_Animation("Mace_NE_Walk");
+			break;
 		}
 	}
 	else if (67.5 <= angle && 112.5 >= angle)
@@ -598,6 +688,12 @@ void CPlayer::Select_MoveKey()
 			break;
 		case WEAPON_AXE:
 			m_pAnimInstance->Apply_Animation("Axe_E_Walk");
+			break;
+		case WEAPON_SLASHER:
+			m_pAnimInstance->Apply_Animation("Slasher_E_Walk");
+			break;
+		case WEAPON_MACE:
+			m_pAnimInstance->Apply_Animation("Mace_E_Walk");
 			break;
 		}
 	}
@@ -611,6 +707,12 @@ void CPlayer::Select_MoveKey()
 		case WEAPON_AXE:
 			m_pAnimInstance->Apply_Animation("Axe_SE_Walk");
 			break;
+		case WEAPON_SLASHER:
+			m_pAnimInstance->Apply_Animation("Slasher_SE_Walk");
+			break;
+		case WEAPON_MACE:
+			m_pAnimInstance->Apply_Animation("Mace_SE_Walk");
+			break;
 		}
 	}
 	else if (157.5 <= angle && 202.5 >= angle)
@@ -622,6 +724,12 @@ void CPlayer::Select_MoveKey()
 			break;
 		case WEAPON_AXE:
 			m_pAnimInstance->Apply_Animation("Axe_S_Walk");
+			break;
+		case WEAPON_SLASHER:
+			m_pAnimInstance->Apply_Animation("Slasher_S_Walk");
+			break;
+		case WEAPON_MACE:
+			m_pAnimInstance->Apply_Animation("Mace_S_Walk");
 			break;
 		}
 	}
@@ -635,6 +743,12 @@ void CPlayer::Select_MoveKey()
 		case WEAPON_AXE:
 			m_pAnimInstance->Apply_Animation("Axe_SW_Walk");
 			break;
+		case WEAPON_SLASHER:
+			m_pAnimInstance->Apply_Animation("Slasher_SW_Walk");
+			break;
+		case WEAPON_MACE:
+			m_pAnimInstance->Apply_Animation("Mace_SW_Walk");
+			break;
 		}
 	}
 	else if (247.5 <= angle && 292.5 >= angle)
@@ -646,6 +760,12 @@ void CPlayer::Select_MoveKey()
 			break;
 		case WEAPON_AXE:
 			m_pAnimInstance->Apply_Animation("Axe_W_Walk");
+			break;
+		case WEAPON_SLASHER:
+			m_pAnimInstance->Apply_Animation("Slasher_W_Walk");
+			break;
+		case WEAPON_MACE:
+			m_pAnimInstance->Apply_Animation("Mace_W_Walk");
 			break;
 		}
 	}
@@ -659,6 +779,12 @@ void CPlayer::Select_MoveKey()
 		case WEAPON_AXE:
 			m_pAnimInstance->Apply_Animation("Axe_NW_Walk");
 			break;
+		case WEAPON_SLASHER:
+			m_pAnimInstance->Apply_Animation("Slasher_NW_Walk");
+			break;
+		case WEAPON_MACE:
+			m_pAnimInstance->Apply_Animation("Mace_NW_Walk");
+			break;
 		}
 	}
 
@@ -667,12 +793,7 @@ void CPlayer::Select_MoveKey()
 
 void CPlayer::Select_DashKey()
 {
-	if (m_bDash == false) return;
-
-	if (m_pAnimInstance->Animation_Finished())
-	{
-		m_bDash = false;
-	}
+	
 }
 
 void CPlayer::Select_AttackKey()
@@ -686,9 +807,17 @@ void CPlayer::Select_IdleKey()
 	{
 	case WEAPON_HAND:
 		m_pAnimInstance->Apply_Animation("Idle");
+		/*m_pAnimInstance->Apply_Animation("Idle", ANIM_UPPERBODY);
+		m_pAnimInstance->Apply_Animation("E_Walk", ANIM_LOWERBODY);*/
 		break;
 	case WEAPON_AXE:
 		m_pAnimInstance->Apply_Animation("Axe_Idle");
+		break;
+	case WEAPON_SLASHER:
+		m_pAnimInstance->Apply_Animation("Slasher_Idle");
+		break;
+	case WEAPON_MACE:
+		m_pAnimInstance->Apply_Animation("Mace_Idle");
 		break;
 	}
 }
@@ -698,36 +827,50 @@ void CPlayer::Attack_Combo()
 	
 	if (m_bAttack == true)
 	{
+		m_pColliderCom[COLLIDER_ATTACK]->Set_Enable(true);
 		if (m_pAnimInstance->Animation_Finished())
 		{
+			// 어택무브가 진행중이 아니였다라면
+
+			if (m_bMove == true)
+			{
+				if (m_pAnimInstance->Get_NextNode_Name().compare("") != 0)
+				{
+					if (m_bAttackMove == false)
+					{
+						m_bAttackMove = true;
+						m_MoveAttackTimeAcc = 0.0;
+					}
+					// 어택무브가 진행중 이였다면.
+					else
+					{
+						m_MoveAttackTimeAcc = 0.0;
+					}
+				}
+				
+			}
+			
+
 			if (m_Combo > m_PrevCombo)
 			{
-				//cout << m_ClawCombo << endl;
 				_bool bNext = m_pAnimInstance->Next_Animation();
 				if (bNext == false)
 				{
+					m_pColliderCom[COLLIDER_ATTACK]->Set_Enable(false);
 					m_bAttack = false;
 					m_Combo = 0;
 					m_PrevCombo = 0;
-					//m_bAttackMove = false;
 					return;
 				}
 				else
 				{
-					/*if (m_bMove)
-					{
-						m_bAttackMove = true;
-					}
-					else
-					{
-						m_bAttackMove = false;
-					}*/
 					m_PrevCombo += 1;
 				}
 				
 			}
 			else
 			{
+				m_pColliderCom[COLLIDER_ATTACK]->Set_Enable(false);
 				m_bAttack = false;
 				m_Combo = 0;
 				m_PrevCombo = 0;
@@ -753,6 +896,12 @@ void CPlayer::Attack_Combo()
 				break;
 			case WEAPON_AXE:
 				m_pAnimInstance->Apply_Animation("Axe_Right");
+				break;
+			case WEAPON_SLASHER:
+				m_pAnimInstance->Apply_Animation("Slasher_Right");
+				break;
+			case WEAPON_MACE:
+				m_pAnimInstance->Apply_Animation("Mace_Right");
 				break;
 			}
 			m_bAttack = true;
@@ -810,7 +959,7 @@ void CPlayer::Add_Animations()
 	m_pAnimInstance->Push_Animation("Claw_Smash", node);
 
 	node.AnimIndices = { 198, 199, 200 };
-	node.eraseLessTime = { 0.06, 0.06, 0.07 };
+	node.eraseLessTime = { 0.06, 0.06, 0.03 };
 	m_pAnimInstance->Push_Animation("Dash", node);
 
 	////////////// 도끼 애니메이션들 //////////////
@@ -850,8 +999,8 @@ void CPlayer::Add_Animations()
 	node.eraseLessTime = { 0.06, 0.05, 0.3 };
 	m_pAnimInstance->Push_Animation("Axe_Smash", node);
 
-	node.AnimIndices = { 156, 157, 158 };
-	node.eraseLessTime = { 0.06, 0.06, 0.09 };
+	node.AnimIndices = { 157, 158 };
+	node.eraseLessTime = {  0.01, 0.06 };
 	m_pAnimInstance->Push_Animation("Axe_Dash", node);
 
 	node.AnimIndices = { 159, 160, 161, 162 };
@@ -861,11 +1010,115 @@ void CPlayer::Add_Animations()
 	node.AnimIndices = { 94 };
 	node.eraseLessTime = { 0.1 };
 	m_pAnimInstance->Push_Animation("Axe_Equip", node);
+
+	//.//////////////////// 슬래셔 애니메이션 //////////////////////////
+
+	node.bLoop = true;
+	node.eraseLessTime = {};
+	node.AnimIndices = { 72 };
+	m_pAnimInstance->Push_Animation("Slasher_N_Walk", node);
+	node.AnimIndices = { 73 };
+	m_pAnimInstance->Push_Animation("Slasher_NE_Walk", node);
+	node.AnimIndices = { 74 };
+	m_pAnimInstance->Push_Animation("Slasher_SE_Walk", node);
+	node.AnimIndices = { 75 };
+	m_pAnimInstance->Push_Animation("Slasher_S_Walk", node);
+	node.AnimIndices = { 76 };
+	m_pAnimInstance->Push_Animation("Slasher_SW_Walk", node);
+	node.AnimIndices = { 77 };
+	m_pAnimInstance->Push_Animation("Slasher_NW_Walk", node);
+	node.AnimIndices = { 78 };
+	m_pAnimInstance->Push_Animation("Slasher_W_Walk", node);
+	node.AnimIndices = { 79 };
+	m_pAnimInstance->Push_Animation("Slasher_E_Walk", node);
+
+	node.AnimIndices = { 80 };
+	m_pAnimInstance->Push_Animation("Slasher_Idle", node);
+
+	node.bLoop = false;
+
+	node.AnimIndices = { 440, 441, 442 };
+	node.eraseLessTime = { 0.03, 0.05, 0.04 };
+	m_pAnimInstance->Push_Animation("Slasher_Right", node, "Slasher_Left");
+
+	node.AnimIndices = { 443, 444, 445};
+	node.eraseLessTime = { 0.05, 0.05, 0.04 };
+	m_pAnimInstance->Push_Animation("Slasher_Left", node, "Slasher_Smash");
+
+	node.AnimIndices = { 446, 447, 448 };
+	node.eraseLessTime = { 0.06, 0.05, 0.3 };
+	m_pAnimInstance->Push_Animation("Slasher_Smash", node);
+
+	node.AnimIndices = { 449, 450, 451 };
+	node.eraseLessTime = { 0.001, 0.001, 0.001 };
+	m_pAnimInstance->Push_Animation("Slasher_Q", node);
+
+	node.AnimIndices = { 82 };
+	node.eraseLessTime = { 0.02 };
+	m_pAnimInstance->Push_Animation("Slasher_Equip", node);
+
+	node.AnimIndices = { 82 };
+	node.eraseLessTime = { 0.1 };
+	m_pAnimInstance->Push_Animation("Slasher_Ready", node);
+
+	/////////////////////// 메이스 애니메이션 //////////////////////////
+
+	node.bLoop = true;
+	node.eraseLessTime = {};
+	node.AnimIndices = { 23 };
+	m_pAnimInstance->Push_Animation("Mace_N_Walk", node);
+	node.AnimIndices = { 24 };
+	m_pAnimInstance->Push_Animation("Mace_NE_Walk", node);
+	node.AnimIndices = { 25 };
+	m_pAnimInstance->Push_Animation("Mace_SE_Walk", node);
+	node.AnimIndices = { 26 };
+	m_pAnimInstance->Push_Animation("Mace_S_Walk", node);
+	node.AnimIndices = { 27 };
+	m_pAnimInstance->Push_Animation("Mace_SW_Walk", node);
+	node.AnimIndices = { 28 };
+	m_pAnimInstance->Push_Animation("Mace_NW_Walk", node);
+	node.AnimIndices = { 29 };
+	m_pAnimInstance->Push_Animation("Mace_W_Walk", node);
+	node.AnimIndices = { 30 };
+	m_pAnimInstance->Push_Animation("Mace_E_Walk", node);
+	node.AnimIndices = { 31 };
+	m_pAnimInstance->Push_Animation("Mace_Idle", node);
+
+	node.bLoop = false;
+
+	node.AnimIndices = { 277, 278, 279 };
+	node.eraseLessTime = { 0.02, 0.02, 0.02 };
+	m_pAnimInstance->Push_Animation("Mace_Right", node, "Mace_Left");
+
+	node.AnimIndices = { 280, 281, 282 };
+	node.eraseLessTime = { 0.02, 0.001, 0.00001 };
+	m_pAnimInstance->Push_Animation("Mace_Left", node, "Mace_Smash");
+
+	node.AnimIndices = { 283, 284, 285 };
+	node.eraseLessTime = { 0.05, 0.05, 0.35 };
+	m_pAnimInstance->Push_Animation("Mace_Smash", node);
+
+	node.AnimIndices = { 286, 287, 288 };
+	node.eraseLessTime = { 0.6, 0.06, 0.3 };
+	//node.bResetAfterFinish = false;
+	m_pAnimInstance->Push_Animation("Mace_Dash", node);
+
+
+	node.AnimIndices = { 289, 290, 291};
+	node.eraseLessTime = { 0.1, 0.01, 0.5};
+	m_pAnimInstance->Push_Animation("Mace_Spin", node);
+
+	node.bMotionCancel = false;
+
+	node.AnimIndices = { 33 };
+	node.eraseLessTime = { 0.1 };
+	m_pAnimInstance->Push_Animation("Mace_Equip", node);
 }
 
 void CPlayer::Skills(const _double& TimeDelta)
 {
 	if (m_eWeaponType == WEAPON_HAND) return;
+	m_bSkill = m_bSkillQ || m_bSkillC || m_bSkillR || m_bSkillE || m_bSkillT;
 
 	Skill_Q(TimeDelta);
 	Skill_C(TimeDelta);
@@ -878,41 +1131,164 @@ void CPlayer::Skill_Q(const _double& TimeDelta)
 {
 	if (m_bSkillQ)
 	{
+		// 슬래셔 일때는 슬래셔 스킬이 끝나야 아래를 진행해야함.
 		if (m_pAnimInstance->Animation_Finished())
 		{
-			m_bSkillQ = false;
-			return;
+			_bool bResult = false;
+			switch (m_eWeaponType)
+			{
+				case WEAPON_AXE:
+				{
+					// 방향이 역방향이 되는 순간. 멈춰라.
+					if (m_bAxeDashFinished == true)
+						bResult = true;
+					break;
+				}	
+				case WEAPON_SLASHER:
+				{
+					m_bSlasherDashStarted = true;
+					// 슬래셔 대쉬가 끝나면 멈춰라.
+					if (m_bSlasherDashFinished == true)
+					{
+						bResult = true;
+						m_bSlasherDashStarted = false;
+					}
+						
+					break;
+				}
+				case WEAPON_MACE:
+				{
+					if (m_bMaceDashFinished == true)
+					{
+						bResult = true;
+						m_bMaceDashFinished = false;
+					}
+					break;
+				}
+				default:
+					bResult = true;
+					break;
+			}
+
+			if (bResult == true)
+			{
+				m_bSkillQ = false;
+				return;
+			}
 		}
 
 		switch (m_eWeaponType)
 		{
-		case WEAPON_AXE:
-		{
-			m_AxeDashTimeAcc += TimeDelta;
+			case WEAPON_AXE:
+			{
+				if ((m_AxeDashInitSpeed + (m_AxeDashAccel * m_AxeDashTimeAcc)) < 0.f)
+				{
+					m_bAxeDashFinished = true;
+					return;
+				}
+				
+				m_AxeDashTimeAcc += TimeDelta;
 
-			m_pTransformCom->Go_Dir(XMLoadFloat3(&m_DashDir), m_AxeDashInitSpeed, m_AxeDashAccel, m_AxeDashTimeAcc, m_pNavigationCom);
-		}
-			break;
-		default:
-			break;
+				m_pTransformCom->Go_Dir(XMLoadFloat3(&m_DashDir), m_AxeDashInitSpeed, m_AxeDashAccel, m_AxeDashTimeAcc, m_pNavigationCom);		
+				break;
+			}
+			case WEAPON_SLASHER:
+			{
+				if (m_bSlasherDashFinished == true || m_bSlasherDashStarted == false)
+					return;
+
+				m_SlasherDashTimeAcc += TimeDelta;
+
+				m_pTransformCom->Go_Dir(XMLoadFloat3(&m_DashDir), m_SlasherDashInitSpeed, m_SlasherDashAccel, m_SlasherDashTimeAcc, m_pNavigationCom);
+
+				_vector vector1 = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
+				_vector vector2 = XMLoadFloat4(&m_SlasherDashOriginPos);
+
+				_vector diff_vector = DirectX::XMVectorSubtract(vector2, vector1);
+				float distance = DirectX::XMVectorGetX(DirectX::XMVector3Length(diff_vector));
+
+				if (distance <= 1.2f)
+				{
+					m_bSlasherDashFinished = true;
+					m_pTransformCom->Set_State(CTransform::STATE_POSITION, XMLoadFloat4(&m_SlasherDashOriginPos));
+				}
+				break;
+			}
+			case WEAPON_MACE:
+			{
+				if (m_bMaceDashFinished == true) return;
+
+				m_MaceDashTimeAcc += TimeDelta;
+				if ((m_MaceDashInitSpeed + (m_MaceDashAccel * m_MaceDashTimeAcc)) >= 0.f)
+				{
+					XMStoreFloat3(&m_DashDir, m_pTransformCom->Get_State(CTransform::STATE_LOOK));
+					m_pTransformCom->Go_Dir(XMLoadFloat3(&m_DashDir), m_MaceDashInitSpeed, m_MaceDashAccel,  m_MaceDashTimeAcc, m_pNavigationCom);
+				}	
+				
+				_double height = m_MaceDashJumpOriginHeight + (m_MaceDashJumpSpeed * m_MaceDashTimeAcc) - (0.5 * m_MaceDashJumpGravity * m_MaceDashTimeAcc * m_MaceDashTimeAcc);
+
+				if (Compute_NavMesh_Height() <= height)
+				{
+					_vector myPos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
+
+					myPos.m128_f32[1] = height;
+					m_pTransformCom->Set_Position(myPos);
+
+					m_bClimbNavMesh = false;
+				}
+				else
+				{
+					CCamera_Player_Main::MAINCAMERASHAKE desc;
+					desc.fShakeMagnitude = 0.6f;
+					CGameInstance::GetInstance()->On_Shake(&desc);
+					m_bClimbNavMesh = true;
+					m_bMaceDashFinished = true;
+				}
+
+				break;
+			}
+			
+			
+				
+			default:
+				break;
 		}
 	}
-
-	if (CGameInstance::GetInstance()->Key_Down(DIK_Q))
+	else
 	{
-		m_bSkillQ = true;
-
-		switch (m_eWeaponType)
+		if (CGameInstance::GetInstance()->Key_Down(DIK_Q))
 		{
-		case WEAPON_AXE:
-			XMStoreFloat3(&m_DashDir, m_pTransformCom->Get_State(CTransform::STATE_LOOK));
-			m_AxeDashTimeAcc = 0.0;
-			m_pAnimInstance->Apply_Animation("Axe_Dash");
-			break;
-		default:
-			break;
+			m_bSkillQ = true;
+
+			switch (m_eWeaponType)
+			{
+			case WEAPON_AXE:
+				XMStoreFloat3(&m_DashDir, m_pTransformCom->Get_State(CTransform::STATE_LOOK));
+				m_AxeDashTimeAcc = 0.0;
+				m_bAxeDashFinished = false;
+				m_pAnimInstance->Apply_Animation("Axe_Dash");
+				break;
+			case WEAPON_SLASHER:
+				XMStoreFloat3(&m_DashDir, m_pTransformCom->Get_State(CTransform::STATE_LOOK));
+				XMStoreFloat4(&m_SlasherDashOriginPos, m_pTransformCom->Get_State(CTransform::STATE_POSITION));
+				m_SlasherDashTimeAcc = 0.0;
+				m_bSlasherDashFinished = false;
+				m_pAnimInstance->Apply_Animation("Slasher_Q");
+				break;
+			case WEAPON_MACE:
+				XMStoreFloat3(&m_DashDir, m_pTransformCom->Get_State(CTransform::STATE_LOOK));
+				m_MaceDashJumpOriginHeight = m_pTransformCom->Get_State(CTransform::STATE_POSITION).m128_f32[1];
+				m_MaceDashTimeAcc = 0.0;
+				//m_bSlasherDashFinished = false;
+				m_pAnimInstance->Apply_Animation("Mace_Dash");
+				break;
+
+			default:
+				break;
+			}
 		}
 	}
+	
 	
 }
 
@@ -937,20 +1313,20 @@ void CPlayer::Skill_C(const _double& TimeDelta)
 			break;
 		}
 	}
-
-	if (CGameInstance::GetInstance()->Key_Down(DIK_C))
+	else
 	{
-		m_bSkillC = true;
-
-		switch (m_eWeaponType)
+		if (CGameInstance::GetInstance()->Key_Down(DIK_C))
 		{
-		case WEAPON_AXE:
-			m_pAnimInstance->Apply_Animation("Axe_Throw");
-			break;
-		default:
-			break;
+			m_bSkillC = true;
+
+			switch (m_eWeaponType)
+			{
+			default:
+				break;
+			}
 		}
 	}
+	
 }
 
 void CPlayer::Skill_R(const _double& TimeDelta)
@@ -963,9 +1339,46 @@ void CPlayer::Skill_R(const _double& TimeDelta)
 
 void CPlayer::Skill_E(const _double& TimeDelta)
 {
-	if (CGameInstance::GetInstance()->Key_Down(DIK_E))
+	if (m_bSkillE)
 	{
-		m_bSkillE = true;
+		if (m_pAnimInstance->Animation_Finished())
+		{
+			m_bSkillE = false;
+			return;
+		}
+
+		switch (m_eWeaponType)
+		{
+			case WEAPON_AXE:
+			{
+				break;
+			}
+			case WEAPON_MACE:
+			{
+				break;
+			}
+			default:
+				break;
+		}
+	}
+	else
+	{
+		if (CGameInstance::GetInstance()->Key_Down(DIK_E))
+		{
+			m_bSkillE = true;
+
+			switch (m_eWeaponType)
+			{
+			case WEAPON_AXE:
+				m_pAnimInstance->Apply_Animation("Axe_Throw");
+				break;
+			case WEAPON_MACE:
+				m_pAnimInstance->Apply_Animation("Mace_Spin");
+				break;
+			default:
+				break;
+			}
+		}
 	}
 }
 
@@ -1051,7 +1464,6 @@ void CPlayer::Select_AnimationKey()
 
 	if (m_bMove == true)
 	{
-		cout << "MoveKey!!!" << endl;
 		Select_MoveKey();
 		return;
 	}
@@ -1110,7 +1522,12 @@ HRESULT CPlayer::Add_Components()
 
 	CGameInstance::GetInstance()->On_Camera(m_pCameraCom);
 
-	/* For.Com_Navigation */
+	m_pCameraCom->Set_Offset(XMLoadFloat3(&m_OriginOffset));
+	m_fCameraRotationX = 270.f;
+	m_fCameraRotationY = 45.f;
+
+
+	/* For.PlayerCollider */
 	CBounding_OBB::BOUNDINGBOX OBBDesc;
 
 	OBBDesc.eColGroup = COL_PLAYER;
@@ -1119,12 +1536,23 @@ HRESULT CPlayer::Add_Components()
 	OBBDesc.vRotation = _float3(0.f, XMConvertToRadians(0.0f), 0.f);
 
 	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Collider_OBB"),
-		COLLIDER_W, (CComponent**)&m_pColliderCom[COLLIDER_OBB], &OBBDesc)))
+		COLLIDER_W, (CComponent**)&m_pColliderCom[COLLIDER_PLAYER], &OBBDesc)))
 		return E_FAIL;
 
-	m_pCameraCom->Set_Offset(XMLoadFloat3(&m_OriginOffset));
-	m_fCameraRotationX = 270.f;
-	m_fCameraRotationY = 45.f;
+	/* For.AttackCollider */
+	CBounding_OBB::BOUNDINGBOX AttackColliderDesc;
+
+	AttackColliderDesc.eColGroup = COL_PLAYERWEAPON;
+	AttackColliderDesc.vExtents = _float3(0.3f, 0.3f, 0.3f);
+	AttackColliderDesc.vPosition = _float3(0.f, 0.4f, 1.4f);
+	AttackColliderDesc.vRotation = _float3(0.f, XMConvertToRadians(0.0f), 0.f);
+
+	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Collider_OBB"),
+		L"Attack_Collider", (CComponent**)&m_pColliderCom[COLLIDER_ATTACK], &AttackColliderDesc)))
+		return E_FAIL;
+
+	m_pColliderCom[COLLIDER_ATTACK]->Set_Enable(false);
+	
 
 	CGameInstance* pGameInstance = CGameInstance::GetInstance();
 	Safe_AddRef(pGameInstance);
@@ -1219,20 +1647,21 @@ HRESULT CPlayer::Add_Components()
 		return E_FAIL;
 
 	//////////////////////////// 메이스 ///////////////////////////
-	//CMace::PARENTDESC		ParentDescMace;
-	//ZeroMemory(&ParentDescMace, sizeof ParentDescMace);
+	CMace::PARENTDESC		ParentDescMace;
+	ZeroMemory(&ParentDescMace, sizeof ParentDescMace);
 
-	//pBone = m_pModelCom->Get_Bone("Weapon01_JNT");
-	//if (nullptr == pBone)
-	//	return E_FAIL;
+	pBone = m_pModelCom->Get_Bone("Weapon02_JNT");
+	if (nullptr == pBone)
+		return E_FAIL;
 
-	//ParentDescMace.OffsetMatrix = pBone->Get_OffsetMatrix();
-	//ParentDescMace.pCombindTransformationMatrix = pBone->Get_CombinedTransformationMatrixPtr();
-	//ParentDescMace.PivotMatrix = m_pModelCom->Get_PivotMatrix();
-	//ParentDescMace.pParentWorldMatrix = m_pTransformCom->Get_WorldFloat4x4Ptr();
+	ParentDescMace.OffsetMatrix = pBone->Get_OffsetMatrix();
+	ParentDescMace.pCombindTransformationMatrix = pBone->Get_CombinedTransformationMatrixPtr();
+	ParentDescMace.PivotMatrix = m_pModelCom->Get_PivotMatrix();
+	ParentDescMace.pParentWorldMatrix = m_pTransformCom->Get_WorldFloat4x4Ptr();
 
-	//if (FAILED(__super::Add_Component(TEXT("Prototype_GameObject_Mace"), L"Mace", nullptr, &ParentDescMace)))
-	//	return E_FAIL;
+	m_Weapons[WEAPON_MACE].push_back(nullptr);
+	if (FAILED(__super::Add_Component(TEXT("Prototype_GameObject_Mace"), L"Mace", (CGameObject**)&m_Weapons[WEAPON_MACE][0], &ParentDescMace)))
+		return E_FAIL;
 
 
 	////////////////////////// 애님 인스턴스 ///////////////
@@ -1316,6 +1745,6 @@ void CPlayer::Free()
 	Safe_Release(m_pModelCom);
 	Safe_Release(m_pRendererCom);
 	Safe_Release(m_pCameraCom);
-	Safe_Release(m_pColliderCom[COLLIDER_OBB]);
-
+	Safe_Release(m_pColliderCom[COLLIDER_PLAYER]);
+	Safe_Release(m_pColliderCom[COLLIDER_ATTACK]);
 }

@@ -111,8 +111,10 @@ public: /* For. Camera Manager*/
 	CCamera* Get_CurCamera();
 	void On_Camera(const wstring & pCamTag);
 	void On_Camera(CCamera * pCamera);
+	_bool Is_Shacking() const;
 	_bool Is_On_Camera(const wstring & pCamTag);
-	void On_Shake(CCamera::SHAKE_TYPE eType, const _float & fForce = 1.5f, const _float & fTime = 5.f);
+	void On_Shake(void* pArg = nullptr);
+	void Off_Shake();
 
 private:
 	class CGraphic_Device*			m_pGraphic_Device = { nullptr };

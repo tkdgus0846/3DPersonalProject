@@ -53,9 +53,24 @@ void CCamera_Manager::On_Camera(CCamera* pCamera)
 		Safe_AddRef(m_pCurCamera);
 }
 
-void CCamera_Manager::On_Shake(CCamera::SHAKE_TYPE eType, const _float& fForce, const _float& fTime)
+void CCamera_Manager::On_Shake(void* pArg)
 {
-	m_pCurCamera->On_Shake(eType, fForce, fTime);
+	for (auto& item : m_CameraList)
+	{
+		if (m_pCurCamera != item.second)
+			m_pCurCamera->Off_Shake();
+	}
+	m_pCurCamera->On_Shake(pArg);
+}
+
+void CCamera_Manager::Off_Shake()
+{
+	m_pCurCamera->Off_Shake();
+}
+
+_bool CCamera_Manager::Is_Shacking() const
+{
+	return m_pCurCamera->Is_Shacking();
 }
 
 void CCamera_Manager::Add_Camera(const wstring& pCamTag, CCamera* pCamera)

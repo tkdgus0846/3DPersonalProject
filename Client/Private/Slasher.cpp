@@ -26,7 +26,7 @@ HRESULT CSlasher::Initialize(void* pArg)
 
 
 	// 여기에 오프셋 설정 같은걸 다시 해줘야한다.
-	m_pTransformCom->Scaled(_float3(0.01f, 0.01f, 0.01f));
+	m_pTransformCom->Scaled(_float3(0.016f, 0.016f, 0.016f));
 	//m_pTransformCom->Set_Position({ -2.f,0.f,0.f,1.f });
 	//m_pTransformCom->Rotation(XMVectorSet(0.f, 1.f, 0.f, 0.f), XMConvertToRadians(180.0f));
 

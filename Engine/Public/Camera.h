@@ -9,11 +9,6 @@ class ENGINE_DLL CCamera abstract : public CGameObject
 {
 	friend class CCamera_Manager;
 public:
-	enum SHAKE_TYPE
-	{
-		SHAKE_X, SHAKE_Y, SHAKE_END
-	};
-public:
 	typedef struct tagCameraDesc
 	{
 		_float4			vEye, vAt, vUp;
@@ -29,9 +24,10 @@ protected:
 public:
 	virtual HRESULT Initialize_Prototype() override;
 	virtual HRESULT Initialize(void* pArg) override;
-	virtual void Tick(_double TimeDelta) override;
-	virtual void Late_Tick(_double TimeDelta) override;
+	virtual void	Tick(_double TimeDelta) override;
+	virtual void	Late_Tick(_double TimeDelta) override;
 	virtual HRESULT Render() override;
+	virtual void	Shake(const _double& TimeDelta) {};
 
 	void			Look_At(_fvector pos);
 	void			Set_Pos(_fvector pos);
@@ -40,8 +36,10 @@ public:
 	void			On_Camera() { m_bCameraOn = true; }
 	void			Off_Camera() { m_bCameraOn = false; }
 
-	void			On_Shake(SHAKE_TYPE eType, const _float& fForce, const _float& fTime);
-
+	virtual void			On_Shake(void* pArg = nullptr) { m_bShake = true; }
+	virtual void			Off_Shake() { m_bShake = false; }
+	
+	_bool			Is_Shacking() const { return m_bShake; }
 	_bool			Is_On_Camera() const { return m_bCameraOn; }
 
 
@@ -53,10 +51,8 @@ protected:
 	class CPipeLine*			m_pPipeLine = { nullptr };
 
 	_bool						m_bCameraOn = { false };
-	SHAKE_TYPE					m_eType;
 	_bool						m_bShake;
-	_float						m_fShakeForce;
-	_float						m_fShakeTime;
+
 public:
 	virtual CGameObject* Clone(void* pArg) = 0;
 	virtual void Free() override;

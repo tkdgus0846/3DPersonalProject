@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Component.h"
+#include "AnimInstance.h"
 
 BEGIN(Engine)
 
@@ -26,12 +26,7 @@ public:
 	const class CBone* Get_Bone(const char* pBoneName);
 
 public:
-	void Set_AnimIndex(_uint iAnimIndex) {
-		if (iAnimIndex >= m_iNumAnimations || Is_Changing_Animation())
-			return;
-		// 위에 잠깐만 주석
-		m_iCurrentAnimIndex = iAnimIndex;
-	}
+	void Set_AnimIndex(_uint iAnimIndex, ANIMTYPE eType = ANIM_ALLBODY);
 	_uint Get_NumAnimations() const { return m_iNumAnimations; }
 
 public:
@@ -43,6 +38,8 @@ public:
 
 public:
 	void Play_Animation(_double TimeDelta);
+	void Play_UpperBody_Animation(_double TimeDelta);
+	void Play_LowerBody_Animation(_double TimeDelta);
 
 public:
 	HRESULT Bind_Material(class CShader* pShader, const char* pConstantName, _uint iMeshIndex, aiTextureType MaterialType);
@@ -50,10 +47,19 @@ public:
 	void Loop_Animation(_uint iAnimIndex, _bool bLoop); 
 	void Loop_Animation(const vector<_uint>& indexVec, _bool bLoop);
 	vector<class CAnimation*>* Get_Animations() { return &m_Animations; }
-	_bool Is_Changing_Animation() const { return m_iPrevAnimIndex != m_iCurrentAnimIndex; }
+
+	_bool Is_Changing_Animation(ANIMTYPE eType = ANIM_ALLBODY); 
 	void Erase_LastFrame_Animation(_uint iIndex);
 	void Erase_Frames_LessTime(_uint iIndex, _double time);
 	void Remove_Mesh(const string& name, _uint iBoneNum);
+	void Motion_Cancel() { m_iPrevAnimIndex = m_iCurrentAnimIndex; }
+
+	void Collect_BodyBones_UpperLower(_int iUpperIndex, _int iLowerIndex);
+	
+private:
+	// 매개변수로 가장 부모의 인덱스를 넣어주면 
+	_bool Collect_UpperBodyBones_ByParentIndex(_int iCurIndex, _int iParentIndex);
+	_bool Collect_LowerBodyBones_ByParentIndex(_int iCurIndex, _int iParentIndex);
 
 private: /* For.Meshes  */
 	_uint					m_iNumMeshes = { 0 };
@@ -65,15 +71,30 @@ private: /* For.Materials */
 
 private: /* For.Bones*/
 	vector<class CBone*>	m_Bones;
+
+	/* 상하체 뼈 정보들 인덱스로 가지고 있음.*/
+	unordered_set<_int>	m_UpperBodyBoneIndex;
+	unordered_set<_int>	m_LowerBodyBoneIndex;
+
 	_uint					m_iNumBones;
 
 public:
 	typedef vector<class CBone*>	BONES;
 
 private:
-	_uint							m_iCurrentAnimIndex = { 0 };
-	_uint							m_iPrevAnimIndex = { 0 };
+	_int							m_iCurrentAnimIndex = { -1 };
+	_int							m_iPrevAnimIndex = { -1 };
 	_double							m_lerpTimeAcc = { 0.0 };
+
+	_int							m_iUpperCurrentAnimIndex = { -1 };
+	_int							m_iUpperPrevAnimIndex = { -1 };
+	_double							m_UpperLerpTimeAcc = { 0.0 };
+
+	_int							m_iLowerCurrentAnimIndex = { -1 };
+	_int							m_iLowerPrevAnimIndex = { -1 };
+	_double							m_LowerLerpTimeAcc = { 0.0 };
+
+	////////////////////////////////////////////////////////////
 
 	_uint							m_iNumAnimations = { 0 };
 	vector<class CAnimation*>		m_Animations;

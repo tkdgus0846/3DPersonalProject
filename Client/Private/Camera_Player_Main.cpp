@@ -2,6 +2,8 @@
 #include "Camera_Player_Main.h"
 #include "GameInstance.h"
 
+#include <random>
+
 CCamera_Player_Main::CCamera_Player_Main(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: CCamera(pDevice, pContext)
 {
@@ -39,7 +41,6 @@ HRESULT CCamera_Player_Main::Initialize(void* pArg)
 
 void CCamera_Player_Main::Tick(_double TimeDelta)
 {
-	
 	__super::Tick(TimeDelta);
 	
 
@@ -67,9 +68,72 @@ HRESULT CCamera_Player_Main::Render()
 	return S_OK;
 }
 
+void CCamera_Player_Main::Shake(const _double& TimeDelta)
+{
+	// 오리진 포스가 바뀐경우를 체크
+
+	if (m_fShakeTimeAcc == 0.0f)
+		m_ShakeOriginOffset = m_Offset;
+
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_real_distribution<float> dis(-1.0f, 1.0f);
+
+	// 경과 시간 업데이트
+	m_fShakeTimeAcc += TimeDelta; // 시간 간격을 조정하여 폭발 지속 시간을 조절하세요
+
+	// 폭발 효과 계산
+	float shakeMagnitude = 0.0f;
+	if (m_fShakeTimeAcc < m_fShakeDuration)
+	{
+		float normalizedTime = m_fShakeTimeAcc / m_fShakeDuration;
+		shakeMagnitude = m_fShakeMagnitude * (1.0f - std::sqrt(normalizedTime));
+	}
+	else
+	{
+		m_Offset = m_ShakeOriginOffset;
+		m_bShake = false;
+		return;
+	}
+
+	// 진동 벡터 생성
+	XMVECTOR shakeVector = XMVectorSet(dis(gen), dis(gen), dis(gen), 0.0f);
+
+	// 진동의 크기 조절
+	shakeVector *= shakeMagnitude;
+
+	// 카메라 위치에 진동 벡터 더하기
+	_vector myOffset = XMVectorSet(m_ShakeOriginOffset.x, m_ShakeOriginOffset.y, m_ShakeOriginOffset.z, 1.f);
+
+	myOffset += shakeVector;
+
+	XMStoreFloat3(&m_Offset, myOffset);
+	//Set_Offset(myOffset);
+}
+
+void CCamera_Player_Main::On_Shake(void* pArg)
+{
+	__super::On_Shake(pArg);
+	
+	MAINCAMERASHAKE* shakeInfo = (MAINCAMERASHAKE*)pArg;
+
+	m_fShakeRadius = shakeInfo->fShakeRadius;
+	m_fShakeMagnitude = shakeInfo->fShakeMagnitude;
+	m_fShakeDuration = shakeInfo->fShakeDuration;
+	m_fShakeTimeAcc = shakeInfo->fShakeTimeAcc;
+}
+
 void CCamera_Player_Main::Set_Offset(_fvector offset)
 {
+	_vector diff = XMVectorSubtract(offset, XMLoadFloat3(&m_Offset));
 	XMStoreFloat3(&m_Offset, offset);
+	_vector origin = XMLoadFloat3(&m_ShakeOriginOffset);
+	XMStoreFloat3(&m_ShakeOriginOffset, origin + diff);
+
+	/*if (m_bShake == false)
+		XMStoreFloat3(&m_Offset, offset);
+	else
+		XMStoreFloat3(&m_ShakeOriginOffset, offset);*/
 }
 
 _vector CCamera_Player_Main::Get_Offset()

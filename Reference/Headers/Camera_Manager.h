@@ -28,7 +28,9 @@ public:
 	CCamera* Get_CurCamera() { return m_pCurCamera; }
 	void On_Camera(const wstring& pCamTag);
 	void On_Camera(CCamera* pCamera);
-	void On_Shake(CCamera::SHAKE_TYPE eType, const _float& fForce = 1.5f, const _float& fTime = 5.f);
+	void On_Shake(void* pArg = nullptr);
+	void Off_Shake();
+	_bool Is_Shacking() const;
 
 private:
 	CCamera* m_pCurCamera;

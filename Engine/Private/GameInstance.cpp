@@ -527,6 +527,13 @@ void CGameInstance::On_Camera(CCamera* pCamera)
 	m_pCameraManager->On_Camera(pCamera);
 }
 
+_bool CGameInstance::Is_Shacking() const
+{
+	if (nullptr == m_pCameraManager) return false;
+
+	return m_pCameraManager->Is_Shacking();
+}
+
 _bool CGameInstance::Is_On_Camera(const wstring& pCamTag)
 {
 	if (nullptr == m_pCameraManager) return false;
@@ -534,11 +541,18 @@ _bool CGameInstance::Is_On_Camera(const wstring& pCamTag)
 	return m_pCameraManager->Is_On_Camera(pCamTag);
 }
 
-void CGameInstance::On_Shake(CCamera::SHAKE_TYPE eType, const _float& fForce, const _float& fTime)
+void CGameInstance::On_Shake(void* pArg)
 {
 	if (nullptr == m_pCameraManager) return;
 
-	m_pCameraManager->On_Shake(eType, fForce, fTime);
+	m_pCameraManager->On_Shake(pArg);
+}
+
+void CGameInstance::Off_Shake()
+{
+	if (nullptr == m_pCameraManager) return;
+
+	m_pCameraManager->Off_Shake();
 }
 
 void CGameInstance::Release_Engine()

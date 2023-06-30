@@ -97,9 +97,12 @@ void CCollider::OnCollisionExit(const Collision* collision)
 
 void CCollider::Tick(_double TimeDelta)
 {
-	if (m_bEnabled == false) return;
-	if (nullptr == m_pBounding)
+	if (m_bEnabled == false)
+	{
+		m_CollisionList.clear();
 		return;
+	}
+	if (m_pBounding == nullptr) return;
 
 	__super::Tick(TimeDelta);
 	CGameInstance::GetInstance()->Add_ColGroup(m_eColGroup, this);
@@ -112,6 +115,16 @@ void CCollider::Tick(_double TimeDelta)
 
 	if (m_pOwnerTransform != nullptr)
 		m_pBounding->Tick(m_pOwnerTransform->Get_WorldMatrix());
+
+
+	/// 지금은 콜라이더가 사용중이 아니면 그냥 빼버리는데 나중에 게임의 성격에 따라 Exit 를 불러줘도 된다.
+	for (auto it = m_CollisionList.begin(); it != m_CollisionList.end();)
+	{
+		if (it->first->Get_Enable() == false)
+			it = m_CollisionList.erase(it);
+		else
+			it++;
+	}
 }
 
 void CCollider::Late_Tick(_double TimeDelta)

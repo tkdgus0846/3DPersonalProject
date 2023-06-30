@@ -26,7 +26,7 @@ HRESULT CAxe::Initialize(void* pArg)
 
 
 	// 여기에 오프셋 설정 같은걸 다시 해줘야한다.
-	m_pTransformCom->Scaled(_float3(0.005f, 0.005f, 0.005f));
+	m_pTransformCom->Scaled(_float3(0.007f, 0.007f, 0.007f));
 	//m_pTransformCom->Set_Position({ -2.f,0.f,0.f,1.f });
 	//m_pTransformCom->Rotation(XMVectorSet(1.f, 0.f, 0.f, 0.f), XMConvertToRadians(90.0f));
 

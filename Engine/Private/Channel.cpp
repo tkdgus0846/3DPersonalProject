@@ -42,6 +42,8 @@ void CChannel::Invalidate_TransformationMatrix(CModel::BONES& Bones, _double Tim
 	}
 	else /* 현재 존재하는 키프레임의 상태를 좌우 키프레임정보를 이용하여 선형보간한다. */
 	{
+		//if ((*pCurrentKeyFrameIndex) + 1 >= m_KeyFrames.size()) return;
+
 		while (TimeAcc >= m_KeyFrames[(*pCurrentKeyFrameIndex) + 1].Time)
 			++(*pCurrentKeyFrameIndex);
 

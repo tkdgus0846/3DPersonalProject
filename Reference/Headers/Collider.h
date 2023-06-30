@@ -51,6 +51,7 @@ private:
 	TYPE							m_eColliderType = { TYPE_END };
 	class CBounding*				m_pBounding = { nullptr };
 	_bool							m_bEnabled = { true };
+	// 사실상 이 Enabled 변수가 콜리젼매니저에 넣을지 말지도 결정한다.
 	
 	class CTransform*				m_pOwnerTransform = { nullptr };
 	class CGameObject*				m_pOwnerObject = { nullptr };
