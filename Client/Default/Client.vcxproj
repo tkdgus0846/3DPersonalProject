@@ -184,12 +184,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Public\Axe.h" />
-    <ClInclude Include="..\Public\Axe2.h" />
     <ClInclude Include="..\public\BackGround.h" />
     <ClInclude Include="..\Public\Camera_Free.h" />
     <ClInclude Include="..\public\Camera_Player_Main.h" />
     <ClInclude Include="..\Public\Client_Defines.h" />
+    <ClInclude Include="..\public\Creature.h" />
     <ClInclude Include="..\Public\CubeObject.h" />
+    <ClInclude Include="..\Public\Hand.h" />
+    <ClInclude Include="..\Public\Horse.h" />
     <ClInclude Include="..\Public\Level_GamePlay.h" />
     <ClInclude Include="..\Public\Level_Loading.h" />
     <ClInclude Include="..\public\Level_Logo.h" />
@@ -198,8 +200,10 @@
     <ClInclude Include="..\public\MainApp.h" />
     <ClInclude Include="..\Public\Player.h" />
     <ClInclude Include="..\public\PlayerHead.h" />
+    <ClInclude Include="..\Public\PlayerParts.h" />
     <ClInclude Include="..\Public\Slasher.h" />
     <ClInclude Include="..\Public\Terrain.h" />
+    <ClInclude Include="..\public\Weapon.h" />
     <ClInclude Include="Client.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
@@ -207,11 +211,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Private\Axe.cpp" />
-    <ClCompile Include="..\Private\Axe2.cpp" />
     <ClCompile Include="..\private\BackGround.cpp" />
     <ClCompile Include="..\Private\Camera_Free.cpp" />
     <ClCompile Include="..\private\Camera_Player_Main.cpp" />
+    <ClCompile Include="..\private\Creature.cpp" />
     <ClCompile Include="..\Private\CubeObject.cpp" />
+    <ClCompile Include="..\Private\Hand.cpp" />
+    <ClCompile Include="..\Private\Horse.cpp" />
     <ClCompile Include="..\Private\Level_GamePlay.cpp" />
     <ClCompile Include="..\Private\Level_Loading.cpp" />
     <ClCompile Include="..\private\Level_Logo.cpp" />
@@ -220,8 +226,10 @@
     <ClCompile Include="..\private\MainApp.cpp" />
     <ClCompile Include="..\Private\Player.cpp" />
     <ClCompile Include="..\private\PlayerHead.cpp" />
+    <ClCompile Include="..\Private\PlayerParts.cpp" />
     <ClCompile Include="..\Private\Slasher.cpp" />
     <ClCompile Include="..\Private\Terrain.cpp" />
+    <ClCompile Include="..\private\Weapon.cpp" />
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

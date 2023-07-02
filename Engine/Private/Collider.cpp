@@ -135,6 +135,15 @@ void CCollider::Late_Tick(_double TimeDelta)
 
 }
 
+void CCollider::Erase_FromOtherCollisionList()
+{
+	for (auto& item : m_CollisionList)
+	{
+		item.first->m_CollisionList.erase(this);
+	}
+	m_CollisionList.clear();
+}
+
 #ifdef _DEBUG
 
 HRESULT CCollider::Render()

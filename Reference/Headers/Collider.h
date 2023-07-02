@@ -31,6 +31,7 @@ public:
 	_bool Get_Enable() const { return m_bEnabled; }
 
 	void Change_ColGroup(COLGROUP eGroup) { m_eColGroup = eGroup; }
+	void Erase_FromOtherCollisionList();
 	
 
 #ifdef _DEBUG

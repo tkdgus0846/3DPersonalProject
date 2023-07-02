@@ -78,10 +78,14 @@ void CAnimInstance::Proceed_Animation()
 
 void CAnimInstance::Apply_Animation(const string& name, ANIMTYPE eType)
 {
+	
+
 	if (eType == ANIM_ALLBODY)
 	{
 		/*if (m_pCurAnimationName.compare("") != 0)
 				Reset_Animation(m_pCurAnimationName);*/
+		if (m_pCurAnimationName.compare(name) == 0) return;
+		//Reset_Animation(m_pCurAnimationName);
 
 		m_pCurAnimationName = name;
 		m_pCurAnimNode = &m_AnimationNode[m_pCurAnimationName];
@@ -92,14 +96,30 @@ void CAnimInstance::Apply_Animation(const string& name, ANIMTYPE eType)
 			m_pModel->Motion_Cancel();
 
 		
-		if (m_pCurLowerAnimNode != nullptr && m_pCurUpperAnimNode != nullptr)
+		if (m_pCurLowerAnimNode != nullptr || m_pCurUpperAnimNode != nullptr)
 		{
-			Reset_Animation(m_pCurUpperAnimationName);
-			Reset_Animation(m_pCurLowerAnimationName);
-			m_pCurUpperAnimationName = m_pCurLowerAnimationName = "";
-			m_pCurUpperAnimNode = nullptr;
-			m_pCurLowerAnimNode = nullptr;
+			if (m_pCurLowerAnimNode)
+			{
+				Reset_Animation(m_pCurLowerAnimationName);
+				m_pCurLowerAnimationName = "";
+				m_pCurLowerAnimNode = nullptr;
+				m_pModel->m_bChange_LowerBodyToAllBody = true;
+			}
+
+			if (m_pCurUpperAnimNode)
+			{
+				Reset_Animation(m_pCurUpperAnimationName);
+				m_pCurUpperAnimationName = "";
+				m_pCurUpperAnimNode = nullptr;
+				m_pModel->m_bChange_UpperBodyToAllBody = true;
+			}
+			
 		}
+		
+		m_bUseAllBodyAnim = true;
+		m_bUseUpperBodyAnim = false;
+		m_bUseLowerBodyAnim = false;
+
 		
 	}
 	
@@ -107,6 +127,8 @@ void CAnimInstance::Apply_Animation(const string& name, ANIMTYPE eType)
 	{
 		/*if (m_pCurAnimationName.compare("") != 0)
 				Reset_Animation(m_pCurAnimationName);*/
+		if (m_pCurLowerAnimationName.compare(name) == 0) return;
+		//Reset_Animation(m_pCurLowerAnimationName);
 
 		m_pCurLowerAnimationName = name;
 		m_pCurLowerAnimNode = &m_AnimationNode[m_pCurLowerAnimationName];
@@ -121,13 +143,20 @@ void CAnimInstance::Apply_Animation(const string& name, ANIMTYPE eType)
 			Reset_Animation(m_pCurAnimationName);
 			m_pCurAnimationName = "";
 			m_pCurAnimNode = nullptr;
+
+			m_pModel->m_bChange_AllBodyToLowerBody = true;
 		}
+
+		m_bUseAllBodyAnim = false;
+		m_bUseLowerBodyAnim = true;
 	}
 
 	if (eType == ANIM_UPPERBODY)
 	{
 		/*if (m_pCurAnimationName.compare("") != 0)
 				Reset_Animation(m_pCurAnimationName);*/
+		if (m_pCurUpperAnimationName.compare(name) == 0) return;
+		//Reset_Animation(m_pCurUpperAnimationName);
 
 		m_pCurUpperAnimationName = name;
 		m_pCurUpperAnimNode = &m_AnimationNode[m_pCurUpperAnimationName];
@@ -142,7 +171,12 @@ void CAnimInstance::Apply_Animation(const string& name, ANIMTYPE eType)
 			Reset_Animation(m_pCurAnimationName);
 			m_pCurAnimationName = "";
 			m_pCurAnimNode = nullptr;
+
+			m_pModel->m_bChange_AllBodyToUpperBody = true;
 		}
+
+		m_bUseAllBodyAnim = false;
+		m_bUseUpperBodyAnim = true;
 	}
 	
 }
@@ -153,6 +187,7 @@ _bool CAnimInstance::Next_Animation(ANIMTYPE eType)
 	{
 		case ANIM_ALLBODY:
 		{
+			if (m_pCurAnimNode == nullptr) return false;
 			if (m_pCurAnimNode->nextAnimNode.compare("") == 0)
 				return false;
 
@@ -161,6 +196,7 @@ _bool CAnimInstance::Next_Animation(ANIMTYPE eType)
 		}
 		case ANIM_UPPERBODY:
 		{
+			if (m_pCurUpperAnimNode == nullptr) return false;
 			if (m_pCurUpperAnimNode->nextAnimNode.compare("") == 0)
 				return false;
 
@@ -169,6 +205,7 @@ _bool CAnimInstance::Next_Animation(ANIMTYPE eType)
 		}
 		case ANIM_LOWERBODY:
 		{
+			if (m_pCurLowerAnimNode == nullptr) return false;
 			if (m_pCurLowerAnimNode->nextAnimNode.compare("") == 0)
 				return false;
 
@@ -198,10 +235,13 @@ const string& CAnimInstance::Get_NextNode_Name(ANIMTYPE eType)
 	switch (eType)
 	{
 	case ANIM_ALLBODY:
+		if (m_pCurAnimNode == nullptr) return "";
 		return m_pCurAnimNode->nextAnimNode;
 	case ANIM_UPPERBODY:
+		if (m_pCurUpperAnimNode == nullptr) return "";
 		return m_pCurUpperAnimNode->nextAnimNode;
 	case ANIM_LOWERBODY:
+		if (m_pCurLowerAnimNode == nullptr) return "";
 		return m_pCurLowerAnimNode->nextAnimNode;
 	}
 	
@@ -226,6 +266,7 @@ void CAnimInstance::Play_Animation(_double TimeDelta, AnimNode* node)
 	CAnimation* anim = m_pModel->m_Animations[node->AnimIndices[*iCurIndex]];
 	if (m_pModel->Is_Changing_Animation())
 	{
+		
 		return;
 	}
 
@@ -277,6 +318,7 @@ void CAnimInstance::Play_UpperBody_Animation(_double TimeDelta, AnimNode* node)
 	CAnimation* anim = m_pModel->m_Animations[node->AnimIndices[*iCurIndex]];
 	if (m_pModel->Is_Changing_Animation(ANIM_UPPERBODY))
 	{
+		/*cout << m_pModel->m_iUpperPrevAnimIndex << " " << m_pModel->m_iUpperCurrentAnimIndex << " Can't Start" << endl;*/
 		return;
 	}
 

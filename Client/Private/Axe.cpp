@@ -1,14 +1,15 @@
 #include "stdafx.h"
 #include "..\Public\Axe.h"
 #include "GameInstance.h"
+#include "Player.h"
 
 CAxe::CAxe(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
-	: CActorComponent(pDevice, pContext)
+	: CWeapon(pDevice, pContext)
 {
 }
 
 CAxe::CAxe(const CAxe& rhs)
-	: CActorComponent(rhs)
+	: CWeapon(rhs)
 {
 }
 
@@ -68,7 +69,7 @@ HRESULT CAxe::Add_Components()
 		return E_FAIL;
 
 	/* For.Com_Model */
-	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Axe_GEO #103351_2"),
+	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Axe_GEO #103351"),
 		TEXT("Com_Model"), (CComponent**)&m_pModelCom)))
 		return E_FAIL;
 
@@ -132,4 +133,108 @@ CGameObject* CAxe::Clone(void* pArg)
 void CAxe::Free()
 {
 	__super::Free();
+}
+
+void CAxe::Skill_Q(const _double& TimeDelta)
+{
+	if ((m_AxeDashInitSpeed + (m_AxeDashAccel * m_AxeDashTimeAcc)) < 0.f)
+	{
+		m_bAxeDashFinished = true;
+		return;
+	}
+
+	m_AxeDashTimeAcc += TimeDelta;
+
+	
+	m_pPlayer->m_pTransformCom->Go_Dir(XMLoadFloat3(&m_DashDir), m_AxeDashInitSpeed, m_AxeDashAccel, m_AxeDashTimeAcc, m_pPlayer->m_pNavigationCom);
+}
+
+void CAxe::Skill_E(const _double& TimeDelta)
+{
+}
+
+void CAxe::Skill_Q_Setting()
+{
+	XMStoreFloat3(&m_DashDir, m_pPlayer->m_pTransformCom->Get_State(CTransform::STATE_LOOK));
+	m_AxeDashTimeAcc = 0.0;
+	m_bAxeDashFinished = false;
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Axe_Dash");
+}
+
+void CAxe::Skill_E_Setting()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Axe_Throw");
+}
+
+_bool CAxe::Skill_Q_End()
+{
+	// 방향이 역방향이 되는 순간. 멈춰라.
+	if (m_bAxeDashFinished == true)
+		return true;
+	return false;
+}
+
+_bool CAxe::Skill_E_End()
+{
+	return true;
+}
+
+void CAxe::N_Walk_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Axe_N_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+}
+
+void CAxe::NE_Walk_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Axe_NE_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+}
+
+void CAxe::E_Walk_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Axe_E_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+}
+
+void CAxe::SE_Walk_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Axe_SE_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+}
+
+void CAxe::S_Walk_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Axe_S_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+}
+
+void CAxe::SW_Walk_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Axe_SW_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+}
+
+void CAxe::W_Walk_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Axe_W_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+}
+
+void CAxe::NW_Walk_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Axe_NW_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+}
+
+void CAxe::Idle_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Axe_Idle");
+}
+
+void CAxe::Equip_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Axe_Equip");
+}
+
+void CAxe::Move_Attack_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Axe_Right_MoveCast", ANIM_UPPERBODY);
+}
+
+void CAxe::Standing_Attack_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Axe_Right");
 }

@@ -1,14 +1,16 @@
 #include "stdafx.h"
 #include "..\Public\Mace.h"
 #include "GameInstance.h"
+#include "Player.h"
+#include "Camera_Player_Main.h"
 
 CMace::CMace(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
-	: CActorComponent(pDevice, pContext)
+	: CWeapon(pDevice, pContext)
 {
 }
 
 CMace::CMace(const CMace& rhs)
-	: CActorComponent(rhs)
+	: CWeapon(rhs)
 {
 }
 
@@ -132,4 +134,148 @@ CGameObject* CMace::Clone(void* pArg)
 void CMace::Free()
 {
 	__super::Free();
+}
+
+void CMace::Skill_Q(const _double& TimeDelta)
+{
+	if (m_bMaceDashFinished == true) return;
+
+	m_MaceDashTimeAcc += TimeDelta;
+	if ((m_MaceDashInitSpeed + (m_MaceDashAccel * m_MaceDashTimeAcc)) >= 0.f)
+	{
+		XMStoreFloat3(&m_DashDir, m_pPlayer->m_pTransformCom->Get_State(CTransform::STATE_LOOK));
+		m_pPlayer->m_pTransformCom->Go_Dir(XMLoadFloat3(&m_DashDir), m_MaceDashInitSpeed, m_MaceDashAccel, m_MaceDashTimeAcc, m_pPlayer->m_pNavigationCom);
+	}
+
+	_double height = m_MaceDashJumpOriginHeight + (m_MaceDashJumpSpeed * m_MaceDashTimeAcc) - (0.5 * m_MaceDashJumpGravity * m_MaceDashTimeAcc * m_MaceDashTimeAcc);
+
+	if (m_pPlayer->Compute_NavMesh_Height() <= height)
+	{
+		_vector myPos = m_pPlayer->m_pTransformCom->Get_State(CTransform::STATE_POSITION);
+
+		myPos.m128_f32[1] = height;
+		m_pPlayer->m_pTransformCom->Set_Position(myPos);
+
+		m_pPlayer->m_bClimbNavMesh = false;
+	}
+	else
+	{
+		CCamera_Player_Main::MAINCAMERASHAKE desc;
+		desc.fShakeMagnitude = 0.6f;
+		CGameInstance::GetInstance()->On_Shake(&desc);
+		m_pPlayer->m_bClimbNavMesh = true;
+		m_bMaceDashFinished = true;
+	}
+}
+
+void CMace::Skill_E(const _double& TimeDelta)
+{
+	m_MaceDashTimeAcc += TimeDelta;
+	if ((m_MaceSpinInitSpeed + (m_MaceSpinAccel * m_MaceDashTimeAcc)) >= 0.f)
+	{
+		XMStoreFloat3(&m_DashDir, m_pPlayer->m_pTransformCom->Get_State(CTransform::STATE_LOOK));
+		m_pPlayer->m_pTransformCom->Go_Dir(XMLoadFloat3(&m_DashDir), m_MaceSpinInitSpeed, m_MaceSpinAccel, m_MaceDashTimeAcc, m_pPlayer->m_pNavigationCom);
+	}
+	else
+	{
+		m_bMaceSpinFinished = true;
+	}
+}
+
+void CMace::Skill_Q_Setting()
+{
+	XMStoreFloat3(&m_DashDir, m_pPlayer->m_pTransformCom->Get_State(CTransform::STATE_LOOK));
+	m_MaceDashJumpOriginHeight = m_pPlayer->m_pTransformCom->Get_State(CTransform::STATE_POSITION).m128_f32[1];
+	m_MaceDashTimeAcc = 0.0;
+	//m_bSlasherDashFinished = false;
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_Dash");
+}
+
+void CMace::Skill_E_Setting()
+{
+	XMStoreFloat3(&m_DashDir, m_pPlayer->m_pTransformCom->Get_State(CTransform::STATE_LOOK));
+	m_MaceDashTimeAcc = 0.0;
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_Spin");
+}
+
+_bool CMace::Skill_Q_End()
+{
+	_bool bResult = false;
+	if (m_bMaceDashFinished == true)
+	{
+		bResult = true;
+		m_bMaceDashFinished = false;
+	}
+	return bResult;
+}
+
+_bool CMace::Skill_E_End()
+{
+	_bool bResult = false;
+	if (m_bMaceSpinFinished == true)
+	{
+		bResult = true;
+		m_bMaceSpinFinished = false;
+	}
+	return bResult;
+}
+
+void CMace::N_Walk_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_N_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+}
+
+void CMace::NE_Walk_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_NE_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+}
+
+void CMace::E_Walk_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_E_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+}
+
+void CMace::SE_Walk_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_SE_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+}
+
+void CMace::S_Walk_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_S_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+}
+
+void CMace::SW_Walk_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_SW_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+}
+
+void CMace::W_Walk_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_W_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+}
+
+void CMace::NW_Walk_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_NW_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+}
+
+void CMace::Idle_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_Idle");
+}
+
+void CMace::Equip_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_Equip");
+}
+
+void CMace::Move_Attack_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_Right", ANIM_UPPERBODY);
+}
+
+void CMace::Standing_Attack_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_Right");
 }

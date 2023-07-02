@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Client_Defines.h"
-#include "GameObject.h"
+#include "Creature.h"
 
 BEGIN(Engine)
 class CModel;
@@ -11,14 +11,16 @@ class CCollider;
 class CTransform;
 class CNavigation;
 class CAnimInstance;
-class CActorComponent;
-
 END
 
 BEGIN(Client)
 
-class CPlayer final : public CGameObject
+class CPlayer final : public CCreature
 {
+	friend class CAxe;
+	friend class CSlasher;
+	friend class CMace;
+	friend class CHand;
 public:
 	enum COLLIDER { COLLIDER_PLAYER, COLLIDER_ATTACK, COLLIDER_SPHERE, COLLIDER_END };
 	enum WEAPONTYPE { WEAPON_HAND, WEAPON_AXE, WEAPON_SLASHER, WEAPON_MACE, WEAPON_END};
@@ -49,7 +51,6 @@ private:
 	void CameraZoom(_double TimeDelta);
 	void Dash(_double TimeDelta);
 
-	// 무기 타입에 따라서 처리 해주면 좋을거같다. 일단은 임시로 Attack_Claw
 	void Attack_Combo();
 	void Add_Animations();
 
@@ -115,7 +116,7 @@ private:
 	// 무기에 관한 정보들
 	WEAPONTYPE					m_eWeaponType = { WEAPON_HAND };
 	WEAPONTYPE					m_ePrevWeaponType = { WEAPON_HAND };
-	vector<CActorComponent*>	m_Weapons[WEAPON_END];
+	vector<class CWeapon*>		m_Weapons[WEAPON_END];
 
 	
 
@@ -136,35 +137,6 @@ private:
 	_double						m_DashTimeAcc = { 0.0 };
 	const _double				m_DashAccel = { 5.7 };
 	const _double				m_DashInitSpeed = { -0.01 };
-
-	// 도끼 Q 스킬 변수들
-	_double						m_AxeDashTimeAcc = { 0.0 };
-	const _double				m_AxeDashAccel = { -4.1 };
-	const _double				m_AxeDashInitSpeed = { 1.21 };
-	_bool						m_bAxeDashFinished = { false };
-
-	// 슬래셔 Q 스킬 변수들
-	_double						m_SlasherDashTimeAcc = { 0.0 };
-	const _double				m_SlasherDashAccel = { -4.1 };
-	const _double				m_SlasherDashInitSpeed = { 1.41 };
-	_float4						m_SlasherDashOriginPos;
-	_bool						m_bSlasherDashFinished = { false };
-	_bool						m_bSlasherDashStarted = { false };
-
-	// 메이스 Q 스킬 변수들
-	_double						m_MaceDashTimeAcc = { 0.0 };
-	const _double				m_MaceDashAccel = { -0.01 };
-	const _double				m_MaceDashInitSpeed = { 0.2 };
-
-	const _double				m_MaceDashJumpSpeed = { 6.0 };
-	const _double				m_MaceDashJumpGravity = { 10.5 };
-	_double						m_MaceDashJumpOriginHeight = { 0.0 };
-
-	_bool						m_bMaceDashFinished = { false };
-
-
-	// 현재 마우스 방향으로 뛰어야한다.
-	// h = h0 + (v0 * t) - (0.5 * g * t^2)
 
 public:
 	HRESULT Add_Components();

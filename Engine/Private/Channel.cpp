@@ -42,7 +42,7 @@ void CChannel::Invalidate_TransformationMatrix(CModel::BONES& Bones, _double Tim
 	}
 	else /* 현재 존재하는 키프레임의 상태를 좌우 키프레임정보를 이용하여 선형보간한다. */
 	{
-		//if ((*pCurrentKeyFrameIndex) + 1 >= m_KeyFrames.size()) return;
+		if ((*pCurrentKeyFrameIndex) + 1 >= m_KeyFrames.size()) return;
 
 		while (TimeAcc >= m_KeyFrames[(*pCurrentKeyFrameIndex) + 1].Time)
 			++(*pCurrentKeyFrameIndex);
@@ -78,8 +78,12 @@ _int CChannel::Lerp_TransformaitionMatrix(CModel::BONES& Bones, _double duration
 
 	_double		Ratio = TimeAcc/duration;
 
+
 	if (Ratio >= 1.f) 
 		return 1;
+
+	if (srcKeyFrame >= m_KeyFrames.size()) 
+		srcKeyFrame = m_KeyFrames.size() - 1;
 
 	_float3		vSourScale = m_KeyFrames[srcKeyFrame].vScale;
 	_float4		vSourRotation = m_KeyFrames[srcKeyFrame].vRotation;
@@ -99,6 +103,7 @@ _int CChannel::Lerp_TransformaitionMatrix(CModel::BONES& Bones, _double duration
 	/* 같은 이름을 가진 모델이 들고 있는 뼈에게 전달해준다. */
 	Bones[m_iBoneIndex]->Set_TransformationMatrix(TransformationMatrix);
 
+	
 	return 0;
 }
 

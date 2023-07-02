@@ -9,6 +9,25 @@ class ENGINE_DLL CModel final : public CComponent, public IReadable
 	friend class CAnimInstance;
 public:
 	enum TYPE { TYPE_NONANIM, TYPE_ANIM, TYPE_END };
+	enum ANIMCHANGE 
+	{ 
+		//전체-전체, 전체-하체, 전체-상체
+		ALLBODY_TO_UPPERBODY,
+		ALLBODY_TO_LOWERBODY,
+		ALLBODY_TO_ALLBODY,
+
+		// 상체-전체, 상체-상체
+		UPPERBODY_TO_ALLBODY,
+		UPPERBODY_TO_UPPERBODY,
+
+		// 하체-전체, 
+		LOWERBODY_TO_ALLBODY, 
+		LOWERBODY_TO_LOWERBODY,
+
+		LOWERUPPERBODY_TO_ALLBODY,
+
+		ANIMCHANGE_END
+	};
 private:
 	CModel(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	CModel(const CModel& rhs);
@@ -48,7 +67,8 @@ public:
 	void Loop_Animation(const vector<_uint>& indexVec, _bool bLoop);
 	vector<class CAnimation*>* Get_Animations() { return &m_Animations; }
 
-	_bool Is_Changing_Animation(ANIMTYPE eType = ANIM_ALLBODY); 
+	_bool Is_Changing_Animation(ANIMTYPE eType = ANIM_ALLBODY);
+
 	void Erase_LastFrame_Animation(_uint iIndex);
 	void Erase_Frames_LessTime(_uint iIndex, _double time);
 	void Remove_Mesh(const string& name, _uint iBoneNum);
@@ -60,6 +80,10 @@ private:
 	// 매개변수로 가장 부모의 인덱스를 넣어주면 
 	_bool Collect_UpperBodyBones_ByParentIndex(_int iCurIndex, _int iParentIndex);
 	_bool Collect_LowerBodyBones_ByParentIndex(_int iCurIndex, _int iParentIndex);
+
+	_bool Is_Changing_Animation(_int& iPrevIndex, const _int& iCurIndex);
+	_bool Lerp_NextAnimation(_int& iPrevAnimIndex, _int& iCurrentAnimIndex, _double& lerpTimeAcc, const _double& TimeDelta, const _double& lerpTimes, unordered_set<_int>* BoneIndex = nullptr);
+	ANIMCHANGE Decide_ChangeAnimState(ANIMTYPE eCurType);
 
 private: /* For.Meshes  */
 	_uint					m_iNumMeshes = { 0 };
@@ -93,6 +117,13 @@ private:
 	_int							m_iLowerCurrentAnimIndex = { -1 };
 	_int							m_iLowerPrevAnimIndex = { -1 };
 	_double							m_LowerLerpTimeAcc = { 0.0 };
+
+
+	_bool							m_bChange_AllBodyToUpperBody = { false };
+	_bool							m_bChange_UpperBodyToAllBody = { false };
+	_bool							m_bChange_LowerBodyToAllBody = { false };
+	_bool							m_bChange_AllBodyToLowerBody = { false };
+
 
 	////////////////////////////////////////////////////////////
 

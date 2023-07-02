@@ -69,8 +69,7 @@ void CActorComponent::Late_Tick(_double TimeDelta)
 	BoneMatrix.r[2] = XMVector3Normalize(BoneMatrix.r[2]);
 
 
-	XMStoreFloat4x4(&m_WorldMatrix, m_pTransformCom->Get_WorldMatrix() *
-		BoneMatrix * XMLoadFloat4x4(m_ParentDesc.pParentWorldMatrix));
+	XMStoreFloat4x4(&m_WorldMatrix, m_pTransformCom->Get_WorldMatrix() * BoneMatrix * XMLoadFloat4x4(m_ParentDesc.pParentWorldMatrix));
 }
 
 HRESULT CActorComponent::Render()

@@ -19,6 +19,9 @@ public:
 		const _float4x4*	pCombindTransformationMatrix;
 		const _float4x4*	pParentWorldMatrix;
 
+		const _tchar*	    ModelName;
+		_float4x4			LocalOffsetMatrix;
+
 	}PARENTDESC;
 
 protected:

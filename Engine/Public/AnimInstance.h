@@ -51,6 +51,16 @@ public:
 	_bool Animation_Finished(ANIMTYPE eType = ANIM_ALLBODY);
 	const string& Get_NextNode_Name(ANIMTYPE eType = ANIM_ALLBODY);
 
+	_bool Is_Use_AllBodyAnim() const { return m_bUseAllBodyAnim; }
+	_bool Is_Use_UpperBodyAnim() const { return m_bUseUpperBodyAnim; }
+	_bool Is_Use_LowerBodyAnim() const { return m_bUseLowerBodyAnim; }
+
+	AnimNode* Get_AllBody_CurAnimNode() { return m_pCurAnimNode; }
+	AnimNode* Get_UpperBody_CurAnimNode() { return m_pCurUpperAnimNode; }
+	AnimNode* Get_LowerBody_CurAnimNode() { return m_pCurLowerAnimNode; }
+
+
+
 private:
 	// 다음 애니메이션으로 넘어갈때 원래의 진행상황 정보를 초기화해주자.
 	void Reset_Animation(const string& name);
@@ -81,6 +91,11 @@ private:
 	AnimNode*						m_pCurLowerAnimNode = { nullptr };
 	_bool							m_bLowerProceed = { false };
 	_bool							m_bLowerAnimationFinished = { false };
+
+	/* 현재 전체 몸을 쓰는 애니메이션을 쓰는지 아니면 상하체 분리 애니메이션을 쓰는지 에 대한 변수.*/
+	_bool							m_bUseAllBodyAnim = { false };
+	_bool							m_bUseUpperBodyAnim = { false };
+	_bool							m_bUseLowerBodyAnim = { false };
 
 	
 

@@ -18,6 +18,7 @@
 #include <vector>
 #include <list>
 #include <map>
+#include <stack>
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"

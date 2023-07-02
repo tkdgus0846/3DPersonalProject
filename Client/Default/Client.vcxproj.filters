@@ -46,14 +46,23 @@
     <Filter Include="02.GameObjects\TestObject">
       <UniqueIdentifier>{e194f5f7-a53a-4b3b-b16b-88cc45dac25e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="02.GameObjects\Player">
-      <UniqueIdentifier>{687b3eec-a957-4eb8-bcff-73a55704976d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="02.GameObjects\Camera\PlayerCam">
       <UniqueIdentifier>{db3325dd-2c02-4e36-aaaa-0e280a398ae3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="02.GameObjects\Player\Parts">
+    <Filter Include="02.GameObjects\Creatures">
+      <UniqueIdentifier>{16b54430-71ca-44e7-90f5-8e89d157a97e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObjects\Creatures\Horse">
+      <UniqueIdentifier>{bd46f027-933d-4bc2-8f6f-0d32fbd09f17}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObjects\Creatures\Player">
+      <UniqueIdentifier>{687b3eec-a957-4eb8-bcff-73a55704976d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObjects\Creatures\Player\Parts">
       <UniqueIdentifier>{cb42d30d-702e-4f84-93de-d734bb6aae7f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObjects\Creatures\Player\Parts\Weapon">
+      <UniqueIdentifier>{69573494-ff1f-4ba5-859d-6030f8f4869e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -103,25 +112,37 @@
       <Filter>02.GameObjects\TestObject</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Player.h">
-      <Filter>02.GameObjects\Player</Filter>
+      <Filter>02.GameObjects\Creatures\Player</Filter>
     </ClInclude>
     <ClInclude Include="..\public\Camera_Player_Main.h">
       <Filter>02.GameObjects\Camera\PlayerCam</Filter>
     </ClInclude>
     <ClInclude Include="..\public\PlayerHead.h">
-      <Filter>02.GameObjects\Player\Parts</Filter>
+      <Filter>02.GameObjects\Creatures\Player\Parts</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\Axe.h">
-      <Filter>02.GameObjects\Player\Parts</Filter>
+    <ClInclude Include="..\public\Weapon.h">
+      <Filter>02.GameObjects\Creatures\Player\Parts\Weapon</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Mace.h">
-      <Filter>02.GameObjects\Player\Parts</Filter>
+      <Filter>02.GameObjects\Creatures\Player\Parts\Weapon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Axe.h">
+      <Filter>02.GameObjects\Creatures\Player\Parts\Weapon</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Slasher.h">
-      <Filter>02.GameObjects\Player\Parts</Filter>
+      <Filter>02.GameObjects\Creatures\Player\Parts\Weapon</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\Axe2.h">
-      <Filter>02.GameObjects\Player\Parts</Filter>
+    <ClInclude Include="..\Public\Hand.h">
+      <Filter>02.GameObjects\Creatures\Player\Parts\Weapon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Horse.h">
+      <Filter>02.GameObjects\Creatures\Horse</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\Creature.h">
+      <Filter>02.GameObjects\Creatures</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\PlayerParts.h">
+      <Filter>02.GameObjects\Creatures\Player\Parts</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -159,25 +180,37 @@
       <Filter>02.GameObjects\TestObject</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Player.cpp">
-      <Filter>02.GameObjects\Player</Filter>
+      <Filter>02.GameObjects\Creatures\Player</Filter>
     </ClCompile>
     <ClCompile Include="..\private\Camera_Player_Main.cpp">
       <Filter>02.GameObjects\Camera\PlayerCam</Filter>
     </ClCompile>
     <ClCompile Include="..\private\PlayerHead.cpp">
-      <Filter>02.GameObjects\Player\Parts</Filter>
+      <Filter>02.GameObjects\Creatures\Player\Parts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Weapon.cpp">
+      <Filter>02.GameObjects\Creatures\Player\Parts\Weapon</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Mace.cpp">
-      <Filter>02.GameObjects\Player\Parts</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Slasher.cpp">
-      <Filter>02.GameObjects\Player\Parts</Filter>
+      <Filter>02.GameObjects\Creatures\Player\Parts\Weapon</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Axe.cpp">
-      <Filter>02.GameObjects\Player\Parts</Filter>
+      <Filter>02.GameObjects\Creatures\Player\Parts\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\Axe2.cpp">
-      <Filter>02.GameObjects\Player\Parts</Filter>
+    <ClCompile Include="..\Private\Slasher.cpp">
+      <Filter>02.GameObjects\Creatures\Player\Parts\Weapon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Hand.cpp">
+      <Filter>02.GameObjects\Creatures\Player\Parts\Weapon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Horse.cpp">
+      <Filter>02.GameObjects\Creatures\Horse</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Creature.cpp">
+      <Filter>02.GameObjects\Creatures</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\PlayerParts.cpp">
+      <Filter>02.GameObjects\Creatures\Player\Parts</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

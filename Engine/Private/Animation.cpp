@@ -157,7 +157,7 @@ void CAnimation::Invalidate_TransformationMatrix_Lower(CModel::BONES& Bones, _do
 	}
 }
 
-_int CAnimation::Lerp_NextAnimation(CAnimation* pNextAnimation, CModel::BONES& Bones, _double Duration, _double LerpTimeAcc)
+_int CAnimation::Lerp_NextAnimation(CAnimation* pNextAnimation, CModel::BONES& Bones, _double Duration, _double LerpTimeAcc, unordered_set<_int>* BoneIndex)
 {
 	_int iChannelIndex = 0;
 	_int iResult = 1;
@@ -172,12 +172,11 @@ _int CAnimation::Lerp_NextAnimation(CAnimation* pNextAnimation, CModel::BONES& B
 			if (nullptr == pNextChannel) 
 				return -1;
 
-			if (pPrevChannel->Get_BoneIndex() == pNextChannel->Get_BoneIndex())
+			if (pPrevChannel->Get_BoneIndex() == pNextChannel->Get_BoneIndex() && (BoneIndex == nullptr || BoneIndex->find(pPrevChannel->Get_BoneIndex()) != BoneIndex->end()))
 			{
-				
-				_int result;
-				
-				result = pPrevChannel->Lerp_TransformaitionMatrix(Bones, Duration, LerpTimeAcc, m_ChannelCurrentKeyFrames[iChannelIndex], pNextChannel->Get_FirstKeyFrame());
+				_int result = pPrevChannel->Lerp_TransformaitionMatrix(Bones, Duration, LerpTimeAcc, m_ChannelCurrentKeyFrames[iChannelIndex], pNextChannel->Get_FirstKeyFrame());
+
+				//cout << "Hit " << result << " BoneIndex:" << BoneIndex << " LerpTime" << LerpTimeAcc<< endl;
 
 				if (result == 0)
 					iResult = 0;

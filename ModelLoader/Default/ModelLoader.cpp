@@ -12,8 +12,7 @@ void Load(path modelPath, wstring extractPath, CAssimpModel::TYPE type)
     {
         if (entry.path().extension() == ".fbx")
         {
-            cout << entry.path() << endl;
-            CAssimpModel* model = CAssimpModel::Create(entry.path().string(), type);
+            
             
             wstring path = extractPath;
             path = path + entry.path().filename().wstring();
@@ -42,8 +41,16 @@ void Load(path modelPath, wstring extractPath, CAssimpModel::TYPE type)
                 }
             }
 
-            CDataParsing::Save_File(path.c_str(), model);
-            Safe_Delete(model);
+            if (exists(path) == false)
+            {
+                cout << entry.path() << endl;
+
+                CAssimpModel* model = CAssimpModel::Create(entry.path().string(), type);
+
+                CDataParsing::Save_File(path.c_str(), model);
+                Safe_Delete(model);
+            }
+                
         }
     }
 }
@@ -58,7 +65,7 @@ void Close()
 
 int main()
 {
-   // Load("../../Models/AnimModels/", L"../../ExtractModels/AnimModels/", CAssimpModel::TYPE_ANIM);
+    Load("../../Models/AnimModels/", L"../../ExtractModels/AnimModels/", CAssimpModel::TYPE_ANIM);
     Load("../../Models/NonAnimModels/", L"../../ExtractModels/NonAnimModels/", CAssimpModel::TYPE_NONANIM);
     Close();
     return 0;

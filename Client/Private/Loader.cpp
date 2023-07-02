@@ -8,11 +8,12 @@
 #include "Player.h"
 #include "Camera_Player_Main.h"
 #include "PlayerHead.h"
+#include "PlayerParts.h"
 #include "Mace.h"
 #include "Axe.h"
-#include "Axe2.h"
 #include "Slasher.h"
-
+#include "Hand.h"
+#include "Horse.h"
 
 CLoader::CLoader(ID3D11Device * pDevice, ID3D11DeviceContext * pContext)
 	: m_pDevice(pDevice)
@@ -129,7 +130,7 @@ HRESULT CLoader::Loading_For_GamePlay()
 
 	/* For.Prototype_Component_Texture_Terrain */
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Terrain"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/Terrain/Tile%d.dds"), 2))))
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/SilverhillsBuilding_Cobblestone02_bc.dds")))))
 		return E_FAIL;
 
 	/* For.Prototype_Component_Texture_Cube */
@@ -140,9 +141,8 @@ HRESULT CLoader::Loading_For_GamePlay()
 	lstrcpy(m_szLoading, TEXT("모델 로딩 중."));
 	/* For.Prototype_Component_VIBuffer_Terrain */
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_VIBuffer_Terrain"),
-		CVIBuffer_Terrain::Create(m_pDevice, m_pContext, wstring(L"../../Terrains/CEX.dat")))))
+		CVIBuffer_Terrain::Create(m_pDevice, m_pContext, wstring(L"../../Terrains/CEXMASTER.dat")))))
 		return E_FAIL;
-
 	
 	///////////////// 애님모델 로드//////////////////////////////////////
 	_matrix PivotMatrix = XMMatrixIdentity();
@@ -157,6 +157,14 @@ HRESULT CLoader::Loading_For_GamePlay()
 		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/AnimModels/VampireMale_Standard_LOD00_rig/VampireMale_Standard_LOD00_rig.dat", PivotMatrix))))
 		return E_FAIL;
 
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Horse"),
+		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/AnimModels/CreatureHorse_Standard_LOD00_rig/CreatureHorse_Standard_LOD00_rig.dat", PivotMatrix))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Horse_Mount"),
+		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/AnimModels/CreatureHorse_Standard_LOD00_rig_Mount/CreatureHorse_Standard_LOD00_rig_Mount.dat", PivotMatrix))))
+		return E_FAIL;
+
 	///////////////// 논애님모델 로드//////////////////////////////////////
 
 	PivotMatrix = XMMatrixIdentity();
@@ -164,13 +172,8 @@ HRESULT CLoader::Loading_For_GamePlay()
 		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/NonAnimModels/face02_GEO/face02_GEO.dat", PivotMatrix))))
 		return E_FAIL;
 
-	PivotMatrix = XMMatrixRotationZ(XMConvertToRadians(180.f));
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Axe_GEO #103351"),
-		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/NonAnimModels/Axe_GEO #103351/Axe_GEO #103351.dat", PivotMatrix))))
-		return E_FAIL;
-
 	PivotMatrix = XMMatrixIdentity();
-	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Axe_GEO #103351_2"),
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Axe_GEO #103351"),
 		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/NonAnimModels/Axe_GEO #103351/Axe_GEO #103351.dat", PivotMatrix))))
 		return E_FAIL;
 
@@ -191,12 +194,38 @@ HRESULT CLoader::Loading_For_GamePlay()
 		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/NonAnimModels/SteelSlasher_2H_Standard_GEO/SteelSlasher_2H_Standard_GEO.dat", PivotMatrix))))
 		return E_FAIL;
 
+	/////////////////////// 장비들 ////////////////////////////
+
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Bear_GEO2"),
+		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/NonAnimModels/Bear_GEO2/Bear_GEO2.dat", PivotMatrix))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Boots_GEO"),
+		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/NonAnimModels/Boots_GEO/Boots_GEO.dat", PivotMatrix))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_ArmorTop_GEO"),
+		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/NonAnimModels/ArmorTop_GEO/ArmorTop_GEO.dat", PivotMatrix))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Armor"),
+		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/NonAnimModels/Armor/Armor.dat", PivotMatrix))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Gloves_GEO2 #173971"),
+		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/NonAnimModels/Gloves_GEO2 #173971/Gloves_GEO2 #173971.dat", PivotMatrix))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Pants_GEO #210964"),
+		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/NonAnimModels/Pants_GEO #210964/Pants_GEO #210964.dat", PivotMatrix))))
+		return E_FAIL;
+
 	
 
 	lstrcpy(m_szLoading, TEXT("네비게이션 로딩 중."));
 
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Navigation"),
-		CNavigation::Create(m_pDevice, m_pContext, L"../../NavMeshes/CEX.dat"))))
+		CNavigation::Create(m_pDevice, m_pContext, L"../../NavMeshes/CEXMASTER.dat"))))
 		return E_FAIL;
 
 	lstrcpy(m_szLoading, TEXT("애님인스턴스 로딩 중."));
@@ -267,12 +296,12 @@ HRESULT CLoader::Loading_For_GamePlay()
 		CPlayerHead::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
-	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Axe"),
-		CAxe::Create(m_pDevice, m_pContext))))
+	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_PlayerParts"),
+		CPlayerParts::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
-	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Axe2"),
-		CAxe2::Create(m_pDevice, m_pContext))))
+	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Axe"),
+		CAxe::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Slasher"),
@@ -281,6 +310,14 @@ HRESULT CLoader::Loading_For_GamePlay()
 
 	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Mace"),
 		CMace::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Hand"),
+		CHand::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Horse"),
+		CHorse::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 	lstrcpy(m_szLoading, TEXT("로딩 완료."));

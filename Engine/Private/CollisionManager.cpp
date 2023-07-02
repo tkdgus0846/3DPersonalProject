@@ -178,6 +178,10 @@ void CCollisionManager::Reset_ColGroup()
 	{
 		for (auto& collider : m_ColliderList[i])
 		{
+			if (collider->GetRef() == 1)
+			{
+				collider->Erase_FromOtherCollisionList();
+			}
 			Safe_Release(collider);
 		}
 		m_ColliderList[i].clear();

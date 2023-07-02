@@ -26,7 +26,7 @@ public:
 	void Invalidate_TransformationMatrix_Upper(CModel::BONES & Bones, _double TimeDelta, const unordered_set<_int>& UpperSet);
 	void Invalidate_TransformationMatrix_Lower(CModel::BONES & Bones, _double TimeDelta, const unordered_set<_int>& LowerSet);
 
-	_int Lerp_NextAnimation(CAnimation* pNextAnimation, CModel::BONES & Bones, _double Duration, _double LerpTimeAcc);
+	_int Lerp_NextAnimation(CAnimation* pNextAnimation, CModel::BONES & Bones, _double Duration, _double LerpTimeAcc, unordered_set<_int>*BoneIndex);
 	void Reset_Channels()
 	{
 		for (int i = 0; i < m_ChannelCurrentKeyFrames.size(); i++)
@@ -44,6 +44,7 @@ public:
 	void	Erase_Frames_LessTime(_double time);
 	void	Set_ControlManual(_bool state) { m_isControlManual = state; }
 	void	Set_TimeAcc(_double time) { m_TimeAcc = time; }
+	_double Get_TimeAcc() const { return m_TimeAcc; }
 	_double Get_Duration() const { return m_Duration; }
 
 private:

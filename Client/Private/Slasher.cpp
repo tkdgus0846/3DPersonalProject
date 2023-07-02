@@ -1,14 +1,15 @@
 #include "stdafx.h"
 #include "..\Public\Slasher.h"
 #include "GameInstance.h"
+#include "Player.h"
 
 CSlasher::CSlasher(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
-	: CActorComponent(pDevice, pContext)
+	: CWeapon(pDevice, pContext)
 {
 }
 
 CSlasher::CSlasher(const CSlasher& rhs)
-	: CActorComponent(rhs)
+	: CWeapon(rhs)
 {
 }
 
@@ -132,4 +133,122 @@ CGameObject* CSlasher::Clone(void* pArg)
 void CSlasher::Free()
 {
 	__super::Free();
+}
+
+void CSlasher::Skill_Q(const _double& TimeDelta)
+{
+	if (m_bSlasherDashFinished == true || m_bSlasherDashStarted == false)
+		return;
+
+	m_SlasherDashTimeAcc += TimeDelta;
+
+	m_pPlayer->m_pTransformCom->Go_Dir(XMLoadFloat3(&m_DashDir), m_SlasherDashInitSpeed, m_SlasherDashAccel, m_SlasherDashTimeAcc, m_pPlayer->m_pNavigationCom);
+
+	_vector vector1 = m_pPlayer->m_pTransformCom->Get_State(CTransform::STATE_POSITION);
+	_vector vector2 = XMLoadFloat4(&m_SlasherDashOriginPos);
+
+	_vector diff_vector = DirectX::XMVectorSubtract(vector2, vector1);
+	float distance = DirectX::XMVectorGetX(DirectX::XMVector3Length(diff_vector));
+
+	if (distance <= 1.2f)
+	{
+		m_bSlasherDashFinished = true;
+		m_pPlayer->m_pTransformCom->Set_State(CTransform::STATE_POSITION, XMLoadFloat4(&m_SlasherDashOriginPos));
+	}
+
+}
+
+void CSlasher::Skill_E(const _double& TimeDelta)
+{
+}
+
+void CSlasher::Skill_Q_Setting()
+{
+	XMStoreFloat3(&m_DashDir, m_pPlayer->m_pTransformCom->Get_State(CTransform::STATE_LOOK));
+	XMStoreFloat4(&m_SlasherDashOriginPos, m_pPlayer->m_pTransformCom->Get_State(CTransform::STATE_POSITION));
+	m_SlasherDashTimeAcc = 0.0;
+	m_bSlasherDashFinished = false;
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Slasher_Q");
+}
+
+void CSlasher::Skill_E_Setting()
+{
+}
+
+_bool CSlasher::Skill_Q_End()
+{
+	_bool bResult = false;
+	m_bSlasherDashStarted = true;
+	// ½½·¡¼Å ´ë½¬°¡ ³¡³ª¸é ¸ØÃç¶ó.
+	if (m_bSlasherDashFinished == true)
+	{
+		bResult = true;
+		m_bSlasherDashStarted = false;
+	}
+	return bResult;
+}
+
+_bool CSlasher::Skill_E_End()
+{
+	return _bool();
+}
+
+void CSlasher::N_Walk_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Slasher_N_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+}
+
+void CSlasher::NE_Walk_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Slasher_NE_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+}
+
+void CSlasher::E_Walk_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Slasher_E_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+}
+
+void CSlasher::SE_Walk_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Slasher_SE_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+}
+
+void CSlasher::S_Walk_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Slasher_S_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+}
+
+void CSlasher::SW_Walk_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Slasher_SW_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+}
+
+void CSlasher::W_Walk_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Slasher_W_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+}
+
+void CSlasher::NW_Walk_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Slasher_NW_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+}
+
+void CSlasher::Idle_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Slasher_Idle");
+}
+
+void CSlasher::Equip_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Slasher_Equip");
+}
+
+void CSlasher::Move_Attack_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Slasher_Right", ANIM_UPPERBODY);
+}
+
+void CSlasher::Standing_Attack_Animation()
+{
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Slasher_Right");
 }

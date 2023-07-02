@@ -32,6 +32,9 @@ private:
 	_int			m_CurAnimationIndex = { -1 };
 
 	CAnimation*		m_pCurAnim = { nullptr };
+	_bool			m_bAutoPlay = { true };
+	_bool			m_bLoop = { true };
+	_float			m_fDragValue = { 0.f };
 	
 
 };

@@ -8,14 +8,15 @@
 #include "Mace.h"
 #include "Axe.h"
 #include "Slasher.h"
+#include "PlayerParts.h"
 
 CPlayer::CPlayer(ID3D11Device * pDevice, ID3D11DeviceContext * pContext)
-	: CGameObject(pDevice, pContext)
+	: CCreature(pDevice, pContext)
 {
 }
 
 CPlayer::CPlayer(const CPlayer & rhs)
-	: CGameObject(rhs)
+	: CCreature(rhs)
 {
 }
 
@@ -233,7 +234,9 @@ void CPlayer::Move(_double TimeDelta)
 	if (m_bMove)
 	{
 
-		if (m_bAttack == false)
+		// 무기가 손 일때만 이동을 멈추게 하려고 했다. 추후 추가사항이 있으면 추가.
+		if (m_bAttack == false || 
+			m_eWeaponType != WEAPON_HAND)
 		{
 			_vector resultDir = { 0.f,0.f,0.f,0.f };
 
@@ -591,12 +594,7 @@ void CPlayer::Dash(_double TimeDelta)
 		}
 
 		m_pTransformCom->Go_Dir(XMLoadFloat3(&m_DashDir), m_DashInitSpeed, m_DashAccel, m_DashTimeAcc / 4.0, m_pNavigationCom);
-		
-		
 	}
-
-	
-
 }
 
 void CPlayer::Select_ChangingWeaponKey()
@@ -610,20 +608,7 @@ void CPlayer::Select_ChangingWeaponKey()
 		return;
 	}
 
-	switch (m_eWeaponType)
-	{
-	case WEAPON_AXE:
-		m_pAnimInstance->Apply_Animation("Axe_Equip");
-		break;
-	case WEAPON_SLASHER:
-		m_pAnimInstance->Apply_Animation("Slasher_Equip");
-		break;
-	case WEAPON_MACE:
-		m_pAnimInstance->Apply_Animation("Mace_Equip");
-		break;
-	default:
-		break;
-	}
+	m_Weapons[m_eWeaponType].front()->Equip_Animation();
 }
 
 void CPlayer::Select_MoveKey()
@@ -644,148 +629,35 @@ void CPlayer::Select_MoveKey()
 	
 	if (337.5 <= angle || 22.5 >= angle)
 	{
-		switch (m_eWeaponType)
-		{
-		case WEAPON_HAND:
-			m_pAnimInstance->Apply_Animation("N_Walk", ANIM_UPPERBODY);
-			//m_pAnimInstance->Apply_Animation("S_Walk", ANIM_LOWERBODY);
-			break;
-		case WEAPON_AXE:
-			m_pAnimInstance->Apply_Animation("Axe_N_Walk");
-			break;
-		case WEAPON_SLASHER:
-			m_pAnimInstance->Apply_Animation("Slasher_N_Walk");
-			break;
-		case WEAPON_MACE:
-			m_pAnimInstance->Apply_Animation("Mace_N_Walk");
-			break;
-		}	
+		m_Weapons[m_eWeaponType].front()->N_Walk_Animation();
 	}
 	else if (22.5 <= angle && 67.5 >= angle)
 	{
-		switch (m_eWeaponType)
-		{
-		case WEAPON_HAND:
-			m_pAnimInstance->Apply_Animation("NE_Walk");
-			break;
-		case WEAPON_AXE:
-			m_pAnimInstance->Apply_Animation("Axe_NE_Walk");
-			break;
-		case WEAPON_SLASHER:
-			m_pAnimInstance->Apply_Animation("Slasher_NE_Walk");
-			break;
-		case WEAPON_MACE:
-			m_pAnimInstance->Apply_Animation("Mace_NE_Walk");
-			break;
-		}
+		m_Weapons[m_eWeaponType].front()->NE_Walk_Animation();
 	}
 	else if (67.5 <= angle && 112.5 >= angle)
 	{
-		switch (m_eWeaponType)
-		{
-		case WEAPON_HAND:
-			m_pAnimInstance->Apply_Animation("E_Walk");
-			break;
-		case WEAPON_AXE:
-			m_pAnimInstance->Apply_Animation("Axe_E_Walk");
-			break;
-		case WEAPON_SLASHER:
-			m_pAnimInstance->Apply_Animation("Slasher_E_Walk");
-			break;
-		case WEAPON_MACE:
-			m_pAnimInstance->Apply_Animation("Mace_E_Walk");
-			break;
-		}
+		m_Weapons[m_eWeaponType].front()->E_Walk_Animation();
 	}
 	else if (112.5 <= angle && 157.5 >= angle)
 	{
-		switch (m_eWeaponType)
-		{
-		case WEAPON_HAND:
-			m_pAnimInstance->Apply_Animation("SE_Walk");
-			break;
-		case WEAPON_AXE:
-			m_pAnimInstance->Apply_Animation("Axe_SE_Walk");
-			break;
-		case WEAPON_SLASHER:
-			m_pAnimInstance->Apply_Animation("Slasher_SE_Walk");
-			break;
-		case WEAPON_MACE:
-			m_pAnimInstance->Apply_Animation("Mace_SE_Walk");
-			break;
-		}
+		m_Weapons[m_eWeaponType].front()->SE_Walk_Animation();
 	}
 	else if (157.5 <= angle && 202.5 >= angle)
 	{
-		switch (m_eWeaponType)
-		{
-		case WEAPON_HAND:
-			m_pAnimInstance->Apply_Animation("S_Walk");
-			break;
-		case WEAPON_AXE:
-			m_pAnimInstance->Apply_Animation("Axe_S_Walk");
-			break;
-		case WEAPON_SLASHER:
-			m_pAnimInstance->Apply_Animation("Slasher_S_Walk");
-			break;
-		case WEAPON_MACE:
-			m_pAnimInstance->Apply_Animation("Mace_S_Walk");
-			break;
-		}
+		m_Weapons[m_eWeaponType].front()->S_Walk_Animation();
 	}
 	else if (202.5 <= angle && 247.5 >= angle)
 	{
-		switch (m_eWeaponType)
-		{
-		case WEAPON_HAND:
-			m_pAnimInstance->Apply_Animation("SW_Walk");
-			break;
-		case WEAPON_AXE:
-			m_pAnimInstance->Apply_Animation("Axe_SW_Walk");
-			break;
-		case WEAPON_SLASHER:
-			m_pAnimInstance->Apply_Animation("Slasher_SW_Walk");
-			break;
-		case WEAPON_MACE:
-			m_pAnimInstance->Apply_Animation("Mace_SW_Walk");
-			break;
-		}
+		m_Weapons[m_eWeaponType].front()->SW_Walk_Animation();
 	}
 	else if (247.5 <= angle && 292.5 >= angle)
 	{
-		switch (m_eWeaponType)
-		{
-		case WEAPON_HAND:
-			m_pAnimInstance->Apply_Animation("W_Walk");
-			break;
-		case WEAPON_AXE:
-			m_pAnimInstance->Apply_Animation("Axe_W_Walk");
-			break;
-		case WEAPON_SLASHER:
-			m_pAnimInstance->Apply_Animation("Slasher_W_Walk");
-			break;
-		case WEAPON_MACE:
-			m_pAnimInstance->Apply_Animation("Mace_W_Walk");
-			break;
-		}
+		m_Weapons[m_eWeaponType].front()->W_Walk_Animation();
 	}
 	else if (292.5 <= angle && 337.5 >= angle)
 	{
-		switch (m_eWeaponType)
-		{
-		case WEAPON_HAND:
-			m_pAnimInstance->Apply_Animation("NW_Walk");
-			break;
-		case WEAPON_AXE:
-			m_pAnimInstance->Apply_Animation("Axe_NW_Walk");
-			break;
-		case WEAPON_SLASHER:
-			m_pAnimInstance->Apply_Animation("Slasher_NW_Walk");
-			break;
-		case WEAPON_MACE:
-			m_pAnimInstance->Apply_Animation("Mace_NW_Walk");
-			break;
-		}
+		m_Weapons[m_eWeaponType].front()->NW_Walk_Animation();
 	}
 
 	
@@ -803,38 +675,70 @@ void CPlayer::Select_AttackKey()
 
 void CPlayer::Select_IdleKey()
 {
-	switch (m_eWeaponType)
-	{
-	case WEAPON_HAND:
-		m_pAnimInstance->Apply_Animation("Idle");
-		/*m_pAnimInstance->Apply_Animation("Idle", ANIM_UPPERBODY);
-		m_pAnimInstance->Apply_Animation("E_Walk", ANIM_LOWERBODY);*/
-		break;
-	case WEAPON_AXE:
-		m_pAnimInstance->Apply_Animation("Axe_Idle");
-		break;
-	case WEAPON_SLASHER:
-		m_pAnimInstance->Apply_Animation("Slasher_Idle");
-		break;
-	case WEAPON_MACE:
-		m_pAnimInstance->Apply_Animation("Mace_Idle");
-		break;
-	}
+	m_Weapons[m_eWeaponType].front()->Idle_Animation();
 }
 
 void CPlayer::Attack_Combo()
 {
+
+	//cout << m_bAttack << " " << m_pAnimInstance->Is_Use_AllBodyAnim() << endl;
+
+	// 공격이 끝나기 전 선입력을 하면... 콤보가 쌓이게끔.
+	if (CGameInstance::GetInstance()->Mouse_Pressing(CInput_Device::DIMK_LBUTTON))
+	{
+		if (m_bAttack == true)
+		{
+			m_PrevCombo = m_Combo;
+			m_Combo++;
+		}
+		else
+		{
+			if (m_bMove == false)
+			{
+				m_Weapons[m_eWeaponType].front()->Standing_Attack_Animation();
+			}
+			else
+			{
+				m_Weapons[m_eWeaponType].front()->Move_Attack_Animation();
+			}
+
+			m_bAttack = true;
+		}
+
+		/*if (m_pAnimInstance->Animation_Finished())
+		m_ClawCombo */
+	}
 	
 	if (m_bAttack == true)
 	{
+		
 		m_pColliderCom[COLLIDER_ATTACK]->Set_Enable(true);
-		if (m_pAnimInstance->Animation_Finished())
+
+		// 지금은 All_Body 에 대해서 체크하고있다. 하지만 우리는 상체와 하체에 대해서도 검사해야한다.
+		ANIMTYPE eType;
+
+		if (m_pAnimInstance->Is_Use_AllBodyAnim())
+			eType = ANIM_ALLBODY;
+		else
+			eType = ANIM_UPPERBODY;
+
+		
+
+		if (eType == ANIM_UPPERBODY && m_pAnimInstance->Get_UpperBody_CurAnimNode() == nullptr)
+		{
+			m_bAttack = false;
+			return;
+		}
+
+		if (m_pAnimInstance->Animation_Finished(eType))
 		{
 			// 어택무브가 진행중이 아니였다라면
 
-			if (m_bMove == true)
+			if (m_bMove == true && m_pAnimInstance->Get_NextNode_Name(eType).compare("") != 0)
 			{
-				if (m_pAnimInstance->Get_NextNode_Name().compare("") != 0)
+				// 어택 무브가 들어가는 무기는 ? 현재 맨손밖에없음
+				// 나중에 어택 무브가 들어가는 무기가 늘어나면 아래에 작성해주도록 하자.
+				if (m_eWeaponType == WEAPON_HAND)
 				{
 					if (m_bAttackMove == false)
 					{
@@ -850,10 +754,10 @@ void CPlayer::Attack_Combo()
 				
 			}
 			
-
+			// 다음 Attack.
 			if (m_Combo > m_PrevCombo)
 			{
-				_bool bNext = m_pAnimInstance->Next_Animation();
+				_bool bNext = m_pAnimInstance->Next_Animation(eType);
 				if (bNext == false)
 				{
 					m_pColliderCom[COLLIDER_ATTACK]->Set_Enable(false);
@@ -878,38 +782,7 @@ void CPlayer::Attack_Combo()
 				
 		}
 	}
-	// 공격이 끝나기 전 선입력을 하면... 콤보가 쌓이게끔.
-	if (CGameInstance::GetInstance()->Mouse_Down(CInput_Device::DIMK_LBUTTON))
-	{
-		if (m_bAttack == true)
-		{
-			m_PrevCombo = m_Combo;
-			m_Combo++;
-		}
-
-		if (m_bAttack == false)
-		{
-			switch (m_eWeaponType)
-			{
-			case WEAPON_HAND:
-				m_pAnimInstance->Apply_Animation("Claw_Right");
-				break;
-			case WEAPON_AXE:
-				m_pAnimInstance->Apply_Animation("Axe_Right");
-				break;
-			case WEAPON_SLASHER:
-				m_pAnimInstance->Apply_Animation("Slasher_Right");
-				break;
-			case WEAPON_MACE:
-				m_pAnimInstance->Apply_Animation("Mace_Right");
-				break;
-			}
-			m_bAttack = true;
-		}
-			
-		/*if (m_pAnimInstance->Animation_Finished())
-		m_ClawCombo */
-	}
+	
 }
 
 void CPlayer::Add_Animations()
@@ -991,13 +864,25 @@ void CPlayer::Add_Animations()
 	node.eraseLessTime = { 0.03, 0.05, 0.04 };
 	m_pAnimInstance->Push_Animation("Axe_Right", node, "Axe_Left");
 
+	node.AnimIndices = { 140, 141, 142 };
+	node.eraseLessTime = { 0.03, 0.05, 0.04 };
+	m_pAnimInstance->Push_Animation("Axe_Right_MoveCast", node, "Axe_Left_MoveCast");
+
 	node.AnimIndices = { 144, 145, 149 };
 	node.eraseLessTime = { 0.05, 0.05, 0.04 };
 	m_pAnimInstance->Push_Animation("Axe_Left", node, "Axe_Smash");
 
+	node.AnimIndices = { 146, 147, 148 };
+	node.eraseLessTime = { 0.05, 0.05, 0.04 };
+	m_pAnimInstance->Push_Animation("Axe_Left_MoveCast", node, "Axe_Smash_MoveCast");
+
 	node.AnimIndices = { 150, 151, 155 };
 	node.eraseLessTime = { 0.06, 0.05, 0.3 };
 	m_pAnimInstance->Push_Animation("Axe_Smash", node);
+
+	node.AnimIndices = { 152, 153, 154 };
+	node.eraseLessTime = { 0.06, 0.05, 0.3 };
+	m_pAnimInstance->Push_Animation("Axe_Smash_MoveCast", node);
 
 	node.AnimIndices = { 157, 158 };
 	node.eraseLessTime = {  0.01, 0.06 };
@@ -1104,8 +989,8 @@ void CPlayer::Add_Animations()
 	m_pAnimInstance->Push_Animation("Mace_Dash", node);
 
 
-	node.AnimIndices = { 289, 290, 291};
-	node.eraseLessTime = { 0.1, 0.01, 0.5};
+	node.AnimIndices = { 290, 291};
+	node.eraseLessTime = { 0.001, 0.5};
 	m_pAnimInstance->Push_Animation("Mace_Spin", node);
 
 	node.bMotionCancel = false;
@@ -1135,40 +1020,7 @@ void CPlayer::Skill_Q(const _double& TimeDelta)
 		if (m_pAnimInstance->Animation_Finished())
 		{
 			_bool bResult = false;
-			switch (m_eWeaponType)
-			{
-				case WEAPON_AXE:
-				{
-					// 방향이 역방향이 되는 순간. 멈춰라.
-					if (m_bAxeDashFinished == true)
-						bResult = true;
-					break;
-				}	
-				case WEAPON_SLASHER:
-				{
-					m_bSlasherDashStarted = true;
-					// 슬래셔 대쉬가 끝나면 멈춰라.
-					if (m_bSlasherDashFinished == true)
-					{
-						bResult = true;
-						m_bSlasherDashStarted = false;
-					}
-						
-					break;
-				}
-				case WEAPON_MACE:
-				{
-					if (m_bMaceDashFinished == true)
-					{
-						bResult = true;
-						m_bMaceDashFinished = false;
-					}
-					break;
-				}
-				default:
-					bResult = true;
-					break;
-			}
+			bResult = m_Weapons[m_eWeaponType].front()->Skill_Q_End();
 
 			if (bResult == true)
 			{
@@ -1177,115 +1029,15 @@ void CPlayer::Skill_Q(const _double& TimeDelta)
 			}
 		}
 
-		switch (m_eWeaponType)
-		{
-			case WEAPON_AXE:
-			{
-				if ((m_AxeDashInitSpeed + (m_AxeDashAccel * m_AxeDashTimeAcc)) < 0.f)
-				{
-					m_bAxeDashFinished = true;
-					return;
-				}
-				
-				m_AxeDashTimeAcc += TimeDelta;
-
-				m_pTransformCom->Go_Dir(XMLoadFloat3(&m_DashDir), m_AxeDashInitSpeed, m_AxeDashAccel, m_AxeDashTimeAcc, m_pNavigationCom);		
-				break;
-			}
-			case WEAPON_SLASHER:
-			{
-				if (m_bSlasherDashFinished == true || m_bSlasherDashStarted == false)
-					return;
-
-				m_SlasherDashTimeAcc += TimeDelta;
-
-				m_pTransformCom->Go_Dir(XMLoadFloat3(&m_DashDir), m_SlasherDashInitSpeed, m_SlasherDashAccel, m_SlasherDashTimeAcc, m_pNavigationCom);
-
-				_vector vector1 = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
-				_vector vector2 = XMLoadFloat4(&m_SlasherDashOriginPos);
-
-				_vector diff_vector = DirectX::XMVectorSubtract(vector2, vector1);
-				float distance = DirectX::XMVectorGetX(DirectX::XMVector3Length(diff_vector));
-
-				if (distance <= 1.2f)
-				{
-					m_bSlasherDashFinished = true;
-					m_pTransformCom->Set_State(CTransform::STATE_POSITION, XMLoadFloat4(&m_SlasherDashOriginPos));
-				}
-				break;
-			}
-			case WEAPON_MACE:
-			{
-				if (m_bMaceDashFinished == true) return;
-
-				m_MaceDashTimeAcc += TimeDelta;
-				if ((m_MaceDashInitSpeed + (m_MaceDashAccel * m_MaceDashTimeAcc)) >= 0.f)
-				{
-					XMStoreFloat3(&m_DashDir, m_pTransformCom->Get_State(CTransform::STATE_LOOK));
-					m_pTransformCom->Go_Dir(XMLoadFloat3(&m_DashDir), m_MaceDashInitSpeed, m_MaceDashAccel,  m_MaceDashTimeAcc, m_pNavigationCom);
-				}	
-				
-				_double height = m_MaceDashJumpOriginHeight + (m_MaceDashJumpSpeed * m_MaceDashTimeAcc) - (0.5 * m_MaceDashJumpGravity * m_MaceDashTimeAcc * m_MaceDashTimeAcc);
-
-				if (Compute_NavMesh_Height() <= height)
-				{
-					_vector myPos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
-
-					myPos.m128_f32[1] = height;
-					m_pTransformCom->Set_Position(myPos);
-
-					m_bClimbNavMesh = false;
-				}
-				else
-				{
-					CCamera_Player_Main::MAINCAMERASHAKE desc;
-					desc.fShakeMagnitude = 0.6f;
-					CGameInstance::GetInstance()->On_Shake(&desc);
-					m_bClimbNavMesh = true;
-					m_bMaceDashFinished = true;
-				}
-
-				break;
-			}
-			
-			
-				
-			default:
-				break;
-		}
+		m_Weapons[m_eWeaponType].front()->Skill_Q(TimeDelta);
 	}
 	else
 	{
+		// Q를 눌렀을때 스킬 Q 를 쓰기위한 설정
 		if (CGameInstance::GetInstance()->Key_Down(DIK_Q))
 		{
 			m_bSkillQ = true;
-
-			switch (m_eWeaponType)
-			{
-			case WEAPON_AXE:
-				XMStoreFloat3(&m_DashDir, m_pTransformCom->Get_State(CTransform::STATE_LOOK));
-				m_AxeDashTimeAcc = 0.0;
-				m_bAxeDashFinished = false;
-				m_pAnimInstance->Apply_Animation("Axe_Dash");
-				break;
-			case WEAPON_SLASHER:
-				XMStoreFloat3(&m_DashDir, m_pTransformCom->Get_State(CTransform::STATE_LOOK));
-				XMStoreFloat4(&m_SlasherDashOriginPos, m_pTransformCom->Get_State(CTransform::STATE_POSITION));
-				m_SlasherDashTimeAcc = 0.0;
-				m_bSlasherDashFinished = false;
-				m_pAnimInstance->Apply_Animation("Slasher_Q");
-				break;
-			case WEAPON_MACE:
-				XMStoreFloat3(&m_DashDir, m_pTransformCom->Get_State(CTransform::STATE_LOOK));
-				m_MaceDashJumpOriginHeight = m_pTransformCom->Get_State(CTransform::STATE_POSITION).m128_f32[1];
-				m_MaceDashTimeAcc = 0.0;
-				//m_bSlasherDashFinished = false;
-				m_pAnimInstance->Apply_Animation("Mace_Dash");
-				break;
-
-			default:
-				break;
-			}
+			m_Weapons[m_eWeaponType].front()->Skill_Q_Setting();
 		}
 	}
 	
@@ -1343,41 +1095,24 @@ void CPlayer::Skill_E(const _double& TimeDelta)
 	{
 		if (m_pAnimInstance->Animation_Finished())
 		{
-			m_bSkillE = false;
-			return;
+			_bool bResult = false;
+			bResult = m_Weapons[m_eWeaponType].front()->Skill_E_End();
+
+			if (bResult == true)
+			{
+				m_bSkillE = false;
+				return;
+			}
 		}
 
-		switch (m_eWeaponType)
-		{
-			case WEAPON_AXE:
-			{
-				break;
-			}
-			case WEAPON_MACE:
-			{
-				break;
-			}
-			default:
-				break;
-		}
+		m_Weapons[m_eWeaponType].front()->Skill_E(TimeDelta);
 	}
 	else
 	{
 		if (CGameInstance::GetInstance()->Key_Down(DIK_E))
 		{
 			m_bSkillE = true;
-
-			switch (m_eWeaponType)
-			{
-			case WEAPON_AXE:
-				m_pAnimInstance->Apply_Animation("Axe_Throw");
-				break;
-			case WEAPON_MACE:
-				m_pAnimInstance->Apply_Animation("Mace_Spin");
-				break;
-			default:
-				break;
-			}
+			m_Weapons[m_eWeaponType].front()->Skill_E_Setting();
 		}
 	}
 }
@@ -1455,12 +1190,13 @@ void CPlayer::Select_AnimationKey()
 		return;
 	}
 
-	if (m_bAttack == true)
-	{
-		// 공격과 관련된 키 설정 함수
-		Select_AttackKey();
-		return;
-	}
+	//if (m_bAttack == true)
+	//{
+	//	// 공격과 관련된 키 설정 함수
+	//	Select_AttackKey();
+	//	//return;
+	//}
+	if (m_bAttack == true && m_eWeaponType == WEAPON_HAND) return;
 
 	if (m_bMove == true)
 	{
@@ -1468,6 +1204,10 @@ void CPlayer::Select_AnimationKey()
 		return;
 	}
 	
+	
+	if (m_bAttack == true)
+		return;
+
 	Select_IdleKey();
 	
 	
@@ -1576,6 +1316,8 @@ HRESULT CPlayer::Add_Components()
 	///////////// 손 이라는 무기는 없음 ~~~ ///////////
 
 	m_Weapons[WEAPON_HAND].push_back(nullptr);
+	if (FAILED(__super::Add_Component(TEXT("Prototype_GameObject_Hand"), L"Hand", (CGameObject**)&m_Weapons[WEAPON_HAND][0], nullptr)))
+		return E_FAIL;
 
 
 	//////////////////////// 도끼1 ///////////////////////////////////
@@ -1609,7 +1351,7 @@ HRESULT CPlayer::Add_Components()
 	ParentDescAxe2.pParentWorldMatrix = m_pTransformCom->Get_WorldFloat4x4Ptr();
 
 	m_Weapons[WEAPON_AXE].push_back(nullptr);
-	if (FAILED(__super::Add_Component(TEXT("Prototype_GameObject_Axe2"), L"Axe2", (CGameObject**)&m_Weapons[WEAPON_AXE][1], &ParentDescAxe2)))
+	if (FAILED(__super::Add_Component(TEXT("Prototype_GameObject_Axe"), L"Axe2", (CGameObject**)&m_Weapons[WEAPON_AXE][1], &ParentDescAxe2)))
 		return E_FAIL;
 
 	////////////////////////// 슬래셔1 /////////////////////////
@@ -1663,10 +1405,84 @@ HRESULT CPlayer::Add_Components()
 	if (FAILED(__super::Add_Component(TEXT("Prototype_GameObject_Mace"), L"Mace", (CGameObject**)&m_Weapons[WEAPON_MACE][0], &ParentDescMace)))
 		return E_FAIL;
 
+	/////////////////////////////////////////////////////////////////////
+	//////////////////////// 갑옷, 장비들 //////////////////////////////
+	//////////////////////////////////////////////////////////////////
+
+
+	//////////////////////////// 바지 ///////////////////////////////////
+	CPlayerParts::PARENTDESC		PantsDesc;
+	ZeroMemory(&PantsDesc, sizeof PantsDesc);
+
+	pBone = m_pModelCom->Get_Bone("Pelvis_JNT");
+	if (nullptr == pBone)
+		return E_FAIL;
+
+	PantsDesc.OffsetMatrix = pBone->Get_OffsetMatrix();
+	PantsDesc.pCombindTransformationMatrix = pBone->Get_CombinedTransformationMatrixPtr();
+	PantsDesc.PivotMatrix = m_pModelCom->Get_PivotMatrix();
+	PantsDesc.pParentWorldMatrix = m_pTransformCom->Get_WorldFloat4x4Ptr();
+	PantsDesc.ModelName = TEXT("Prototype_Component_Model_Pants_GEO #210964");
+	_matrix localMatrix = XMMatrixIdentity();
+	localMatrix = XMMatrixScaling(0.016f, 0.016f, 0.016f) * XMMatrixTranslation(0.f, -0.60f, 0.0f);
+	XMStoreFloat4x4(&PantsDesc.LocalOffsetMatrix, localMatrix);
+
+	if (FAILED(__super::Add_Component(TEXT("Prototype_GameObject_PlayerParts"), L"PlayerPants", nullptr, &PantsDesc)))
+		return E_FAIL;
+
+	//////////////////////////// 갑옷 ///////////////////////////////////
+	CPlayerParts::PARENTDESC		ArmorDesc;
+	ZeroMemory(&ArmorDesc, sizeof ArmorDesc);
+
+	pBone = m_pModelCom->Get_Bone("Ribcage_JNT");
+	if (nullptr == pBone)
+		return E_FAIL;
+
+	ArmorDesc.OffsetMatrix = pBone->Get_OffsetMatrix();
+	ArmorDesc.pCombindTransformationMatrix = pBone->Get_CombinedTransformationMatrixPtr();
+	ArmorDesc.PivotMatrix = m_pModelCom->Get_PivotMatrix();
+	ArmorDesc.pParentWorldMatrix = m_pTransformCom->Get_WorldFloat4x4Ptr();
+	ArmorDesc.ModelName = TEXT("Prototype_Component_Model_Armor");
+	localMatrix = XMMatrixIdentity();
+	localMatrix = XMMatrixScaling(0.016f, 0.016f, 0.016f) * XMMatrixTranslation(0.f, 1.40f, 0.050f);
+	XMStoreFloat4x4(&ArmorDesc.LocalOffsetMatrix, localMatrix);
+
+	if (FAILED(__super::Add_Component(TEXT("Prototype_GameObject_PlayerParts"), L"PlayerArmor", nullptr, &ArmorDesc)))
+		return E_FAIL;
+
+	//////////////////////////// 헬멧 ///////////////////////////////////
+	CPlayerParts::PARENTDESC		HelmetDesc;
+	ZeroMemory(&HelmetDesc, sizeof HelmetDesc);
+
+	pBone = m_pModelCom->Get_Bone("Hat_JNT");
+	if (nullptr == pBone)
+		return E_FAIL;
+
+	HelmetDesc.OffsetMatrix = pBone->Get_OffsetMatrix();
+	HelmetDesc.pCombindTransformationMatrix = pBone->Get_CombinedTransformationMatrixPtr();
+	HelmetDesc.PivotMatrix = m_pModelCom->Get_PivotMatrix();
+	HelmetDesc.pParentWorldMatrix = m_pTransformCom->Get_WorldFloat4x4Ptr();
+	HelmetDesc.ModelName = TEXT("Prototype_Component_Model_Bear_GEO2");
+	localMatrix = XMMatrixIdentity();
+	localMatrix = XMMatrixScaling(0.009f, 0.009f, 0.009f) * XMMatrixRotationAxis({0.f,1.f,0.f,0.f}, XMConvertToRadians(270.f)) * XMMatrixRotationAxis({ 0.f,0.f,1.f,0.f }, XMConvertToRadians(-90.f)) * XMMatrixTranslation(-0.18f, 0.05f,0.f);
+	XMStoreFloat4x4(&HelmetDesc.LocalOffsetMatrix, localMatrix);
+
+	if (FAILED(__super::Add_Component(TEXT("Prototype_GameObject_PlayerParts"), L"PlayerHelmet", nullptr, &HelmetDesc)))
+		return E_FAIL;
+
 
 	////////////////////////// 애님 인스턴스 ///////////////
 	if (FAILED(__super::Add_Component(LEVEL_STATIC, TEXT("Prototype_Component_AnimInstance"), L"AnimInstance", (CComponent**)&m_pAnimInstance, m_pModelCom)))
 		return E_FAIL;
+
+
+	for (_int i = 0; i < WEAPON_END; i++)
+	{
+		for (auto& weapon : m_Weapons[i])
+		{
+			weapon->SetPlayer();
+		}
+	}
 
 	Safe_Release(pGameInstance);
 	

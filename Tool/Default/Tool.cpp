@@ -23,6 +23,14 @@ BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
+#ifdef _DEBUG
+#ifdef UNICODE                                                         
+#pragma comment(linker, "/entry:wWinMainCRTStartup /subsystem:console")
+#else                                                                  
+#pragma comment(linker, "/entry:WinMainCRTStartup /subsystem:console") 
+#endif                                                                 
+#endif 
+
 void PlaceInCenterOfScreen(HWND window, DWORD style, DWORD exStyle)
 {
     int screenWidth = GetSystemMetrics(SM_CXSCREEN);

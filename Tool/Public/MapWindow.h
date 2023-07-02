@@ -110,5 +110,8 @@ private:
 	vector<_float3> m_PickingVec;
 	vector<_uint>	m_PickingIndexVec;
 
+	/* 되돌리기 기능을 위한 변수*/
+	stack<_uint>	m_HistoryIndex;
+
 };
 

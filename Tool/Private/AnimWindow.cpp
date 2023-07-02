@@ -123,14 +123,12 @@ void CAnimWindow::Show_Animations()
 	ImGui::BeginChild("Animations", ImVec2(0, 300), true, ImGuiWindowFlags_HorizontalScrollbar);
 
 	//ImGui::Begin("Table");
-	ImGui::Columns(3, "myColumns"); // 3개의 열 생성
+	ImGui::Columns(2, "myColumns"); // 3개의 열 생성
 
 	// 열 헤더
 	ImGui::Text("AnimIndex");
 	ImGui::NextColumn();
 	ImGui::Text("AnimationName");
-	ImGui::NextColumn();
-	ImGui::Text("isLoop");
 	ImGui::NextColumn();
 
 	
@@ -159,7 +157,10 @@ void CAnimWindow::Show_Animations()
 			//m_DummyObject->m_pModelCom->Loop_Animation(index, false);
 			m_CurAnimationIndex = index;
 			m_DummyObject->m_pModelCom->Set_AnimIndex(index);
-			anim->Set_ControlManual(true);
+			anim->Set_Loop(m_bLoop);
+			anim->Reset_Channels();
+			anim->Set_ControlManual(!m_bAutoPlay);
+			m_fDragValue = 0.f;
 			m_pCurAnim = anim;
 		}
 		//ImGui::Separator();
@@ -170,11 +171,6 @@ void CAnimWindow::Show_Animations()
 		ImGui::NextColumn();
 		ImGui::Text(anim->Get_Name());
 		ImGui::NextColumn();
-		if (anim->Get_Loop())
-			ImGui::Text("true");
-		else
-			ImGui::Text("false");
-		ImGui::NextColumn();
 		index++;
 	}
 
@@ -183,11 +179,21 @@ void CAnimWindow::Show_Animations()
 
 	if (m_pCurAnim != nullptr)
 	{
-		static _float dragValue = 0.0f;
+		if (m_bAutoPlay == false)
+			m_pCurAnim->Set_TimeAcc((_double)m_fDragValue);
+		else
+			m_fDragValue = m_pCurAnim->Get_TimeAcc();
+		ImGui::DragFloat("Progress", &m_fDragValue, 0.005f, 0.0f, (_float)m_pCurAnim->Get_Duration());
+		ImGui::ProgressBar(m_fDragValue, ImVec2(-1, 0), "Progress Bar");
+	}
 
-		m_pCurAnim->Set_TimeAcc((_double)dragValue);
-		ImGui::DragFloat("Progress", &dragValue, 0.005f, 0.0f, (_float)m_pCurAnim->Get_Duration());
-		ImGui::ProgressBar(dragValue, ImVec2(-1, 0), "Progress Bar");
+	if (ImGui::RadioButton("Auto Play", m_bAutoPlay))
+	{
+		m_bAutoPlay = m_bAutoPlay == true ? false : true;
+	}
+	if (ImGui::RadioButton("Loop Play", m_bLoop))
+	{
+		m_bLoop = m_bLoop == true ? false : true;
 	}
 	
 
