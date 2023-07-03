@@ -128,6 +128,10 @@ HRESULT CLevel_GamePlay::Ready_Layer_Objects(const _tchar* pLayerTag)
 	if (pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Horse"), pLayerTag, objName) == nullptr)
 		return E_FAIL;
 
+	objName = L"Paladin";
+	if (pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Paladin"), pLayerTag, objName) == nullptr)
+		return E_FAIL;
+
 	return S_OK;
 }
 

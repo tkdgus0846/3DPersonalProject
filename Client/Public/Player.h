@@ -84,6 +84,11 @@ private:
 	CTransform*					m_pTransformCom = { nullptr };
 	CNavigation*				m_pNavigationCom = { nullptr };
 	CAnimInstance*				m_pAnimInstance = { nullptr };
+
+	// 플레이어 기본 능력치에 관한 변수들.
+	const _double				m_fNormalSpeed = { 6.0 };
+	const _double				m_fMoveAttackSpeed = { 1.5 };
+
 	
 	// 애님 상태 제어 변수들
 	_bool						m_bMove = { false };

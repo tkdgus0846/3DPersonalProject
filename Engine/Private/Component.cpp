@@ -151,9 +151,11 @@ HRESULT CComposite::Add_Component(_uint iLevelIndex, const _tchar* pPrototypeTag
 	pComponent->SetName(pComponentTag);
 	pComponent->SetOwner(this);
 
-	*ppOut = pComponent;
-
-	Safe_AddRef(pComponent);
+	if (ppOut != nullptr)
+	{
+		*ppOut = pComponent;
+		Safe_AddRef(pComponent);
+	}
 
 	Safe_Release(pGameInstance);
 

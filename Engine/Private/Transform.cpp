@@ -50,6 +50,11 @@ void CTransform::Change_Speed(_double fSpeed)
 	m_TransformDesc.SpeedPerSec = fSpeed;
 }
 
+void CTransform::Change_RotSpeed(_double fRotSpeed)
+{
+	m_TransformDesc.RotationPerSec = fRotSpeed;
+}
+
 void CTransform::Set_Position(_fvector vPos)
 {
 	Set_State(STATE_POSITION, vPos);
@@ -257,13 +262,21 @@ _bool CTransform::Chase(_fvector vTargetPosition, _double TimeDelta,  CNavigatio
 	return bSuccess;
 }
 
-void CTransform::LookAt(_fvector vTargetPosition)
+void CTransform::LookAt(_fvector vTargetPosition, MOVETYPE eMoveType)
 {
 	_float3		vScaled = Get_Scaled();
 
 	_vector		vPosition = Get_State(STATE_POSITION);
+	_vector		vTargetPos = vTargetPosition;
 
-	_vector		vLook = XMVector3Normalize(vTargetPosition - vPosition) * vScaled.z;
+	if (eMoveType == LANDOBJECT)
+	{
+		vTargetPos.m128_f32[1] = 0.f;
+		vPosition.m128_f32[1] = 0.f;
+	}
+		
+
+	_vector		vLook = XMVector3Normalize(vTargetPos - vPosition) * vScaled.z;
 	_vector		vRight = XMVector3Normalize(XMVector3Cross(XMVectorSet(0.f, 1.f, 0.f, 0.f), vLook)) * vScaled.x;
 	_vector		vUp = XMVector3Normalize(XMVector3Cross(vLook, vRight)) * vScaled.y;
 

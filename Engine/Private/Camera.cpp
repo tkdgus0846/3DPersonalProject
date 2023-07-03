@@ -47,7 +47,7 @@ HRESULT CCamera::Initialize(void * pArg)
 	}
 
 	m_pTransform->Set_State(CTransform::STATE_POSITION, XMLoadFloat4(&m_vEye));
-	m_pTransform->LookAt(XMLoadFloat4(&m_vAt));
+	m_pTransform->LookAt(XMLoadFloat4(&m_vAt), CTransform::AIRCRAFT);
 
 	return S_OK;
 }
@@ -82,7 +82,7 @@ HRESULT CCamera::Render()
 void CCamera::Look_At(_fvector pos)
 {
 	XMStoreFloat4(&m_vAt, pos);
-	m_pTransform->LookAt(pos);
+	m_pTransform->LookAt(pos, CTransform::AIRCRAFT);
 }
 
 void CCamera::Set_Pos(_fvector pos)

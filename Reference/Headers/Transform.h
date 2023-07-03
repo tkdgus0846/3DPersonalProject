@@ -12,6 +12,7 @@ class ENGINE_DLL CTransform final : public CComponent, public ISerializable
 public:
 	enum STATE { STATE_RIGHT, STATE_UP, STATE_LOOK, STATE_POSITION, STATE_END };
 	enum AXIS { AXIS_X, AXIS_Y, AXIS_Z, AXIS_END};
+	enum MOVETYPE { LANDOBJECT, AIRCRAFT, MOVE_END };
 
 public:
 	typedef struct tagTransformDesc
@@ -67,6 +68,7 @@ public:
 
 public:
 	void Change_Speed(_double fSpeed);
+	void Change_RotSpeed(_double fRotSpeed);
 	void Set_Position(_fvector vPos);
 	void Go_Dir(_fvector dir, _double TimeDelta, class CNavigation* pNavigation = nullptr);
 	void Go_Dir(_fvector dir, const _double& InitSpeed, const _double& Accel, const _double& TimeAcc, class CNavigation* pNavigation = nullptr);
@@ -77,7 +79,7 @@ public:
 	void Go_Up(_double TimeDelta);
 	void Go_Down(_double TimeDelta);
 	_bool Chase(_fvector vTargetPosition, _double TimeDelta, class CNavigation* pNavigation = nullptr, _float fMinDistance = 0.1f);
-	void LookAt(_fvector vTargetPosition);
+	void LookAt(_fvector vTargetPosition, MOVETYPE eMoveType);
 	void Rotation(_fvector vAxis, _float fDegree);
 	void Rotation(AXIS eAxis, _float fDegree);
 	void Rotation(AXIS eAxis, _float fAngle, _double TimeDelta);

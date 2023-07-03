@@ -130,6 +130,30 @@
     <Filter Include="01.Utility\03.Components\ActorComponent">
       <UniqueIdentifier>{b6719d06-e68e-4a32-9174-21827f25f48e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Utility\03.Components\AIComponent">
+      <UniqueIdentifier>{ae93b113-2f74-4d28-ade2-98557e587b58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\03.Components\AIComponent\Behavior">
+      <UniqueIdentifier>{ede82446-ebb7-40f8-be1e-9b92672d625d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\03.Components\AIComponent\BehaviorTree">
+      <UniqueIdentifier>{6cd6b077-463a-4484-9596-0b7cce342fae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\03.Components\AIComponent\Blackboard">
+      <UniqueIdentifier>{4054f21c-75c8-475c-a198-6e8c228c797d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\03.Components\AIComponent\Decorator">
+      <UniqueIdentifier>{329a9591-7f1c-4d68-9bbe-77d12e0629e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\03.Components\AIComponent\Behavior\Sequence">
+      <UniqueIdentifier>{e41e3d01-6b86-43f4-8742-9f68e10d7894}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\03.Components\AIComponent\Behavior\Selector">
+      <UniqueIdentifier>{f06bc52f-f1b5-4199-97dc-6abc9d635346}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\03.Components\AIComponent\Behavior\RootNode">
+      <UniqueIdentifier>{3c0627f1-e352-4352-81eb-ff6d042b5ff8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\public\Base.h">
@@ -286,6 +310,27 @@
     <ClInclude Include="..\Public\ActorComponent.h">
       <Filter>01.Utility\03.Components\ActorComponent</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\Behavior.h">
+      <Filter>01.Utility\03.Components\AIComponent\Behavior</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\BlackBoard.h">
+      <Filter>01.Utility\03.Components\AIComponent\Blackboard</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\BehaviorTree.h">
+      <Filter>01.Utility\03.Components\AIComponent\BehaviorTree</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\RootNode.h">
+      <Filter>01.Utility\03.Components\AIComponent\Behavior\RootNode</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\Selector.h">
+      <Filter>01.Utility\03.Components\AIComponent\Behavior\Selector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\Sequence.h">
+      <Filter>01.Utility\03.Components\AIComponent\Behavior\Sequence</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\Decorator.h">
+      <Filter>01.Utility\03.Components\AIComponent\Decorator</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\private\Base.cpp">
@@ -425,6 +470,27 @@
     </ClCompile>
     <ClCompile Include="..\Private\ActorComponent.cpp">
       <Filter>01.Utility\03.Components\ActorComponent</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Behavior.cpp">
+      <Filter>01.Utility\03.Components\AIComponent\Behavior</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\BlackBoard.cpp">
+      <Filter>01.Utility\03.Components\AIComponent\Blackboard</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\BehaviorTree.cpp">
+      <Filter>01.Utility\03.Components\AIComponent\BehaviorTree</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\RootNode.cpp">
+      <Filter>01.Utility\03.Components\AIComponent\Behavior\RootNode</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Selector.cpp">
+      <Filter>01.Utility\03.Components\AIComponent\Behavior\Selector</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Sequence.cpp">
+      <Filter>01.Utility\03.Components\AIComponent\Behavior\Sequence</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Decorator.cpp">
+      <Filter>01.Utility\03.Components\AIComponent\Decorator</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

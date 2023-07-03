@@ -48,6 +48,8 @@ HRESULT CPlayer::Initialize(void* pArg)
 	m_pModelCom->Collect_BodyBones_UpperLower(51, 17);
 	Change_Weapon();
 
+	m_pTransformCom->Change_Speed(m_fNormalSpeed);
+
 	return S_OK;
 }
 
@@ -158,7 +160,7 @@ void CPlayer::OnCollisionStay(const Collision* collision)
 			CCamera_Player_Main::MAINCAMERASHAKE desc;
 
 			m_ObjectAttack_CameraShake_TimeAcc = 0.0;
-			desc.fShakeMagnitude = 0.08f;
+			desc.fShakeMagnitude = 0.28f;
 			desc.fShakeDuration = 0.25f;
 			pGameInstance->On_Shake(&desc);
 		}
@@ -331,8 +333,6 @@ void CPlayer::PlayerRotate(_double TimeDelta)
 	degree = XMConvertToDegrees(degree);
 
 	degree -= m_fCameraRotationX;
-
-
 
 	m_pTransformCom->Rotation(CTransform::AXIS_Y, degree);
 }
@@ -680,7 +680,8 @@ void CPlayer::Select_IdleKey()
 
 void CPlayer::Attack_Combo()
 {
-
+	if (m_bAttack == false)
+		m_pTransformCom->Change_Speed(m_fNormalSpeed);
 	//cout << m_bAttack << " " << m_pAnimInstance->Is_Use_AllBodyAnim() << endl;
 
 	// 공격이 끝나기 전 선입력을 하면... 콤보가 쌓이게끔.
@@ -699,6 +700,7 @@ void CPlayer::Attack_Combo()
 			}
 			else
 			{
+				m_pTransformCom->Change_Speed(m_fMoveAttackSpeed);
 				m_Weapons[m_eWeaponType].front()->Move_Attack_Animation();
 			}
 
@@ -711,9 +713,6 @@ void CPlayer::Attack_Combo()
 	
 	if (m_bAttack == true)
 	{
-		
-		m_pColliderCom[COLLIDER_ATTACK]->Set_Enable(true);
-
 		// 지금은 All_Body 에 대해서 체크하고있다. 하지만 우리는 상체와 하체에 대해서도 검사해야한다.
 		ANIMTYPE eType;
 
@@ -732,7 +731,9 @@ void CPlayer::Attack_Combo()
 
 		if (m_pAnimInstance->Animation_Finished(eType))
 		{
-			// 어택무브가 진행중이 아니였다라면
+			
+			m_pColliderCom[COLLIDER_ATTACK]->Set_Enable(true);
+			// 애니메이션 잠깐 띄운다.
 
 			if (m_bMove == true && m_pAnimInstance->Get_NextNode_Name(eType).compare("") != 0)
 			{
@@ -1276,7 +1277,7 @@ HRESULT CPlayer::Add_Components()
 	OBBDesc.vRotation = _float3(0.f, XMConvertToRadians(0.0f), 0.f);
 
 	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Collider_OBB"),
-		COLLIDER_W, (CComponent**)&m_pColliderCom[COLLIDER_PLAYER], &OBBDesc)))
+		L"BodyCollider", (CComponent**)&m_pColliderCom[COLLIDER_PLAYER], &OBBDesc)))
 		return E_FAIL;
 
 	/* For.AttackCollider */

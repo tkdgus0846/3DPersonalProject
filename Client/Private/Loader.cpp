@@ -14,6 +14,7 @@
 #include "Slasher.h"
 #include "Hand.h"
 #include "Horse.h"
+#include "Paladin.h"
 
 CLoader::CLoader(ID3D11Device * pDevice, ID3D11DeviceContext * pContext)
 	: m_pDevice(pDevice)
@@ -232,6 +233,10 @@ HRESULT CLoader::Loading_For_GamePlay()
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_AnimInstance"), CAnimInstance::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
+	lstrcpy(m_szLoading, TEXT("비해비어 트리 로딩 중."));
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_STATIC, TEXT("Prototype_Component_BehaviorTree"), CBehaviorTree::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
 	lstrcpy(m_szLoading, TEXT("충돌체 로딩 중."));
 	/* For.Prototype_Component_Collider_Sphere */
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Collider_Sphere"),
@@ -318,6 +323,10 @@ HRESULT CLoader::Loading_For_GamePlay()
 
 	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Horse"),
 		CHorse::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Paladin"),
+		CPaladin::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 	lstrcpy(m_szLoading, TEXT("로딩 완료."));

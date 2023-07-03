@@ -64,6 +64,15 @@
     <Filter Include="02.GameObjects\Creatures\Player\Parts\Weapon">
       <UniqueIdentifier>{69573494-ff1f-4ba5-859d-6030f8f4869e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="03.Components">
+      <UniqueIdentifier>{d123df29-20b1-48dd-9131-0afd9388b664}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03.Components\Task">
+      <UniqueIdentifier>{2cb2a5c7-a2a2-4270-bc02-711d0fbb1367}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObjects\Creatures\Monster">
+      <UniqueIdentifier>{39fb96ae-307a-4ec9-966b-923216c83606}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -144,6 +153,24 @@
     <ClInclude Include="..\Public\PlayerParts.h">
       <Filter>02.GameObjects\Creatures\Player\Parts</Filter>
     </ClInclude>
+    <ClInclude Include="..\public\Monster.h">
+      <Filter>02.GameObjects\Creatures\Monster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\Task_LookAt.h">
+      <Filter>03.Components\Task</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Paladin.h">
+      <Filter>02.GameObjects\Creatures\Monster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Task_MoveForward.h">
+      <Filter>03.Components\Task</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Task_Wait.h">
+      <Filter>03.Components\Task</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Task_FollowTarget.h">
+      <Filter>03.Components\Task</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp">
@@ -211,6 +238,24 @@
     </ClCompile>
     <ClCompile Include="..\Private\PlayerParts.cpp">
       <Filter>02.GameObjects\Creatures\Player\Parts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Monster.cpp">
+      <Filter>02.GameObjects\Creatures\Monster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Task_LookAt.cpp">
+      <Filter>03.Components\Task</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Paladin.cpp">
+      <Filter>02.GameObjects\Creatures\Monster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Task_MoveForward.cpp">
+      <Filter>03.Components\Task</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Task_Wait.cpp">
+      <Filter>03.Components\Task</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Task_FollowTarget.cpp">
+      <Filter>03.Components\Task</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
