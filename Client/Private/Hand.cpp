@@ -24,11 +24,11 @@ HRESULT CHand::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CHand::Tick(_double TimeDelta)
+void CHand::Tick(_float TimeDelta)
 {
 }
 
-void CHand::Late_Tick(_double TimeDelta)
+void CHand::Late_Tick(_float TimeDelta)
 {
 }
 
@@ -76,12 +76,12 @@ void CHand::Free()
 	__super::Free();
 }
 
-void CHand::Skill_Q(const _double& TimeDelta)
+void CHand::Skill_Q(const _float& TimeDelta)
 {
 
 }
 
-void CHand::Skill_E(const _double& TimeDelta)
+void CHand::Skill_E(const _float& TimeDelta)
 {
 }
 

@@ -52,7 +52,7 @@ HRESULT CCamera::Initialize(void * pArg)
 	return S_OK;
 }
 
-void CCamera::Tick(_double TimeDelta)
+void CCamera::Tick(_float TimeDelta)
 {
 	CGameInstance::GetInstance()->Add_Camera(GetName(), this);
 
@@ -69,7 +69,7 @@ void CCamera::Tick(_double TimeDelta)
 	m_pPipeLine->Set_Transform(CPipeLine::D3DTS_PROJ, XMMatrixPerspectiveFovLH(m_fFovy, m_fAspect, m_fNear, m_fFar));
 }
 
-void CCamera::Late_Tick(_double TimeDelta)
+void CCamera::Late_Tick(_float TimeDelta)
 {
 	__super::Late_Tick(TimeDelta);
 }

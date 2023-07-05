@@ -36,14 +36,14 @@ HRESULT CSlasher::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CSlasher::Tick(_double TimeDelta)
+void CSlasher::Tick(_float TimeDelta)
 {
 	__super::Tick(TimeDelta);
 
 	
 }
 
-void CSlasher::Late_Tick(_double TimeDelta)
+void CSlasher::Late_Tick(_float TimeDelta)
 {
 	__super::Late_Tick(TimeDelta);
 }
@@ -135,7 +135,7 @@ void CSlasher::Free()
 	__super::Free();
 }
 
-void CSlasher::Skill_Q(const _double& TimeDelta)
+void CSlasher::Skill_Q(const _float& TimeDelta)
 {
 	if (m_bSlasherDashFinished == true || m_bSlasherDashStarted == false)
 		return;
@@ -158,7 +158,7 @@ void CSlasher::Skill_Q(const _double& TimeDelta)
 
 }
 
-void CSlasher::Skill_E(const _double& TimeDelta)
+void CSlasher::Skill_E(const _float& TimeDelta)
 {
 }
 
@@ -166,7 +166,7 @@ void CSlasher::Skill_Q_Setting()
 {
 	XMStoreFloat3(&m_DashDir, m_pPlayer->m_pTransformCom->Get_State(CTransform::STATE_LOOK));
 	XMStoreFloat4(&m_SlasherDashOriginPos, m_pPlayer->m_pTransformCom->Get_State(CTransform::STATE_POSITION));
-	m_SlasherDashTimeAcc = 0.0;
+	m_SlasherDashTimeAcc = 0.0f;
 	m_bSlasherDashFinished = false;
 	m_pPlayer->m_pAnimInstance->Apply_Animation("Slasher_Q");
 }

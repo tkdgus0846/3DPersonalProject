@@ -25,7 +25,7 @@ HRESULT CLevel_Loading::Initialize(LEVELID eNextLevelID)
 	return S_OK;
 }
 
-void CLevel_Loading::Tick(_double TimeDelta)
+void CLevel_Loading::Tick(_float TimeDelta)
 {
 	__super::Tick(TimeDelta);
 
@@ -66,7 +66,7 @@ void CLevel_Loading::Tick(_double TimeDelta)
 	SetWindowText(g_hWnd, m_pLoader->Get_LoadingText());
 }
 
-void CLevel_Loading::Late_Tick(_double TimeDelta)
+void CLevel_Loading::Late_Tick(_float TimeDelta)
 {
 	__super::Late_Tick(TimeDelta);
 }

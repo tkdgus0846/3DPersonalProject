@@ -36,7 +36,7 @@ HRESULT CTerrain::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CTerrain::Tick(_double TimeDelta)
+void CTerrain::Tick(_float TimeDelta)
 {
 	__super::Tick(TimeDelta);
 
@@ -45,7 +45,7 @@ void CTerrain::Tick(_double TimeDelta)
 		m_pRendererCom->Add_RenderGroup((CRenderer::RENDERGROUP)m_eRenderGroup, this);
 }
 
-void CTerrain::Late_Tick(_double TimeDelta)
+void CTerrain::Late_Tick(_float TimeDelta)
 {
 	__super::Late_Tick(TimeDelta);
 

@@ -1,6 +1,6 @@
 #include "..\Public\RootNode.h"
 
-CRootNode::RESULT CRootNode::Run(const _double& TimeDelta, vector<CBehavior*>* LastRunningList)
+CRootNode::RESULT CRootNode::Run(const _float& TimeDelta, vector<CBehavior*>* LastRunningList)
 {
 	RESULT result;
 

@@ -14,8 +14,8 @@ public:
 	virtual HRESULT Initialize(); /* 이 레벨에서 사용되는 초기화나 객체 생서응ㄹ 관리하단. */
 
 	/* 이 레벨에서 보여주고하는 디버깅적 요소. */
-	virtual void Tick(_double TimeDelta);
-	virtual void Late_Tick(_double TimeDelta);
+	virtual void Tick(_float TimeDelta);
+	virtual void Late_Tick(_float TimeDelta);
 	virtual HRESULT Render();
 
 protected:

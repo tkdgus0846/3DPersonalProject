@@ -3,6 +3,12 @@
 #include "Client_Defines.h"
 #include "Creature.h"
 
+
+/*
+				플레이어 무기(공격,스킬) 콜라이더는 플레이어가 들고있게하고
+				그냥 스킬 콜라이더는 스킬 자체가 가지고 있게 한다.
+*/
+
 BEGIN(Engine)
 class CModel;
 class CShader;
@@ -21,9 +27,10 @@ class CPlayer final : public CCreature
 	friend class CSlasher;
 	friend class CMace;
 	friend class CHand;
+	friend class CSword;
 public:
-	enum COLLIDER { COLLIDER_PLAYER, COLLIDER_ATTACK, COLLIDER_SPHERE, COLLIDER_END };
-	enum WEAPONTYPE { WEAPON_HAND, WEAPON_AXE, WEAPON_SLASHER, WEAPON_MACE, WEAPON_END};
+	enum COLLIDER { COLLIDER_PLAYER, COLLIDER_ATTACK, COLLIDER_SPHERE, COLLIDER_MACE_E, COLLIDER_SWORD_E,  COLLIDER_END };
+	enum WEAPONTYPE { WEAPON_HAND, WEAPON_AXE, WEAPON_SLASHER, WEAPON_MACE, WEAPON_SWORD, WEAPON_END};
 
 protected:
 	CPlayer(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
@@ -33,47 +40,54 @@ protected:
 public:
 	virtual HRESULT Initialize_Prototype() override;
 	virtual HRESULT Initialize(void* pArg) override;
-	virtual void Tick(_double TimeDelta) override;
-	virtual void Late_Tick(_double TimeDelta) override;
+	virtual void Tick(_float TimeDelta) override;
+	virtual void Late_Tick(_float TimeDelta) override;
 	virtual HRESULT Render() override;
 
-	virtual void OnCollisionEnter(const Collision* collision) override;
-	virtual void OnCollisionStay(const Collision* collision) override;
-	virtual void OnCollisionExit(const Collision* collision) override;
+	virtual void	OnCollisionEnter(const Collision* collision) override;
+	virtual void	OnCollisionStay(const Collision* collision) override;
+	virtual void	OnCollisionExit(const Collision* collision) override;
+
+	void			HitShake_Collision(const Collision* collision);
 
 private:
-	void Move(_double TimeDelta);
-	void PlayerRotate(_double TimeDelta);
-	void AttackMove(_double TimeDelta);
-	void ClimbNavMesh();
-	_float Compute_NavMesh_Height();
-	void CameraRotate(_double TimeDelta);
-	void CameraZoom(_double TimeDelta);
-	void Dash(_double TimeDelta);
+	void Collider_On(COLLIDER eCollider);
+	void Collider_Off(COLLIDER eCollider);
 
-	void Attack_Combo();
-	void Add_Animations();
+private:
+
+	void	Move(_float TimeDelta);
+	void	PlayerRotate(_float TimeDelta);
+	void	AttackMove(_float TimeDelta);
+	void	ClimbNavMesh();
+	_float	Compute_NavMesh_Height();
+	void	CameraRotate(_float TimeDelta);
+	void	CameraZoom(_float TimeDelta);
+	void	Dash(_float TimeDelta);
+
+	void	Attack_Combo();
+	void	Add_Animations();
 
 	// 스킬들
-	void Skills(const _double& TimeDelta);
-	void Skill_Q(const _double& TimeDelta);
-	void Skill_C(const _double& TimeDelta);
-	void Skill_R(const _double& TimeDelta);
-	void Skill_E(const _double& TimeDelta);
-	void Skill_T(const _double& TimeDelta);
+	void	Skills(const _float& TimeDelta);
+	void	Skill_Q(const _float& TimeDelta);
+	void	Skill_C(const _float& TimeDelta);
+	void	Skill_R(const _float& TimeDelta);
+	void	Skill_E(const _float& TimeDelta);
+	void	Skill_T(const _float& TimeDelta);
 
 	// 무기 교체 관련 함수들
-	void Select_Weapon();
-	void Change_Weapon();
+	void	Select_Weapon();
+	void	Change_Weapon();
 
 	/// 애니메이션 키 선택해주는 함수들
-	void Select_ChangingWeaponKey();
-	void Select_MoveKey();
-	void Select_DashKey();
-	void Select_AttackKey();
-	void Select_IdleKey();
+	void	Select_ChangingWeaponKey();
+	void	Select_MoveKey();
+	void	Select_DashKey();
+	void	Select_AttackKey();
+	void	Select_IdleKey();
 
-	void Select_AnimationKey();
+	void	Select_AnimationKey();
 
 private:
 	CModel*						m_pModelCom = { nullptr };
@@ -86,8 +100,8 @@ private:
 	CAnimInstance*				m_pAnimInstance = { nullptr };
 
 	// 플레이어 기본 능력치에 관한 변수들.
-	const _double				m_fNormalSpeed = { 6.0 };
-	const _double				m_fMoveAttackSpeed = { 1.5 };
+	const _float				m_fNormalSpeed = { 6.0 };
+	const _float				m_fMoveAttackSpeed = { 1.5 };
 
 	
 	// 애님 상태 제어 변수들
@@ -110,7 +124,7 @@ private:
 	_float						m_fCameraZoom = { 0.f };
 	_float						m_fCurCameraZoom = { 0.f };
 	_float3						m_OriginOffset = { 0.f, 12.f, -12.f };
-	_double						m_ObjectAttack_CameraShake_TimeAcc = { 0.0 };
+	_float						m_ObjectAttack_CameraShake_TimeAcc = { 0.0 };
 
 	// 이동 관련 변수들
 	_float						m_CurHeight = { 0.f };
@@ -125,23 +139,26 @@ private:
 
 	
 
-	// Claw 무기에 대한 애니메이션 정보
+	//무기에 대한 애니메이션 정보
 	_int						m_Combo = { 0 };
 	_int						m_PrevCombo = { 0 };
 	const _int					m_ComboMax = { 3 };
+	_bool						m_bAttackPressing = { false };
 
 	// 움직이면서 공격하는 것에 대한 변수들
 	_int						m_MoveAttackCheckCombo = { 0 };
-	_double						m_MoveAttackTimeAcc = { 0.0 };
-	const _double				m_MoveAttackAccel = { -1.7 };
-	const _double				m_MoveAttackInitSpeed = { 0.5 };
+	_float						m_MoveAttackTimeAcc = { 0.0 };
+	const _float				m_MoveAttackAccel = { -1.7 };
+	const _float				m_MoveAttackInitSpeed = { 0.5 };
 	_bool						m_bAttackMove = { false };
 
 	// Dash 관련 변수들
 	_float3						m_DashDir;
-	_double						m_DashTimeAcc = { 0.0 };
-	const _double				m_DashAccel = { 5.7 };
-	const _double				m_DashInitSpeed = { -0.01 };
+	_float						m_DashTimeAcc = { 0.0 };
+	_bool						m_bDashStart = { false };
+	const _float				m_DashTime = { 0.5f };
+	const _float				m_DashAccel = { 2.3 };
+	const _float				m_DashInitSpeed = { 0.1 };
 
 public:
 	HRESULT Add_Components();

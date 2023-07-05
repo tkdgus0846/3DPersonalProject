@@ -14,8 +14,8 @@ private:
 public:
 	HRESULT Add_GameObjects(class CGameObject* pGameObject);
 	list<class CGameObject*>* Get_GameObjectsList() { return &m_GameObjects; }
-	void Tick(_double TimeDelta);
-	void Late_Tick(_double TimeDelta);
+	void Tick(_float TimeDelta);
+	void Late_Tick(_float TimeDelta);
 
 	CGameObject* Find_Object(const wstring& objName);
 	HRESULT Delete_GameObject(const wstring& pObjName);

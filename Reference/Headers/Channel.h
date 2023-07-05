@@ -16,13 +16,14 @@ public:
 
 public:
 	HRESULT Initialize(ParsingData* pData);
-	void Invalidate_TransformationMatrix(CModel::BONES& Bones, _double TimeAcc, _uint* pCurrentKeyFrameIndex);
-	_int Lerp_TransformaitionMatrix(CModel::BONES& Bones, _double duration, _double TimeAcc, _uint srcKeyFrame, KEYFRAME& dstKeyFrame);
+	void Invalidate_TransformationMatrix(CModel::BONES& Bones, _float TimeAcc, _uint* pCurrentKeyFrameIndex);
+	_int Lerp_TransformaitionMatrix(CModel::BONES& Bones, _float duration, _float TimeAcc, _uint srcKeyFrame, KEYFRAME& dstKeyFrame);
 
 	_uint Get_BoneIndex() { return m_iBoneIndex; }
 	KEYFRAME& Get_FirstKeyFrame() { return m_KeyFrames.front(); }
-	_double Erase_LastFrame();
-	_double Erase_Frames_LessTime(_double time);
+	_float Erase_LastFrame();
+	_float Erase_Frames_LessTime(_float time);
+	void Change_Start_Frame(_float time);
 
 private:
 	char				m_szName[MAX_PATH] = "";

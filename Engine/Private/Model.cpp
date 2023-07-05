@@ -143,7 +143,7 @@ HRESULT CModel::Render(_uint iMeshIndex)
 	return S_OK;
 }
 
-void CModel::Play_Animation(_double TimeDelta)
+void CModel::Play_Animation(_float TimeDelta)
 {
 	ANIMCHANGE eAnimChange = Decide_ChangeAnimState(ANIM_ALLBODY);
 
@@ -151,55 +151,65 @@ void CModel::Play_Animation(_double TimeDelta)
 
 	if (eAnimChange == ALLBODY_TO_ALLBODY)
 	{
-		bLerpFinished = Lerp_NextAnimation(m_iPrevAnimIndex, m_iCurrentAnimIndex, m_lerpTimeAcc, TimeDelta, 0.2);
+		
+		bLerpFinished = Lerp_NextAnimation(m_iPrevAnimIndex, m_iCurrentAnimIndex, m_lerpTimeAcc, TimeDelta, 0.2f);
 	}
 	else if (eAnimChange == UPPERBODY_TO_ALLBODY)
 	{
 		m_iPrevAnimIndex = m_iUpperCurrentAnimIndex;
-		bLerpFinished = Lerp_NextAnimation(m_iPrevAnimIndex, m_iCurrentAnimIndex, m_lerpTimeAcc, TimeDelta, 0.2, &m_UpperBodyBoneIndex);
+		bLerpFinished = Lerp_NextAnimation(m_iPrevAnimIndex, m_iCurrentAnimIndex, m_lerpTimeAcc, TimeDelta, 0.2f, &m_UpperBodyBoneIndex);
 	}
 	else if (eAnimChange == LOWERBODY_TO_ALLBODY)
 	{
 		m_iPrevAnimIndex = m_iLowerCurrentAnimIndex;
-		bLerpFinished = Lerp_NextAnimation(m_iPrevAnimIndex, m_iCurrentAnimIndex, m_lerpTimeAcc, TimeDelta, 0.2, &m_LowerBodyBoneIndex);
+		bLerpFinished = Lerp_NextAnimation(m_iPrevAnimIndex, m_iCurrentAnimIndex, m_lerpTimeAcc, TimeDelta, 0.2f, &m_LowerBodyBoneIndex);
 	}
 	else if (eAnimChange == LOWERUPPERBODY_TO_ALLBODY)
 	{
 
 		// 한쪽에서 0이 만들어지면 그게 문제가된다.
 		
+	
+			
 
 		m_lerpTimeAcc += TimeDelta;
-		_double tmpTimeAcc = m_lerpTimeAcc;
+		_float tmpTimeAcc = m_lerpTimeAcc;
 
-		//cout << m_lerpTimeAcc << " " << m_iPrevAnimIndex << " " << m_iCurrentAnimIndex << endl;
+
 
 		m_iPrevAnimIndex = m_iLowerCurrentAnimIndex;
-		bLerpFinished = Lerp_NextAnimation(m_iPrevAnimIndex, m_iCurrentAnimIndex, m_lerpTimeAcc, 0.0, 0.3, &m_LowerBodyBoneIndex) ;
+		bLerpFinished = Lerp_NextAnimation(m_iPrevAnimIndex, m_iCurrentAnimIndex, m_lerpTimeAcc, 0.0, 0.2f, &m_LowerBodyBoneIndex) ;
 
 		if (m_lerpTimeAcc == 0.0)
 			m_lerpTimeAcc = tmpTimeAcc;
 
 
 		m_iPrevAnimIndex = m_iUpperCurrentAnimIndex;
-		bLerpFinished = Lerp_NextAnimation(m_iPrevAnimIndex, m_iCurrentAnimIndex, m_lerpTimeAcc, 0.0, 0.3, &m_UpperBodyBoneIndex) && bLerpFinished;
-
-		//cout << bLerpFinished << endl;
-
-		if (m_lerpTimeAcc == 0.0) 
-			m_lerpTimeAcc = tmpTimeAcc;
-
+		bLerpFinished = Lerp_NextAnimation(m_iPrevAnimIndex, m_iCurrentAnimIndex, m_lerpTimeAcc, 0.0, 0.2f, &m_UpperBodyBoneIndex) && bLerpFinished;
 
 		
+
+		if (m_lerpTimeAcc == 0.0f) 
+			m_lerpTimeAcc = tmpTimeAcc;
 	}
 
-	if (bLerpFinished == false) return;
+
+	m_bLerpFinished = bLerpFinished;
+
+	if (bLerpFinished == false)
+	{
+		return;
+	}
+
 	else
 	{
+		// 여기서 ResetAnimations 해줘야하는데
+
 		m_bChange_LowerBodyToAllBody = false;
 		m_bChange_UpperBodyToAllBody = false;
 	}
 	if (m_iCurrentAnimIndex == -1) return;
+
 
 	/* 현재 애니메이션에서 사용하는 뼈들을 찾아서 해당 뼈들의 TransformationMatrix를 갱신한다. */
 	m_Animations[m_iCurrentAnimIndex]->Invalidate_TransformationMatrix(m_Bones, TimeDelta);
@@ -212,7 +222,7 @@ void CModel::Play_Animation(_double TimeDelta)
 	}
 }
 
-void CModel::Play_UpperBody_Animation(_double TimeDelta)
+void CModel::Play_UpperBody_Animation(_float TimeDelta)
 {
 	ANIMCHANGE eAnimChange = Decide_ChangeAnimState(ANIM_UPPERBODY);
 
@@ -223,20 +233,34 @@ void CModel::Play_UpperBody_Animation(_double TimeDelta)
 		m_iUpperPrevAnimIndex = m_iCurrentAnimIndex;
 		bLerpFinished = Lerp_NextAnimation(m_iUpperPrevAnimIndex, m_iUpperCurrentAnimIndex, m_UpperLerpTimeAcc, TimeDelta, 0.2, &m_UpperBodyBoneIndex);
 
-		//cout << "AllBody To Upper" << endl;
 	}
 	else if (eAnimChange == UPPERBODY_TO_UPPERBODY)
 	{
-		bLerpFinished = Lerp_NextAnimation(m_iUpperPrevAnimIndex, m_iUpperCurrentAnimIndex, m_UpperLerpTimeAcc, TimeDelta, 0.2, &m_UpperBodyBoneIndex);
+		// 상체 애니메이션에서 상체 애니메이션을 진행하려고 하는경우
+
+
+
+		/*if (m_Animations[m_iUpperCurrentAnimIndex]->Is_Reseted() && m_iUpperPrevAnimIndex == m_iUpperCurrentAnimIndex)
+			int i = 2;*/
+
+		bLerpFinished = Lerp_NextAnimation(m_iUpperPrevAnimIndex, m_iUpperCurrentAnimIndex, m_UpperLerpTimeAcc, TimeDelta, 0.2f, &m_UpperBodyBoneIndex);
+	
+		
+		int s = 2;
 	}
 	
+	m_bUpperLerpFinished = bLerpFinished;
 
-	if (bLerpFinished == false) return;
+	if (bLerpFinished == false)
+	{
+		return;
+	}
 	else
 	{
 		m_bChange_AllBodyToUpperBody = false;
 	}
 
+	
 	m_Animations[m_iUpperCurrentAnimIndex]->Invalidate_TransformationMatrix_Upper(m_Bones, TimeDelta, m_UpperBodyBoneIndex);
  
 	for (auto& pBone : m_Bones)
@@ -245,7 +269,7 @@ void CModel::Play_UpperBody_Animation(_double TimeDelta)
 	}
 }
 
-void CModel::Play_LowerBody_Animation(_double TimeDelta)
+void CModel::Play_LowerBody_Animation(_float TimeDelta)
 {
 	ANIMCHANGE eAnimChange = Decide_ChangeAnimState(ANIM_LOWERBODY);
 
@@ -256,12 +280,15 @@ void CModel::Play_LowerBody_Animation(_double TimeDelta)
 		m_iLowerPrevAnimIndex = m_iCurrentAnimIndex;
 		bLerpFinished = Lerp_NextAnimation(m_iLowerPrevAnimIndex, m_iLowerCurrentAnimIndex, m_LowerLerpTimeAcc, TimeDelta, 0.2, &m_LowerBodyBoneIndex);
 
-		//cout << "AllBody To Lower" << endl;
+	
 	}
 	else if (eAnimChange == LOWERBODY_TO_LOWERBODY)
 	{
+		
 		bLerpFinished = Lerp_NextAnimation(m_iLowerPrevAnimIndex, m_iLowerCurrentAnimIndex, m_LowerLerpTimeAcc, TimeDelta, 0.2, &m_LowerBodyBoneIndex);
 	}
+
+	m_bLowerLerpFinished = bLerpFinished;
 
 	if (bLerpFinished == false) return;
 	else
@@ -355,7 +382,7 @@ void CModel::Erase_LastFrame_Animation(_uint iIndex)
 
 }
 
-void CModel::Erase_Frames_LessTime(_uint iIndex, _double time)
+void CModel::Erase_Frames_LessTime(_uint iIndex, _float time)
 {
 	m_Animations[iIndex]->Erase_Frames_LessTime(time);
 }
@@ -429,12 +456,35 @@ _bool CModel::Collect_LowerBodyBones_ByParentIndex(_int iCurIndex, _int iParentI
 	return Collect_LowerBodyBones_ByParentIndex(m_Bones[iCurIndex]->Get_ParentIndex(), iParentIndex);
 }
 
-_bool CModel::Lerp_NextAnimation(_int& iPrevAnimIndex, _int& iCurrentAnimIndex, _double& lerpTimeAcc, const _double& TimeDelta, const _double& lerpTimes, unordered_set<_int>* BoneIndex)
+_bool CModel::Lerp_Finished(ANIMTYPE eCurType)
+{
+	_bool bResult;
+
+	switch (eCurType)
+	{
+	case ANIM_ALLBODY:
+		bResult = m_bLerpFinished;
+		break;
+	case ANIM_UPPERBODY:
+		bResult = m_bUpperLerpFinished;
+		break;
+	case ANIM_LOWERBODY:
+		bResult = m_bLowerLerpFinished;
+		break;
+	}
+	return bResult;
+}
+
+_bool CModel::Lerp_NextAnimation(_int& iPrevAnimIndex, _int& iCurrentAnimIndex, _float& lerpTimeAcc, const _float& TimeDelta, const _float& lerpTimes, unordered_set<_int>* BoneIndex)
 {
 	// 지금은 하체-하체 상체-상체 전체-전체 이런식으로 확인하여 보간하고 있다.
 	// 나는 이것
 	if (Is_Changing_Animation(iPrevAnimIndex,iCurrentAnimIndex))
 	{
+
+		if (BoneIndex != nullptr && iPrevAnimIndex == 140)
+			int i = 2;
+
 		lerpTimeAcc += TimeDelta;
 
 		/// 상체 뼈들만 Lerp를 적용함.
@@ -444,13 +494,15 @@ _bool CModel::Lerp_NextAnimation(_int& iPrevAnimIndex, _int& iCurrentAnimIndex, 
 
 		if (result == 1)
 		{
+			// 보간이 끝나면 리셋 채널은 해주고 있다. 문제는 인덱스를 0으로 못돌린다는 것이지.
 			lerpTimeAcc = 0.0;
-			m_Animations[iPrevAnimIndex]->Reset_Channels();
+			//m_Animations[iPrevAnimIndex]->Reset_Channels();
 			iPrevAnimIndex = iCurrentAnimIndex;
 			return true;
 		}
 		else if (result == 0)
 		{
+			
 			for (auto& pBone : m_Bones)
 			{
 				pBone->Invalidate_CombinedTransformationMatrix(m_Bones);
@@ -522,36 +574,6 @@ CModel::ANIMCHANGE CModel::Decide_ChangeAnimState(ANIMTYPE eCurType)
 			result = LOWERBODY_TO_LOWERBODY;
 		}
 	}
-
-	/* 디버깅용 출력문 지워야됨.*/
-	switch (result)
-	{
-	case ALLBODY_TO_UPPERBODY:
-		cout << "ALLBODY_TO_UPPERBODY" << endl;
-		break;
-	case ALLBODY_TO_LOWERBODY:
-		cout << "ALLBODY_TO_LOWERBODY" << endl;
-		break;
-	case ALLBODY_TO_ALLBODY:
-		//cout << "ALLBODY_TO_ALLBODY" << endl;
-		break;
-	case UPPERBODY_TO_ALLBODY:
-		//cout << "UPPERBODY_TO_ALLBODY" << endl;
-		break;
-	case UPPERBODY_TO_UPPERBODY:
-		//cout << "UPPERBODY_TO_UPPERBODY" << endl;
-		break;
-	case LOWERBODY_TO_ALLBODY:
-		//cout << "LOWERBODY_TO_ALLBODY" << endl;
-		break;
-	case LOWERBODY_TO_LOWERBODY:
-		//cout << "LOWERBODY_TO_LOWERBODY" << endl;
-		break;
-	case LOWERUPPERBODY_TO_ALLBODY:
-		//cout << "LOWERUPPERBODY_TO_ALLBODY " << m_lerpTimeAcc << endl;
-		break;
-	}
-
 	return result;
 }
 

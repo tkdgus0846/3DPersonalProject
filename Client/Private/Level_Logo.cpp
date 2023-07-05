@@ -20,12 +20,12 @@ HRESULT CLevel_Logo::Initialize()
 	return S_OK;
 }
 
-void CLevel_Logo::Tick(_double TimeDelta)
+void CLevel_Logo::Tick(_float TimeDelta)
 {
 	__super::Tick(TimeDelta);
 }
 
-void CLevel_Logo::Late_Tick(_double TimeDelta)
+void CLevel_Logo::Late_Tick(_float TimeDelta)
 {
 	__super::Late_Tick(TimeDelta);
 

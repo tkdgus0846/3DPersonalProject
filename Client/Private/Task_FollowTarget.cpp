@@ -6,19 +6,21 @@
 #include "Transform.h"
 #include "Navigation.h"
 
-CTask_FollowTarget::RESULT CTask_FollowTarget::Run(const _double& TimeDelta, vector<CBehavior*>* LastRunningList)
+CTask_FollowTarget::RESULT CTask_FollowTarget::Run(const _float& TimeDelta, vector<CBehavior*>* LastRunningList)
 {
+	m_pBlackBoard->ChangeData("IsRun", false);
+
 	if (Pass_Decorator() == false)
 		return RESULT(FAIL);
 
 	CGameObject* target = any_cast<CGameObject*>(m_pBlackBoard->FindData("Target"));
 
-	if (target == nullptr)
+	/*if (target == nullptr)
 		return RESULT(FAIL);
 
 	_bool bInAttackRange = any_cast<_bool>(m_pBlackBoard->FindData("InAttackRange"));
 	if (bInAttackRange == true)
-		return RESULT(FAIL);
+		return RESULT(FAIL);*/
 
 	CGameObject* owner = any_cast<CGameObject*>(m_pBlackBoard->FindData("Owner"));
 
@@ -30,6 +32,8 @@ CTask_FollowTarget::RESULT CTask_FollowTarget::Run(const _double& TimeDelta, vec
 
 	ownerTransform->LookAt(targetPosition, CTransform::LANDOBJECT);
 	ownerTransform->Go_Dir(targetDir, TimeDelta, (CNavigation*)owner->Get_Component(NAVIGATION_W));
+	
+	m_pBlackBoard->ChangeData("IsRun", true);
 	
 	RESULT result = RESULT(RUNNING);
 	result.LastRunningList.push_back(this);
@@ -43,4 +47,5 @@ CTask_FollowTarget* CTask_FollowTarget::Create()
 
 void CTask_FollowTarget::Free()
 {
+	__super::Free();
 }

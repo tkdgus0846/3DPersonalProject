@@ -9,6 +9,7 @@
 #include "Axe.h"
 #include "Slasher.h"
 #include "PlayerParts.h"
+#include "Sword.h"
 
 CPlayer::CPlayer(ID3D11Device * pDevice, ID3D11DeviceContext * pContext)
 	: CCreature(pDevice, pContext)
@@ -32,6 +33,9 @@ HRESULT CPlayer::Initialize_Prototype()
 
 HRESULT CPlayer::Initialize(void* pArg)
 {
+	for (_int i = 0; i < COLLIDER_END; i++)
+		m_pColliderCom[i] = nullptr;
+
 	/* 원형생성할 때 받아왔던 데이터 외의 추가적인 값들을 더 저장해주낟. */
 	if (FAILED(__super::Initialize(pArg)))
 		return E_FAIL;
@@ -53,7 +57,7 @@ HRESULT CPlayer::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CPlayer::Tick(_double TimeDelta)
+void CPlayer::Tick(_float TimeDelta)
 {
  	__super::Tick(TimeDelta);
 
@@ -82,14 +86,9 @@ void CPlayer::Tick(_double TimeDelta)
 
 	// 애니메이션 관련된 변수 조작은 이 위에서
 	Select_AnimationKey();
-
-
-	
-	if (nullptr != m_pRendererCom)
-		m_pRendererCom->Add_RenderGroup(CRenderer::RENDER_NONBLEND, this);
 }
 
-void CPlayer::Late_Tick(_double TimeDelta)
+void CPlayer::Late_Tick(_float TimeDelta)
 {
 	__super::Late_Tick(TimeDelta);	
 
@@ -102,6 +101,15 @@ void CPlayer::Late_Tick(_double TimeDelta)
 
 	/*if (CGameInstance::GetInstance()->Key_Down(DIK_3))
 		CGameInstance::GetInstance()->On_Shake();*/
+
+	if (m_pRendererCom != nullptr)
+		m_pRendererCom->Add_RenderGroup(CRenderer::RENDER_NONBLEND, this);
+
+	for (_int i = 0; i < COLLIDER_END; i++)
+	{
+		if (m_pColliderCom[i] != nullptr && m_pColliderCom[i]->Get_Enable())
+			m_pColliderCom[i]->Add_ColGroup();
+	}
 }
 
 HRESULT CPlayer::Render()
@@ -141,10 +149,27 @@ HRESULT CPlayer::Render()
 
 void CPlayer::OnCollisionEnter(const Collision* collision)
 {
-	
+	m_Weapons[m_eWeaponType].front()->SkillQ_Collision_Enter(collision);
+	m_Weapons[m_eWeaponType].front()->SkillE_Collision_Enter(collision);
+
 }
 
 void CPlayer::OnCollisionStay(const Collision* collision)
+{
+	m_Weapons[m_eWeaponType].front()->SkillQ_Collision_Stay(collision);
+	m_Weapons[m_eWeaponType].front()->SkillE_Collision_Stay(collision);
+
+	HitShake_Collision(collision);
+}
+
+void CPlayer::OnCollisionExit(const Collision* collision)
+{
+	m_Weapons[m_eWeaponType].front()->SkillQ_Collision_Exit(collision);
+	m_Weapons[m_eWeaponType].front()->SkillE_Collision_Exit(collision);
+
+}
+
+void CPlayer::HitShake_Collision(const Collision* collision)
 {
 	CGameInstance* pGameInstance = CGameInstance::GetInstance();
 
@@ -153,32 +178,40 @@ void CPlayer::OnCollisionStay(const Collision* collision)
 	{
 		m_ObjectAttack_CameraShake_TimeAcc += pGameInstance->Get_Timer(TEXT("Timer_60"));
 
-		if (m_ObjectAttack_CameraShake_TimeAcc >= 0.5f)
+		// 이부분을 무기 마다 틱 변수를 두고 체크하면 어떨까? 그에 따라서 밑에 쉐이크 계수도 바꿔주고 ㅇㅇ 굿 아이디어!!! 여기를 실제 피격처리 하는부분으로 하면 되지않을까한다. 틱변수를 무기에 두고 .
+		if (m_ObjectAttack_CameraShake_TimeAcc >= m_Weapons[m_eWeaponType].front()->Get_AttackRate())
 		{
 			if (pGameInstance->Is_Shacking() == true) return;
 
 			CCamera_Player_Main::MAINCAMERASHAKE desc;
 
-			m_ObjectAttack_CameraShake_TimeAcc = 0.0;
-			desc.fShakeMagnitude = 0.28f;
-			desc.fShakeDuration = 0.25f;
+			m_ObjectAttack_CameraShake_TimeAcc = 0.0f;
+
+			// 데미지에 따라서 쉐이크 계수를 다르게 해보자. 
+			desc.fShakeMagnitude = (_float)m_Weapons[m_eWeaponType].front()->Get_Damage() / 50.f;
+			desc.fShakeDuration = (_float)m_Weapons[m_eWeaponType].front()->Get_Damage() / 20.f;
+
 			pGameInstance->On_Shake(&desc);
 		}
-
-		
-		
-		
 	}
 }
 
-void CPlayer::OnCollisionExit(const Collision* collision)
+void CPlayer::Collider_On(COLLIDER eCollider)
 {
+	if (m_pColliderCom[eCollider] != nullptr)
+		m_pColliderCom[eCollider]->Set_Enable(true);
 }
 
-void CPlayer::Move(_double TimeDelta)
+void CPlayer::Collider_Off(COLLIDER eCollider)
+{
+	if (m_pColliderCom[eCollider] != nullptr)
+		m_pColliderCom[eCollider]->Set_Enable(false);
+}
+
+void CPlayer::Move(_float TimeDelta)
 {
 	if (m_bDash == true) return;
-	if (m_bSkill == true) return;
+	if (m_bSkill == true && m_eWeaponType != WEAPON_SWORD) return;
 
 	m_bMove = false;
 	_bool keyState[4] = { false, false, false, false };
@@ -238,7 +271,7 @@ void CPlayer::Move(_double TimeDelta)
 
 		// 무기가 손 일때만 이동을 멈추게 하려고 했다. 추후 추가사항이 있으면 추가.
 		if (m_bAttack == false || 
-			m_eWeaponType != WEAPON_HAND)
+			(m_eWeaponType != WEAPON_HAND && m_eWeaponType != WEAPON_MACE))
 		{
 			_vector resultDir = { 0.f,0.f,0.f,0.f };
 
@@ -309,7 +342,7 @@ void CPlayer::Move(_double TimeDelta)
 	//}
 }
 
-void CPlayer::PlayerRotate(_double TimeDelta)
+void CPlayer::PlayerRotate(_float TimeDelta)
 {
 	if (m_bDash == true) return;
 
@@ -329,7 +362,7 @@ void CPlayer::PlayerRotate(_double TimeDelta)
 		ptMouse = m_lastCursorPoint;
 	}
 
-	_double degree = atan2(ptMouse.y - centerPos.y, ptMouse.x - centerPos.x);
+	_float degree = atan2(ptMouse.y - centerPos.y, ptMouse.x - centerPos.x);
 	degree = XMConvertToDegrees(degree);
 
 	degree -= m_fCameraRotationX;
@@ -337,7 +370,7 @@ void CPlayer::PlayerRotate(_double TimeDelta)
 	m_pTransformCom->Rotation(CTransform::AXIS_Y, degree);
 }
 
-void CPlayer::AttackMove(_double TimeDelta)
+void CPlayer::AttackMove(_float TimeDelta)
 {
 	
 	if (m_bAttackMove == false) return;
@@ -394,7 +427,7 @@ _float CPlayer::Compute_NavMesh_Height()
 	return offsetY;
 }
 
-void CPlayer::CameraRotate(_double TimeDelta)
+void CPlayer::CameraRotate(_float TimeDelta)
 {
 	if (CGameInstance::GetInstance()->Mouse_Up(CInput_Device::DIMK_RBUTTON))
 	{
@@ -513,7 +546,7 @@ void CPlayer::CameraRotate(_double TimeDelta)
 	}
 }
 
-void CPlayer::CameraZoom(_double TimeDelta)
+void CPlayer::CameraZoom(_float TimeDelta)
 {
 	_long		MouseMove = { 0 };
 
@@ -567,7 +600,7 @@ void CPlayer::CameraZoom(_double TimeDelta)
 
 }
 
-void CPlayer::Dash(_double TimeDelta)
+void CPlayer::Dash(_float TimeDelta)
 {
 	if (m_bDash == false)
 	{
@@ -578,23 +611,30 @@ void CPlayer::Dash(_double TimeDelta)
 			m_pAnimInstance->Apply_Animation("Dash");
 			
 			XMStoreFloat3(&m_DashDir, m_pTransformCom->Get_State(CTransform::STATE_LOOK));
-			m_DashTimeAcc = 0.0;
+			m_DashTimeAcc = 0.0f;
+		}
+	}
+	else
+	{
+		if (m_pAnimInstance->Animation_Finished(0))
+			m_bDashStart = true;
+
+		if (m_bDashStart)
+		{
+			m_DashTimeAcc += TimeDelta;
+
+			if (m_DashTimeAcc > m_DashTime)
+			{
+				m_bDash = false;
+				m_bDashStart = false;
+				return;
+			}
+
+			m_pTransformCom->Go_Dir(XMLoadFloat3(&m_DashDir), m_DashInitSpeed, m_DashAccel, m_DashTimeAcc / 4.0, m_pNavigationCom);
 		}
 	}
 	
-
-	if (m_bDash == true && m_pAnimInstance->Animation_Finished())
-	{
-		m_DashTimeAcc += TimeDelta;
-
-		if (m_DashTimeAcc > 0.5f)
-		{
-			m_bDash = false;
-			return;
-		}
-
-		m_pTransformCom->Go_Dir(XMLoadFloat3(&m_DashDir), m_DashInitSpeed, m_DashAccel, m_DashTimeAcc / 4.0, m_pNavigationCom);
-	}
+	
 }
 
 void CPlayer::Select_ChangingWeaponKey()
@@ -626,7 +666,7 @@ void CPlayer::Select_MoveKey()
 
 
 
-	
+	// 마우스 방향과 계산해야돼서 넣은거 
 	if (337.5 <= angle || 22.5 >= angle)
 	{
 		m_Weapons[m_eWeaponType].front()->N_Walk_Animation();
@@ -681,7 +721,19 @@ void CPlayer::Select_IdleKey()
 void CPlayer::Attack_Combo()
 {
 	if (m_bAttack == false)
-		m_pTransformCom->Change_Speed(m_fNormalSpeed);
+	{
+		if (m_eWeaponType == WEAPON_SWORD && m_bSkillE == true)
+		{
+			
+		}
+		else
+		{
+			m_pTransformCom->Change_Speed(m_fNormalSpeed);
+			m_pColliderCom[COLLIDER_ATTACK]->Set_Enable(false);
+		}
+		
+	}
+		
 	//cout << m_bAttack << " " << m_pAnimInstance->Is_Use_AllBodyAnim() << endl;
 
 	// 공격이 끝나기 전 선입력을 하면... 콤보가 쌓이게끔.
@@ -689,8 +741,11 @@ void CPlayer::Attack_Combo()
 	{
 		if (m_bAttack == true)
 		{
+			
 			m_PrevCombo = m_Combo;
 			m_Combo++;
+
+			
 		}
 		else
 		{
@@ -707,9 +762,15 @@ void CPlayer::Attack_Combo()
 			m_bAttack = true;
 		}
 
+		m_bAttackPressing = true;
 		/*if (m_pAnimInstance->Animation_Finished())
 		m_ClawCombo */
 	}
+	else if (CGameInstance::GetInstance()->Mouse_Up(CInput_Device::DIMK_LBUTTON))
+	{
+		m_bAttackPressing = false;
+	}
+
 	
 	if (m_bAttack == true)
 	{
@@ -729,9 +790,9 @@ void CPlayer::Attack_Combo()
 			return;
 		}
 
-		if (m_pAnimInstance->Animation_Finished(eType))
+		// 애니메이션이 끝나고 난뒤.
+		if (m_pAnimInstance->Animation_Finished(-1, eType))
 		{
-			
 			m_pColliderCom[COLLIDER_ATTACK]->Set_Enable(true);
 			// 애니메이션 잠깐 띄운다.
 
@@ -739,29 +800,29 @@ void CPlayer::Attack_Combo()
 			{
 				// 어택 무브가 들어가는 무기는 ? 현재 맨손밖에없음
 				// 나중에 어택 무브가 들어가는 무기가 늘어나면 아래에 작성해주도록 하자.
-				if (m_eWeaponType == WEAPON_HAND)
+				if (m_eWeaponType == WEAPON_HAND || m_eWeaponType == WEAPON_MACE)
 				{
 					if (m_bAttackMove == false)
 					{
 						m_bAttackMove = true;
-						m_MoveAttackTimeAcc = 0.0;
+						m_MoveAttackTimeAcc = 0.0f;
 					}
 					// 어택무브가 진행중 이였다면.
 					else
 					{
-						m_MoveAttackTimeAcc = 0.0;
+						m_MoveAttackTimeAcc = 0.0f;
 					}
 				}
 				
 			}
 			
 			// 다음 Attack.
-			if (m_Combo > m_PrevCombo)
+			if (m_Combo > m_PrevCombo && m_bAttackPressing)
 			{
 				_bool bNext = m_pAnimInstance->Next_Animation(eType);
 				if (bNext == false)
 				{
-					m_pColliderCom[COLLIDER_ATTACK]->Set_Enable(false);
+					//m_pColliderCom[COLLIDER_ATTACK]->Set_Enable(false);
 					m_bAttack = false;
 					m_Combo = 0;
 					m_PrevCombo = 0;
@@ -775,7 +836,7 @@ void CPlayer::Attack_Combo()
 			}
 			else
 			{
-				m_pColliderCom[COLLIDER_ATTACK]->Set_Enable(false);
+				//m_pColliderCom[COLLIDER_ATTACK]->Set_Enable(false);
 				m_bAttack = false;
 				m_Combo = 0;
 				m_PrevCombo = 0;
@@ -815,25 +876,25 @@ void CPlayer::Add_Animations()
 	node.bLoop = false;
 	
 	node.AnimIndices = {486, 487, 488 };
-	node.eraseLessTime = { 0.05, 0.05, 0.04 };
+	node.eraseLessTime = { 0.05f, 0.05f, 0.04f };
 	m_pAnimInstance->Push_Animation("Claw_Right", node, "Claw_Left");
 
 	node.AnimIndices = { 489, 490, 491 };
 	m_pAnimInstance->Push_Animation("Claw_Right_Standing", node, "Claw_Left_Standing");
 
 	node.AnimIndices = { 492, 493, 494 };
-	node.eraseLessTime = { 0.05, 0.05, 0.04 };
+	node.eraseLessTime = { 0.05f, 0.05f, 0.04f };
 	m_pAnimInstance->Push_Animation("Claw_Left", node, "Claw_Smash");
 
 	node.AnimIndices = { 495, 496, 497 };
 	m_pAnimInstance->Push_Animation("Claw_Left_Standing", node, "Claw_Smash");
 
 	node.AnimIndices = { 498, 499, 500 };
-	node.eraseLessTime = { 0.06, 0.05, 0.3 };
+	node.eraseLessTime = { 0.06f, 0.05f, 0.6f };
 	m_pAnimInstance->Push_Animation("Claw_Smash", node);
 
 	node.AnimIndices = { 198, 199, 200 };
-	node.eraseLessTime = { 0.06, 0.06, 0.03 };
+	node.eraseLessTime = { 0.3f, 1.3f, 0.1f };
 	m_pAnimInstance->Push_Animation("Dash", node);
 
 	////////////// 도끼 애니메이션들 //////////////
@@ -886,15 +947,15 @@ void CPlayer::Add_Animations()
 	m_pAnimInstance->Push_Animation("Axe_Smash_MoveCast", node);
 
 	node.AnimIndices = { 157, 158 };
-	node.eraseLessTime = {  0.01, 0.06 };
+	node.eraseLessTime = {  0.01f, 0.06f };
 	m_pAnimInstance->Push_Animation("Axe_Dash", node);
 
 	node.AnimIndices = { 159, 160, 161, 162 };
-	node.eraseLessTime = { 0.0001, 0.0001, 0.00001, 0.4 };
+	node.eraseLessTime = { 0.0001f, 0.0001f, 0.00001f, 0.4f };
 	m_pAnimInstance->Push_Animation("Axe_Throw", node);
 
-	node.AnimIndices = { 94 };
-	node.eraseLessTime = { 0.1 };
+	node.AnimIndices = { 95 };
+	node.eraseLessTime = { 0.9f };
 	m_pAnimInstance->Push_Animation("Axe_Equip", node);
 
 	//.//////////////////// 슬래셔 애니메이션 //////////////////////////
@@ -924,27 +985,27 @@ void CPlayer::Add_Animations()
 	node.bLoop = false;
 
 	node.AnimIndices = { 440, 441, 442 };
-	node.eraseLessTime = { 0.03, 0.05, 0.04 };
+	node.eraseLessTime = { 0.03f, 0.05f, 0.04f };
 	m_pAnimInstance->Push_Animation("Slasher_Right", node, "Slasher_Left");
 
 	node.AnimIndices = { 443, 444, 445};
-	node.eraseLessTime = { 0.05, 0.05, 0.04 };
+	node.eraseLessTime = { 0.05f, 0.05f, 0.04f };
 	m_pAnimInstance->Push_Animation("Slasher_Left", node, "Slasher_Smash");
 
 	node.AnimIndices = { 446, 447, 448 };
-	node.eraseLessTime = { 0.06, 0.05, 0.3 };
+	node.eraseLessTime = { 0.06f, 0.05f, 0.3f };
 	m_pAnimInstance->Push_Animation("Slasher_Smash", node);
 
 	node.AnimIndices = { 449, 450, 451 };
-	node.eraseLessTime = { 0.001, 0.001, 0.001 };
+	node.eraseLessTime = { 0.001f, 0.001f, 0.001f };
 	m_pAnimInstance->Push_Animation("Slasher_Q", node);
 
-	node.AnimIndices = { 82 };
-	node.eraseLessTime = { 0.02 };
+	node.AnimIndices = { 83 };
+	node.eraseLessTime = { 0.02f };
 	m_pAnimInstance->Push_Animation("Slasher_Equip", node);
 
 	node.AnimIndices = { 82 };
-	node.eraseLessTime = { 0.1 };
+	node.eraseLessTime = { 0.1f };
 	m_pAnimInstance->Push_Animation("Slasher_Ready", node);
 
 	/////////////////////// 메이스 애니메이션 //////////////////////////
@@ -985,23 +1046,93 @@ void CPlayer::Add_Animations()
 	m_pAnimInstance->Push_Animation("Mace_Smash", node);
 
 	node.AnimIndices = { 286, 287, 288 };
-	node.eraseLessTime = { 0.6, 0.06, 0.3 };
-	//node.bResetAfterFinish = false;
+	node.eraseLessTime = { 0.6f, 0.06f, 0.3f };
+	node.bResetAfterFinish = false;
 	m_pAnimInstance->Push_Animation("Mace_Dash", node);
 
 
 	node.AnimIndices = { 290, 291};
-	node.eraseLessTime = { 0.001, 0.5};
+	node.eraseLessTime = { };
 	m_pAnimInstance->Push_Animation("Mace_Spin", node);
 
 	node.bMotionCancel = false;
 
-	node.AnimIndices = { 33 };
-	node.eraseLessTime = { 0.1 };
+	node.AnimIndices = { 34 };
+	node.eraseLessTime = { 0.1f };
 	m_pAnimInstance->Push_Animation("Mace_Equip", node);
+
+
+	/////////////////////// 칼 애니메이션 //////////////////////////
+
+	node.bLoop = true;
+	node.eraseLessTime = {};
+	node.AnimIndices = { 59 };
+	m_pAnimInstance->Push_Animation("Sword_N_Walk", node);
+	node.AnimIndices = { 60 };
+	m_pAnimInstance->Push_Animation("Sword_NE_Walk", node);
+	node.AnimIndices = { 61 };
+	m_pAnimInstance->Push_Animation("Sword_SE_Walk", node);
+	node.AnimIndices = { 62 };
+	m_pAnimInstance->Push_Animation("Sword_S_Walk", node);
+	node.AnimIndices = { 63 };
+	m_pAnimInstance->Push_Animation("Sword_SW_Walk", node);
+	node.AnimIndices = { 64 };
+	m_pAnimInstance->Push_Animation("Sword_NW_Walk", node);
+	node.AnimIndices = { 65 };
+	m_pAnimInstance->Push_Animation("Sword_W_Walk", node);
+	node.AnimIndices = { 66 };
+	m_pAnimInstance->Push_Animation("Sword_E_Walk", node);
+	node.AnimIndices = { 67 };
+	m_pAnimInstance->Push_Animation("Sword_Idle", node);
+
+	node.bLoop = false;
+
+	node.AnimIndices = { 120, 121, 122 };
+	node.eraseLessTime = { 0.15f, 0.15f, 0.15f };
+	m_pAnimInstance->Push_Animation("Sword_Right", node, "Sword_Left");
+
+	node.AnimIndices = { 129, 130, 131 };
+	node.eraseLessTime = { 0.05f, 0.05f, 0.05f };
+	m_pAnimInstance->Push_Animation("Sword_Right_MoveCast", node, "Sword_Left_MoveCast");
+
+	node.AnimIndices = { 123, 124, 125 };
+	node.eraseLessTime = { 0.05f, 0.05f, 0.05f };
+	m_pAnimInstance->Push_Animation("Sword_Left", node, "Sword_Smash");
+
+	node.AnimIndices = { 132, 133, 134 };
+	node.eraseLessTime = { 0.05f, 0.05f, 0.05f };
+	m_pAnimInstance->Push_Animation("Sword_Left_MoveCast", node);
+
+	node.AnimIndices = { 126, 127, 128 };
+	node.eraseLessTime = { 0.05f, 0.05f, 0.35 };
+	m_pAnimInstance->Push_Animation("Sword_Smash", node);
+
+	/*node.AnimIndices = { 135, 136 };
+	node.eraseLessTime = { 0.05f, 0.05f };
+	m_pAnimInstance->Push_Animation("Sword_Smash_MoveCast", node);*/
+
+	node.AnimIndices = {  113, 114 };
+	node.eraseLessTime = {  0.0006f, 0.36f };
+	
+	m_pAnimInstance->Push_Animation("Sword_Dash", node);
+
+
+	node.AnimIndices = { 118};
+	node.eraseLessTime = { 0.03f };
+	m_pAnimInstance->Push_Animation("Sword_Spin", node, "Sword_Spin_Loop");
+
+	node.bLoop = true;
+	node.AnimIndices = { 119 };
+	node.eraseLessTime = { };
+	m_pAnimInstance->Push_Animation("Sword_Spin_Loop", node);
+	node.bLoop = false;
+
+	node.AnimIndices = { 71 };
+	node.eraseLessTime = { 0.1f };
+	m_pAnimInstance->Push_Animation("Sword_Equip", node);
 }
 
-void CPlayer::Skills(const _double& TimeDelta)
+void CPlayer::Skills(const _float& TimeDelta)
 {
 	if (m_eWeaponType == WEAPON_HAND) return;
 	m_bSkill = m_bSkillQ || m_bSkillC || m_bSkillR || m_bSkillE || m_bSkillT;
@@ -1013,7 +1144,7 @@ void CPlayer::Skills(const _double& TimeDelta)
 	Skill_T(TimeDelta);
 }
 
-void CPlayer::Skill_Q(const _double& TimeDelta)
+void CPlayer::Skill_Q(const _float& TimeDelta)
 {
 	if (m_bSkillQ)
 	{
@@ -1045,7 +1176,7 @@ void CPlayer::Skill_Q(const _double& TimeDelta)
 	
 }
 
-void CPlayer::Skill_C(const _double& TimeDelta)
+void CPlayer::Skill_C(const _float& TimeDelta)
 {
 	if (m_bSkillC)
 	{
@@ -1082,7 +1213,7 @@ void CPlayer::Skill_C(const _double& TimeDelta)
 	
 }
 
-void CPlayer::Skill_R(const _double& TimeDelta)
+void CPlayer::Skill_R(const _float& TimeDelta)
 {
 	if (CGameInstance::GetInstance()->Key_Down(DIK_R))
 	{
@@ -1090,12 +1221,30 @@ void CPlayer::Skill_R(const _double& TimeDelta)
 	}
 }
 
-void CPlayer::Skill_E(const _double& TimeDelta)
+void CPlayer::Skill_E(const _float& TimeDelta)
 {
 	if (m_bSkillE)
 	{
-		if (m_pAnimInstance->Animation_Finished())
+		if (m_eWeaponType != WEAPON_SWORD)
 		{
+			if (m_pAnimInstance->Animation_Finished())
+			{
+				_bool bResult = false;
+				bResult = m_Weapons[m_eWeaponType].front()->Skill_E_End();
+
+				if (bResult == true)
+				{
+					m_bSkillE = false;
+					return;
+				}
+			}
+		}
+		else
+		{
+			if (m_pAnimInstance->Animation_Finished(0))
+			{
+				m_pAnimInstance->Next_Animation();
+			}
 			_bool bResult = false;
 			bResult = m_Weapons[m_eWeaponType].front()->Skill_E_End();
 
@@ -1118,7 +1267,7 @@ void CPlayer::Skill_E(const _double& TimeDelta)
 	}
 }
 
-void CPlayer::Skill_T(const _double& TimeDelta)
+void CPlayer::Skill_T(const _float& TimeDelta)
 {
 	if (CGameInstance::GetInstance()->Key_Down(DIK_T))
 	{
@@ -1197,7 +1346,10 @@ void CPlayer::Select_AnimationKey()
 	//	Select_AttackKey();
 	//	//return;
 	//}
-	if (m_bAttack == true && m_eWeaponType == WEAPON_HAND) return;
+
+	// 무브 어택 들어가는 애들은 빼줘야함
+	if (m_bAttack == true && (m_eWeaponType == WEAPON_HAND || m_eWeaponType == WEAPON_MACE)) return;
+
 
 	if (m_bMove == true)
 	{
@@ -1272,7 +1424,7 @@ HRESULT CPlayer::Add_Components()
 	CBounding_OBB::BOUNDINGBOX OBBDesc;
 
 	OBBDesc.eColGroup = COL_PLAYER;
-	OBBDesc.vExtents = _float3(0.5f, 0.5f, 0.5f);
+	OBBDesc.vExtents = _float3(0.4f, 1.0f, 0.4f);
 	OBBDesc.vPosition = _float3(0.f, OBBDesc.vExtents.y, 0.f);
 	OBBDesc.vRotation = _float3(0.f, XMConvertToRadians(0.0f), 0.f);
 
@@ -1289,10 +1441,24 @@ HRESULT CPlayer::Add_Components()
 	AttackColliderDesc.vRotation = _float3(0.f, XMConvertToRadians(0.0f), 0.f);
 
 	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Collider_OBB"),
-		L"Attack_Collider", (CComponent**)&m_pColliderCom[COLLIDER_ATTACK], &AttackColliderDesc)))
+		L"AttackCollider", (CComponent**)&m_pColliderCom[COLLIDER_ATTACK], &AttackColliderDesc)))
 		return E_FAIL;
 
 	m_pColliderCom[COLLIDER_ATTACK]->Set_Enable(false);
+
+
+	//./////////////////////// 밀치기 용도를 위한 콜라이더 ///////////
+	
+	AttackColliderDesc.eColGroup = COL_PLAYERWEAPON;
+	AttackColliderDesc.vExtents = _float3(2.f, 1.0f, 0.6f);
+	AttackColliderDesc.vPosition = _float3(0.f, 0.4f, 1.f);
+	AttackColliderDesc.vRotation = _float3(0.f, XMConvertToRadians(0.0f), 0.f);
+
+	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Collider_OBB"),
+		L"Mace_E_Collider", (CComponent**)&m_pColliderCom[COLLIDER_MACE_E], &AttackColliderDesc)))
+		return E_FAIL;
+
+	m_pColliderCom[COLLIDER_MACE_E]->Set_Enable(false);
 	
 
 	CGameInstance* pGameInstance = CGameInstance::GetInstance();
@@ -1406,13 +1572,30 @@ HRESULT CPlayer::Add_Components()
 	if (FAILED(__super::Add_Component(TEXT("Prototype_GameObject_Mace"), L"Mace", (CGameObject**)&m_Weapons[WEAPON_MACE][0], &ParentDescMace)))
 		return E_FAIL;
 
+	//////////////////////////// 메이스 ///////////////////////////
+	CSword::PARENTDESC		ParentDescSword;
+	ZeroMemory(&ParentDescSword, sizeof ParentDescSword);
+
+	pBone = m_pModelCom->Get_Bone("Weapon01_JNT");
+	if (nullptr == pBone)
+		return E_FAIL;
+
+	ParentDescSword.OffsetMatrix = pBone->Get_OffsetMatrix();
+	ParentDescSword.pCombindTransformationMatrix = pBone->Get_CombinedTransformationMatrixPtr();
+	ParentDescSword.PivotMatrix = m_pModelCom->Get_PivotMatrix();
+	ParentDescSword.pParentWorldMatrix = m_pTransformCom->Get_WorldFloat4x4Ptr();
+
+	m_Weapons[WEAPON_SWORD].push_back(nullptr);
+	if (FAILED(__super::Add_Component(TEXT("Prototype_GameObject_Sword"), L"Sword", (CGameObject**)&m_Weapons[WEAPON_SWORD][0], &ParentDescSword)))
+		return E_FAIL;
+
 	/////////////////////////////////////////////////////////////////////
 	//////////////////////// 갑옷, 장비들 //////////////////////////////
 	//////////////////////////////////////////////////////////////////
 
 
 	//////////////////////////// 바지 ///////////////////////////////////
-	CPlayerParts::PARENTDESC		PantsDesc;
+	/*CPlayerParts::PARENTDESC		PantsDesc;
 	ZeroMemory(&PantsDesc, sizeof PantsDesc);
 
 	pBone = m_pModelCom->Get_Bone("Pelvis_JNT");
@@ -1429,9 +1612,10 @@ HRESULT CPlayer::Add_Components()
 	XMStoreFloat4x4(&PantsDesc.LocalOffsetMatrix, localMatrix);
 
 	if (FAILED(__super::Add_Component(TEXT("Prototype_GameObject_PlayerParts"), L"PlayerPants", nullptr, &PantsDesc)))
-		return E_FAIL;
+		return E_FAIL;*/
 
 	//////////////////////////// 갑옷 ///////////////////////////////////
+	_matrix localMatrix = XMMatrixIdentity();
 	CPlayerParts::PARENTDESC		ArmorDesc;
 	ZeroMemory(&ArmorDesc, sizeof ArmorDesc);
 
@@ -1544,8 +1728,8 @@ void CPlayer::Free()
 {
 	__super::Free();
 
-	/*for (auto& pCollider : m_pColliderCom)
-		Safe_Release(pCollider);*/
+	for (auto& pCollider : m_pColliderCom)
+		Safe_Release(pCollider);
 
 	for (_int i = 0; i < WEAPON_END; i++)
 	{

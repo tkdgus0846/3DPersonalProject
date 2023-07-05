@@ -26,10 +26,7 @@ void CBehavior::AddNode(CBehavior* pNode)
 
 void CBehavior::Set_BlackBoard(CBlackBoard* pBlackBoard)
 {
-	for (auto& deco : m_DecoratorList)
-	{
-		deco->Set_BlackBoard(pBlackBoard);
-	}
+
 
 
 	m_pBlackBoard = pBlackBoard;
@@ -50,7 +47,7 @@ _bool CBehavior::Pass_Decorator()
 
 	for (auto deco : m_DecoratorList)
 	{
-		result = result && deco->Is_Exec();
+		result = result && deco->Is_Exec(m_pBlackBoard);
 		if (result == false)
 			return false;
 	}

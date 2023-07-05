@@ -39,24 +39,46 @@ HRESULT CPaladin::Initialize(void* pArg)
 	m_pAnimInstance->Apply_Animation("Idle");
 
 	m_pTransformCom->Set_Position({ 10.f,0.f,5.f,1.f });
-	m_pTransformCom->Change_Speed(3.0);
+	m_pTransformCom->Change_Speed(m_WalkSpeed);
 
 	m_eRenderGroup = CRenderer::RENDER_NONBLEND;
 
 	return S_OK;
 }
 
-void CPaladin::Tick(_double TimeDelta)
+void CPaladin::Tick(_float TimeDelta)
 {
 	__super::Tick(TimeDelta);
+
+	State();
+	Damaged(TimeDelta);
+	SuperArmor(TimeDelta);
+
+	Select_AnimationKey();
 
 	if (nullptr != m_pRendererCom)
 		m_pRendererCom->Add_RenderGroup((CRenderer::RENDERGROUP)m_eRenderGroup, this);
 }
 
-void CPaladin::Late_Tick(_double TimeDelta)
+void CPaladin::Late_Tick(_float TimeDelta)
 {
 	__super::Late_Tick(TimeDelta);
+
+	CGameInstance* pGameInstance = CGameInstance::GetInstance();
+	Safe_AddRef(pGameInstance);
+
+	if (pGameInstance->isIn_WorldSpace(m_pTransformCom->Get_State(CTransform::STATE_POSITION), 2.f))
+	{
+		if (m_pRendererCom != nullptr)
+			m_pRendererCom->Add_RenderGroup(CRenderer::RENDER_NONBLEND, this);
+		if (m_pBodyColliderCom != nullptr)
+			m_pBodyColliderCom->Add_ColGroup();
+		if (m_pDetectionColliderCom != nullptr)
+			m_pDetectionColliderCom->Add_ColGroup();
+		if (m_pAttackRangeColliderCom != nullptr)
+			m_pAttackRangeColliderCom->Add_ColGroup();
+	}
+	Safe_Release(pGameInstance);
 }
 
 HRESULT CPaladin::Render()
@@ -86,19 +108,30 @@ HRESULT CPaladin::Render()
 
 void CPaladin::OnCollisionEnter(const Collision* collision)
 {
-	if (dynamic_cast<CPlayer*>(collision->OtherGameObject) &&
-		dynamic_cast<CPlayer*>(collision->OtherGameObject)->GetName().compare(L"BodyCollider") &&
-		collision->MyCollider == m_pDetectionColliderCom)
+
+	CPlayer* pPlayer = dynamic_cast<CPlayer*>(collision->OtherGameObject);
+	_bool bPlayerBodyCollider = pPlayer && (collision->OtherCollider->GetName().compare(L"BodyCollider") == 0);
+	_bool bPlayerAttackCollider = pPlayer && (collision->OtherCollider->GetName().compare(L"AttackCollider") == 0);
+
+	if (bPlayerAttackCollider && collision->MyCollider == m_pBodyColliderCom)
 	{
-		m_pBehaviorTreeCom->ChangeData("Target", collision->OtherGameObject);
+		m_isDamaged = true;
 	}
 
-	if (dynamic_cast<CPlayer*>(collision->OtherGameObject) &&
-		dynamic_cast<CPlayer*>(collision->OtherGameObject)->GetName().compare(L"BodyCollider") &&
-		collision->MyCollider == m_pAttackRangeColliderCom)
+	if (bPlayerBodyCollider)
 	{
-		m_pBehaviorTreeCom->ChangeData("InAttackRange", true);
+		if (collision->MyCollider == m_pDetectionColliderCom)
+		{
+			m_pBehaviorTreeCom->ChangeData("Target", collision->OtherGameObject);
+		}
+
+		if (collision->MyCollider == m_pAttackRangeColliderCom)
+		{
+			m_pBehaviorTreeCom->ChangeData("InAttackRange", true);
+		}
 	}
+
+	
 }
 
 void CPaladin::OnCollisionStay(const Collision* collision)
@@ -107,6 +140,16 @@ void CPaladin::OnCollisionStay(const Collision* collision)
 
 void CPaladin::OnCollisionExit(const Collision* collision)
 {
+	CPlayer* pPlayer = dynamic_cast<CPlayer*>(collision->OtherGameObject);
+	_bool bPlayerBodyCollider = pPlayer && (collision->OtherCollider->GetName().compare(L"BodyCollider") == 0);
+	_bool bPlayerAttackCollider = pPlayer && (collision->OtherCollider->GetName().compare(L"AttackCollider") == 0);
+
+
+	/*if (bPlayerAttackCollider && collision->MyCollider == m_pBodyColliderCom)
+	{
+		m_isDamaged = false;
+	}*/
+
 	/*if (dynamic_cast<CPlayer*>(collision->OtherGameObject) &&
 		dynamic_cast<CPlayer*>(collision->OtherGameObject)->GetName().compare(L"BodyCollider") &&
 		collision->MyCollider == m_pDetectionColliderCom)
@@ -115,9 +158,7 @@ void CPaladin::OnCollisionExit(const Collision* collision)
 		m_pBehaviorTreeCom->ChangeData("Target", (CGameObject*)nullptr);
 	}*/
 
-	if (dynamic_cast<CPlayer*>(collision->OtherGameObject) &&
-		dynamic_cast<CPlayer*>(collision->OtherGameObject)->GetName().compare(L"BodyCollider") &&
-		collision->MyCollider == m_pAttackRangeColliderCom)
+	if (bPlayerBodyCollider && collision->MyCollider == m_pAttackRangeColliderCom)
 	{
 		m_pBehaviorTreeCom->ChangeData("InAttackRange", false);
 	}
@@ -130,30 +171,129 @@ void CPaladin::Add_Animations()
 	////////////// 맨손 애니메이션들 //////////////
 	node.bLoop = true;
 
-	node.AnimIndices = { 0 };
-	m_pAnimInstance->Push_Animation("N_Walk", node);
-	node.AnimIndices = { 1 };
-	m_pAnimInstance->Push_Animation("NE_Walk", node);
-	node.AnimIndices = { 2 };
-	m_pAnimInstance->Push_Animation("SE_Walk", node);
-	node.AnimIndices = { 3 };
-	m_pAnimInstance->Push_Animation("S_Walk", node);
-	node.AnimIndices = { 4 };
-	m_pAnimInstance->Push_Animation("SW_Walk", node);
-	node.AnimIndices = { 5 };
-	m_pAnimInstance->Push_Animation("NW_Walk", node);
-	node.AnimIndices = { 6 };
-	m_pAnimInstance->Push_Animation("W_Walk", node);
-	node.AnimIndices = { 7 };
-	m_pAnimInstance->Push_Animation("E_Walk", node);
-	node.AnimIndices = { 8 };
+	node.AnimIndices = { 67 };
 	m_pAnimInstance->Push_Animation("Idle", node);
+
+	node.AnimIndices = { 74 };
+	m_pAnimInstance->Push_Animation("Walk", node);
+
+	node.AnimIndices = { 68 };
+	m_pAnimInstance->Push_Animation("Run", node);
 
 	node.bLoop = false;
 
-	node.AnimIndices = { 486, 487, 488 };
-	node.eraseLessTime = { 0.05, 0.05, 0.04 };
+	node.AnimIndices = { 70, 71, 72 };
+	node.eraseLessTime = { 9999, 999, 0.04 };
+	m_pAnimInstance->Push_Animation("Smash", node);
 
+	node.AnimIndices = { 60 };
+	node.eraseLessTime = {  };
+	m_pAnimInstance->Push_Animation("Damaged", node);
+}
+
+void CPaladin::Attack()
+{
+}
+
+void CPaladin::Damaged(const _float& TimeDelta)
+{
+	if (m_isDamaged == false ) return;
+
+	cout << "Damaged" << endl;
+	m_pBehaviorTreeCom->Stop();
+
+	m_DamagedStunTimeAcc += TimeDelta;
+	if (m_DamagedStunTimeAcc >= m_DamagedStunTime)
+	{
+		m_isDamaged = false;
+		m_isSuperArmor = true;
+		m_DamagedStunTimeAcc = 0.f;
+	}
+}
+
+void CPaladin::SuperArmor(const _float& TimeDelta)
+{
+	if (m_isSuperArmor == false) return;
+	
+	m_pBehaviorTreeCom->Resume();
+
+	m_SuperArmorTimeAcc += TimeDelta;
+	if (m_SuperArmorTimeAcc >= m_SuperArmorTime)
+	{
+		m_isSuperArmor = false;
+		m_SuperArmorTimeAcc = 0.f;
+	}
+}
+
+void CPaladin::State()
+{
+	m_isRun = any_cast<_bool>(m_pBehaviorTreeCom->GetData("IsRun"));
+	m_isWalk = any_cast<_bool>(m_pBehaviorTreeCom->GetData("IsWalk"));
+	m_isAttack1 = any_cast<_bool>(m_pBehaviorTreeCom->GetData("IsAttack1"));
+	// 랜덤 위치는 어디서 잡아주나?
+}
+
+void CPaladin::Select_DamagedKey()
+{
+	if (m_isDamaged)
+	{
+		m_pAnimInstance->Apply_Animation("Damaged");
+	}
+}
+
+void CPaladin::Select_MoveKey()
+{
+	if (m_isRun == true)
+	{
+		m_pAnimInstance->Apply_Animation("Run");
+		m_pTransformCom->Change_Speed(m_RunSpeed);
+	}
+	else if (m_isWalk == true)
+	{
+		m_pAnimInstance->Apply_Animation("Walk");
+		m_pTransformCom->Change_Speed(m_WalkSpeed);
+	}
+		
+}
+
+void CPaladin::Select_IdleKey()
+{
+	m_pAnimInstance->Apply_Animation("Idle");
+}
+
+void CPaladin::Select_AttackKey()
+{
+	if (m_isAttack1)
+	{
+		m_pAnimInstance->Apply_Animation("Smash");
+	}
+}
+
+void CPaladin::Select_AnimationKey()
+{
+	if (m_isDamaged && !m_isSuperArmor)
+	{
+		Select_DamagedKey();
+		return;
+	}
+
+
+	if (m_isAttack1)
+	{
+		Select_AttackKey();
+		return;
+	}
+
+
+	if (m_isWalk == true || m_isRun == true)
+	{
+		Select_MoveKey();
+		return;
+	}
+
+	Select_IdleKey();
+
+		
 }
 
 HRESULT CPaladin::Add_Components()
@@ -191,7 +331,7 @@ HRESULT CPaladin::Add_Components()
 	OBBDesc.vRotation = _float3(0.f, XMConvertToRadians(0.0f), 0.f);
 
 	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Collider_OBB"),
-		COLLIDER_W, (CComponent**)&m_pColliderCom, &OBBDesc)))
+		COLLIDER_W, (CComponent**)&m_pBodyColliderCom, &OBBDesc)))
 		return E_FAIL;
 
 	CBounding_Sphere::BOUNDINGSPHERE SphereDesc;
@@ -205,7 +345,7 @@ HRESULT CPaladin::Add_Components()
 		return E_FAIL;
 
 	SphereDesc.eColGroup = COL_DETECTION;
-	SphereDesc.fRadius = 4.f;
+	SphereDesc.fRadius = 3.f;
 	SphereDesc.vPosition = _float3(0.f, 0.f, 0.f);
 
 	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Collider_Sphere"),
@@ -227,7 +367,16 @@ HRESULT CPaladin::Add_Components()
 	btDesc.pBlackBoard->AddData("Target", (CGameObject*)nullptr);
 	btDesc.pBlackBoard->AddData("InAttackRange", false);
 
-	btDesc.pRootNode->AddNode((CBehavior*)Test(2.0,2.0));
+	btDesc.pBlackBoard->AddData("IsAttack1", false);
+	btDesc.pBlackBoard->AddData("IsWalk", false);
+	btDesc.pBlackBoard->AddData("IsRun", false);
+	btDesc.pBlackBoard->AddData("RandomPos", _float3(0.f, 0.f, 0.f));
+
+
+	
+
+	// 블랙보드 정보를 추가하면 자동으로 데코레이터를 만들면 어떨까?
+	btDesc.pRootNode->AddNode((CBehavior*)Test(3.0f,2.0f));
 
 	if (FAILED(__super::Add_Component(LEVEL_STATIC, TEXT("Prototype_Component_BehaviorTree"), L"Behavior", (CComponent**)&m_pBehaviorTreeCom, &btDesc)))
 		return E_FAIL;
@@ -298,7 +447,7 @@ void CPaladin::Free()
 	Safe_Release(m_pTransformCom);
 	Safe_Release(m_pShaderCom);
 	Safe_Release(m_pRendererCom);
-	Safe_Release(m_pColliderCom);
+	Safe_Release(m_pBodyColliderCom);
 	Safe_Release(m_pBehaviorTreeCom);
 	
 	

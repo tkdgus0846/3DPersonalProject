@@ -23,7 +23,7 @@ HRESULT CChannel::Initialize(ParsingData* pData)
 	return S_OK;
 }
 
-void CChannel::Invalidate_TransformationMatrix(CModel::BONES& Bones, _double TimeAcc, _uint* pCurrentKeyFrameIndex)
+void CChannel::Invalidate_TransformationMatrix(CModel::BONES& Bones, _float TimeAcc, _uint* pCurrentKeyFrameIndex)
 {
 	if (0.0 == TimeAcc)
 		*pCurrentKeyFrameIndex = 0;
@@ -47,7 +47,7 @@ void CChannel::Invalidate_TransformationMatrix(CModel::BONES& Bones, _double Tim
 		while (TimeAcc >= m_KeyFrames[(*pCurrentKeyFrameIndex) + 1].Time)
 			++(*pCurrentKeyFrameIndex);
 
-		_double		Ratio = (TimeAcc - m_KeyFrames[(*pCurrentKeyFrameIndex)].Time) /
+		_float		Ratio = (TimeAcc - m_KeyFrames[(*pCurrentKeyFrameIndex)].Time) /
 			(m_KeyFrames[(*pCurrentKeyFrameIndex) + 1].Time - m_KeyFrames[(*pCurrentKeyFrameIndex)].Time);
 
 		_float3		vSourScale = m_KeyFrames[(*pCurrentKeyFrameIndex)].vScale;
@@ -70,14 +70,15 @@ void CChannel::Invalidate_TransformationMatrix(CModel::BONES& Bones, _double Tim
 	Bones[m_iBoneIndex]->Set_TransformationMatrix(TransformationMatrix);
 }
 
-_int CChannel::Lerp_TransformaitionMatrix(CModel::BONES& Bones, _double duration, _double TimeAcc, _uint srcKeyFrame, KEYFRAME& dstKeyFrame)
+_int CChannel::Lerp_TransformaitionMatrix(CModel::BONES& Bones, _float duration, _float TimeAcc, _uint srcKeyFrame, KEYFRAME& dstKeyFrame)
 {
 	_float3			vScale;
 	_float4			vRotation;
 	_float3			vTranslation;
 
-	_double		Ratio = TimeAcc/duration;
+	_float		Ratio = TimeAcc/duration;
 
+	
 
 	if (Ratio >= 1.f) 
 		return 1;
@@ -107,7 +108,7 @@ _int CChannel::Lerp_TransformaitionMatrix(CModel::BONES& Bones, _double duration
 	return 0;
 }
 
-_double CChannel::Erase_LastFrame()
+_float CChannel::Erase_LastFrame()
 {
 	if (m_KeyFrames.size() < 1) return 0.0;
 
@@ -122,7 +123,7 @@ _double CChannel::Erase_LastFrame()
 	return m_KeyFrames.back().Time;
 }
 
-_double CChannel::Erase_Frames_LessTime(_double time)
+_float CChannel::Erase_Frames_LessTime(_float time)
 {
 	
 	for (auto it = m_KeyFrames.rbegin(); it != m_KeyFrames.rend();)
@@ -137,6 +138,29 @@ _double CChannel::Erase_Frames_LessTime(_double time)
 		
 	}
 	return m_KeyFrames.back().Time;
+
+	/*_float fResultTime = -1.f;
+	for (auto it = m_KeyFrames.begin(); it != m_KeyFrames.end();)
+	{
+		if (time > it->Time)
+		{
+			fResultTime = it->Time;
+			it = m_KeyFrames.erase(it);
+			m_iNumKeyFrames -= 1;
+		}
+		else
+			break;
+
+	}
+	return m_KeyFrames.front().Time;*/
+}
+
+void CChannel::Change_Start_Frame(_float time)
+{
+	for (auto& item : m_KeyFrames)
+	{
+		item.Time -= time;
+	}
 }
 
 CChannel * CChannel::Create(ParsingData* pData)

@@ -20,8 +20,8 @@ public:
 	virtual HRESULT Initialize_Prototype();
 	virtual HRESULT Initialize(void* pArg);
 
-	virtual void Tick(_double TimeDelta) {}
-	virtual void Late_Tick(_double TimeDelta) {}
+	virtual void Tick(_float TimeDelta) {}
+	virtual void Late_Tick(_float TimeDelta) {}
 	virtual HRESULT Render() { return S_OK; }
 
 	const wstring GetName() const { return m_pName; }
@@ -65,8 +65,8 @@ protected:
 public:
 	virtual HRESULT Initialize_Prototype();
 	virtual HRESULT Initialize(void* pArg);
-	virtual void Tick(_double TimeDelta);
-	virtual void Late_Tick(_double TimeDelta);
+	virtual void Tick(_float TimeDelta);
+	virtual void Late_Tick(_float TimeDelta);
 
 	list<class CComponent*> Get_ComponentsByList();
 	unordered_map<wstring, CComponent*>* Get_ComponentsByUmap() { return &m_Components; }

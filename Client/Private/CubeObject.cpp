@@ -31,25 +31,33 @@ HRESULT CCubeObject::Initialize(void* pArg)
 	if (FAILED(Add_Components()))
 		return E_FAIL;
 
-	m_pTransformCom->Set_Position({ 10.f,2.f,10.f,1.f });
-	m_pTransformCom->Scaled({ 4.f,4.f,4.f });
+	/*m_pTransformCom->Set_Position({ 10.f,2.f,10.f,1.f });
+	m_pTransformCom->Scaled({ 4.f,4.f,4.f });*/
 
-	m_eRenderGroup = CRenderer::RENDER_NONBLEND;
+	m_eRenderGroup = CRenderer::RENDER_PRIORITY;
 
 	return S_OK;
 }
 
-void CCubeObject::Tick(_double TimeDelta)
+void CCubeObject::Tick(_float TimeDelta)
 {
 	__super::Tick(TimeDelta);
+}
+
+void CCubeObject::Late_Tick(_float TimeDelta)
+{
+	__super::Late_Tick(TimeDelta);
+
+	
+	CGameInstance* pGameInstance = CGameInstance::GetInstance();
+	Safe_AddRef(pGameInstance);
+
+	m_pTransformCom->Set_State(CTransform::STATE_POSITION, XMLoadFloat4(&pGameInstance->Get_CamPosition()));
+
+	Safe_Release(pGameInstance);
 
 	if (nullptr != m_pRendererCom)
 		m_pRendererCom->Add_RenderGroup((CRenderer::RENDERGROUP)m_eRenderGroup, this);
-}
-
-void CCubeObject::Late_Tick(_double TimeDelta)
-{
-	__super::Late_Tick(TimeDelta);
 }
 
 HRESULT CCubeObject::Render()
@@ -97,16 +105,16 @@ HRESULT CCubeObject::Add_Components()
 		TEXT("Com_Texture"), (CComponent**)&m_pTextureCom)))
 		return E_FAIL;
 
-	CBounding_OBB::BOUNDINGBOX OBBDesc;
+	//CBounding_OBB::BOUNDINGBOX OBBDesc;
 
-	OBBDesc.eColGroup = COL_ENEMY;
-	OBBDesc.vExtents = _float3(0.5f, 0.5f, 0.5f);
-	OBBDesc.vPosition = _float3(0.f, 0.f, 0.f);
-	OBBDesc.vRotation = _float3(0.f, XMConvertToRadians(0.0f), 0.f);
+	//OBBDesc.eColGroup = COL_ENEMY;
+	//OBBDesc.vExtents = _float3(0.5f, 0.5f, 0.5f);
+	//OBBDesc.vPosition = _float3(0.f, 0.f, 0.f);
+	//OBBDesc.vRotation = _float3(0.f, XMConvertToRadians(0.0f), 0.f);
 
-	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Collider_OBB"),
-		COLLIDER_W, (CComponent**)&m_pColliderCom, &OBBDesc)))
-		return E_FAIL;
+	//if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Collider_OBB"),
+	//	COLLIDER_W, (CComponent**)&m_pColliderCom, &OBBDesc)))
+	//	return E_FAIL;
 
 	return S_OK;
 }

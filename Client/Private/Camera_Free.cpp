@@ -37,7 +37,7 @@ HRESULT CCamera_Free::Initialize(void * pArg)
 	return S_OK;
 }
 
-void CCamera_Free::Tick(_double TimeDelta)
+void CCamera_Free::Tick(_float TimeDelta)
 {
 	__super::Tick(TimeDelta);
 
@@ -93,7 +93,7 @@ void CCamera_Free::Tick(_double TimeDelta)
 	Safe_Release(pGameInstance);
 }
 
-void CCamera_Free::Late_Tick(_double TimeDelta)
+void CCamera_Free::Late_Tick(_float TimeDelta)
 {
 }
 

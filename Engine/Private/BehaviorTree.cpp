@@ -9,6 +9,11 @@ void CBehaviorTree::ChangeData(const string& name, any Data)
 		m_pBlackBoard->ChangeData(name, Data);
 }
 
+any CBehaviorTree::GetData(const string& name)
+{
+	return m_pBlackBoard->FindData(name);
+}
+
 CBehaviorTree::CBehaviorTree(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: CComponent(pDevice, pContext)
 {
@@ -36,8 +41,10 @@ HRESULT CBehaviorTree::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CBehaviorTree::Tick(_double TimeDelta)
+void CBehaviorTree::Tick(_float TimeDelta)
 {
+	if (m_bRun == false) return;
+
 	m_pRootNode->Run(TimeDelta);
 }
 

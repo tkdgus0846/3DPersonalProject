@@ -1,3 +1,4 @@
+#include "Shader_Client_Defines.hpp"
 
 matrix			g_WorldMatrix, g_ViewMatrix, g_ProjMatrix;
 float3			g_LightPosition;
@@ -8,13 +9,6 @@ vector			g_vBrushPos;
 float			g_fBrushRadius;
 
 vector			g_vCamPosition;
-
-sampler LinearSampler = sampler_state
-{	
-	Filter = MIN_MAG_MIP_LINEAR;
-	AddressU = WRAP;
-	AddressV = WRAP;
-};
 
 struct VS_IN
 {
@@ -152,6 +146,10 @@ technique11		DefaultTechnique
 {
 	pass Terrain
 	{
+		SetRasterizerState(RS_Default);
+		SetDepthStencilState(DSS_Default, 0);
+		SetBlendState(BS_Default, float4(0.f, 0.f, 0.f, 0.f), 0xffffffff);
+
 		VertexShader = compile vs_5_0 VS_MAIN();
 		GeometryShader = NULL/*compile gs_5_0 GS_MAIN()*/;
 		HullShader = NULL/*compile hs_5_0 HS_MAIN()*/;
@@ -161,6 +159,10 @@ technique11		DefaultTechnique
 
 	pass BrushTerrain
 	{
+		SetRasterizerState(RS_Default);
+		SetDepthStencilState(DSS_Default, 0);
+		SetBlendState(BS_Default, float4(0.f, 0.f, 0.f, 0.f), 0xffffffff);
+
 		VertexShader = compile vs_5_0 VS_MAIN_BRUSH();
 		GeometryShader = NULL/*compile gs_5_0 GS_MAIN()*/;
 		HullShader = NULL/*compile hs_5_0 HS_MAIN()*/;

@@ -201,6 +201,7 @@ call Copy.bat</Command>
     <ClInclude Include="..\Public\CollisionManager.h" />
     <ClInclude Include="..\public\Component.h" />
     <ClInclude Include="..\public\Component_Manager.h" />
+    <ClInclude Include="..\Public\CustomFont.h" />
     <ClInclude Include="..\public\DataParsing.h" />
     <ClInclude Include="..\Public\DebugDraw.h" />
     <ClInclude Include="..\public\Decorator.h" />
@@ -210,6 +211,8 @@ call Copy.bat</Command>
     <ClInclude Include="..\Public\Engine_Function.h" />
     <ClInclude Include="..\Public\Engine_Struct.h" />
     <ClInclude Include="..\Public\Engine_Typedef.h" />
+    <ClInclude Include="..\Public\Font_Manager.h" />
+    <ClInclude Include="..\Public\Frustum.h" />
     <ClInclude Include="..\Public\GameInstance.h" />
     <ClInclude Include="..\public\GameObject.h" />
     <ClInclude Include="..\Public\Graphic_Device.h" />
@@ -262,9 +265,12 @@ call Copy.bat</Command>
     <ClCompile Include="..\Private\CollisionManager.cpp" />
     <ClCompile Include="..\private\Component.cpp" />
     <ClCompile Include="..\private\Component_Manager.cpp" />
+    <ClCompile Include="..\Private\CustomFont.cpp" />
     <ClCompile Include="..\private\DataParsing.cpp" />
     <ClCompile Include="..\Private\DebugDraw.cpp" />
     <ClCompile Include="..\private\Decorator.cpp" />
+    <ClCompile Include="..\Private\Font_Manager.cpp" />
+    <ClCompile Include="..\Private\Frustum.cpp" />
     <ClCompile Include="..\Private\GameInstance.cpp" />
     <ClCompile Include="..\private\GameObject.cpp" />
     <ClCompile Include="..\Private\Graphic_Device.cpp" />

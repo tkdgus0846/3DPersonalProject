@@ -27,7 +27,7 @@ protected:
 	virtual ~CBehavior() = default;
 
 public:
-	virtual RESULT	Run(const _double& TimeDelta, vector<CBehavior*>* LastRunningList = nullptr) PURE;
+	virtual RESULT	Run(const _float& TimeDelta, vector<CBehavior*>* LastRunningList = nullptr) PURE;
 	void			AddNode(CBehavior* pNode);
 	void			Set_BlackBoard(CBlackBoard* pBlackBoard);
 	CBehavior*		Get_Parent() { return m_pParent; }

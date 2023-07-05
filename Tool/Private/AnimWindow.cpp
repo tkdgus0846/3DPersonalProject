@@ -180,7 +180,7 @@ void CAnimWindow::Show_Animations()
 	if (m_pCurAnim != nullptr)
 	{
 		if (m_bAutoPlay == false)
-			m_pCurAnim->Set_TimeAcc((_double)m_fDragValue);
+			m_pCurAnim->Set_TimeAcc((_float)m_fDragValue);
 		else
 			m_fDragValue = m_pCurAnim->Get_TimeAcc();
 		ImGui::DragFloat("Progress", &m_fDragValue, 0.005f, 0.0f, (_float)m_pCurAnim->Get_Duration());

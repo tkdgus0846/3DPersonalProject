@@ -214,8 +214,8 @@ namespace Engine
 		_uint						iNumChannels;
 		vector<ChannelParsingData>	ChannelDatas;
 		_char						szName[MAX_PATH];
-		_double						Duration;
-		_double						TickPerSecond;
+		double						Duration;
+		double						TickPerSecond;
 	};
 
 	struct ModelParsingData : public ParsingData

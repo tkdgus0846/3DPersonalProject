@@ -3,6 +3,7 @@
 #include "GameInstance.h"
 #include "Player.h"
 #include "Camera_Player_Main.h"
+#include <Monster.h>
 
 CMace::CMace(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: CWeapon(pDevice, pContext)
@@ -27,6 +28,8 @@ HRESULT CMace::Initialize(void* pArg)
 		return E_FAIL;
 
 
+	m_Damage = 10.f;
+
 	// 여기에 오프셋 설정 같은걸 다시 해줘야한다.
 	m_pTransformCom->Scaled(_float3(0.012f, 0.012f, 0.012f));
 	//m_pTransformCom->Set_Position({ -2.f,0.f,0.f,1.f });
@@ -37,14 +40,14 @@ HRESULT CMace::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CMace::Tick(_double TimeDelta)
+void CMace::Tick(_float TimeDelta)
 {
 	__super::Tick(TimeDelta);
 
 	
 }
 
-void CMace::Late_Tick(_double TimeDelta)
+void CMace::Late_Tick(_float TimeDelta)
 {
 	__super::Late_Tick(TimeDelta);
 }
@@ -136,7 +139,7 @@ void CMace::Free()
 	__super::Free();
 }
 
-void CMace::Skill_Q(const _double& TimeDelta)
+void CMace::Skill_Q(const _float& TimeDelta)
 {
 	if (m_bMaceDashFinished == true) return;
 
@@ -147,7 +150,7 @@ void CMace::Skill_Q(const _double& TimeDelta)
 		m_pPlayer->m_pTransformCom->Go_Dir(XMLoadFloat3(&m_DashDir), m_MaceDashInitSpeed, m_MaceDashAccel, m_MaceDashTimeAcc, m_pPlayer->m_pNavigationCom);
 	}
 
-	_double height = m_MaceDashJumpOriginHeight + (m_MaceDashJumpSpeed * m_MaceDashTimeAcc) - (0.5 * m_MaceDashJumpGravity * m_MaceDashTimeAcc * m_MaceDashTimeAcc);
+	_float height = m_MaceDashJumpOriginHeight + (m_MaceDashJumpSpeed * m_MaceDashTimeAcc) - (0.5 * m_MaceDashJumpGravity * m_MaceDashTimeAcc * m_MaceDashTimeAcc);
 
 	if (m_pPlayer->Compute_NavMesh_Height() <= height)
 	{
@@ -168,7 +171,7 @@ void CMace::Skill_Q(const _double& TimeDelta)
 	}
 }
 
-void CMace::Skill_E(const _double& TimeDelta)
+void CMace::Skill_E(const _float& TimeDelta)
 {
 	m_MaceDashTimeAcc += TimeDelta;
 	if ((m_MaceSpinInitSpeed + (m_MaceSpinAccel * m_MaceDashTimeAcc)) >= 0.f)
@@ -186,15 +189,17 @@ void CMace::Skill_Q_Setting()
 {
 	XMStoreFloat3(&m_DashDir, m_pPlayer->m_pTransformCom->Get_State(CTransform::STATE_LOOK));
 	m_MaceDashJumpOriginHeight = m_pPlayer->m_pTransformCom->Get_State(CTransform::STATE_POSITION).m128_f32[1];
-	m_MaceDashTimeAcc = 0.0;
+	m_MaceDashTimeAcc = 0.0f;
 	//m_bSlasherDashFinished = false;
 	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_Dash");
 }
 
 void CMace::Skill_E_Setting()
 {
+	m_pPlayer->Collider_On(CPlayer::COLLIDER_MACE_E);
+
 	XMStoreFloat3(&m_DashDir, m_pPlayer->m_pTransformCom->Get_State(CTransform::STATE_LOOK));
-	m_MaceDashTimeAcc = 0.0;
+	m_MaceDashTimeAcc = 0.0f;
 	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_Spin");
 }
 
@@ -216,48 +221,49 @@ _bool CMace::Skill_E_End()
 	{
 		bResult = true;
 		m_bMaceSpinFinished = false;
+		m_pPlayer->Collider_Off(CPlayer::COLLIDER_MACE_E);
 	}
 	return bResult;
 }
 
 void CMace::N_Walk_Animation()
 {
-	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_N_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_N_Walk");
 }
 
 void CMace::NE_Walk_Animation()
 {
-	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_NE_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_NE_Walk");
 }
 
 void CMace::E_Walk_Animation()
 {
-	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_E_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_E_Walk");
 }
 
 void CMace::SE_Walk_Animation()
 {
-	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_SE_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_SE_Walk");
 }
 
 void CMace::S_Walk_Animation()
 {
-	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_S_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_S_Walk");
 }
 
 void CMace::SW_Walk_Animation()
 {
-	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_SW_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_SW_Walk");
 }
 
 void CMace::W_Walk_Animation()
 {
-	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_W_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_W_Walk");
 }
 
 void CMace::NW_Walk_Animation()
 {
-	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_NW_Walk", m_pPlayer->m_bAttack == true ? ANIM_LOWERBODY : ANIM_ALLBODY);
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_NW_Walk");
 }
 
 void CMace::Idle_Animation()
@@ -272,10 +278,53 @@ void CMace::Equip_Animation()
 
 void CMace::Move_Attack_Animation()
 {
-	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_Right", ANIM_UPPERBODY);
+	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_Right");
 }
 
 void CMace::Standing_Attack_Animation()
 {
 	m_pPlayer->m_pAnimInstance->Apply_Animation("Mace_Right");
+}
+
+void CMace::SkillQ_Collision_Enter(const Collision* collision)
+{
+}
+
+void CMace::SkillQ_Collision_Stay(const Collision* collision)
+{
+}
+
+void CMace::SkillQ_Collision_Exit(const Collision* collision)
+{
+}
+
+void CMace::SkillE_Collision_Enter(const Collision* collision)
+{
+	
+	
+}
+
+void CMace::SkillE_Collision_Stay(const Collision* collision)
+{
+	CMonster* monster = (CMonster*)collision->OtherGameObject;
+	CCollider* collider = m_pPlayer->m_pColliderCom[CPlayer::COLLIDER_MACE_E];
+
+	if (monster != nullptr && collider == collision->MyCollider)
+	{
+		_vector vLookDir = m_pPlayer->m_pTransformCom->Get_State(CTransform::STATE_LOOK);
+
+		CTransform* monsterTransform = (CTransform*)monster->Get_Component(TRANSFORM_W);
+
+		if (monsterTransform == nullptr) return;
+
+		_vector vPos = monsterTransform->Get_State(CTransform::STATE_POSITION);
+		monsterTransform->Go_Dir(vPos + vLookDir, 0.015f, nullptr);
+
+	}
+}
+
+
+
+void CMace::SkillE_Collision_Exit(const Collision* collision)
+{
 }

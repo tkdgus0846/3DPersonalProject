@@ -6,6 +6,8 @@
 #include "Component_Manager.h"
 #include "CollisionManager.h"
 #include "DataParsing.h"
+#include "Font_Manager.h"
+#include "Frustum.h"
 
 #include "Layer.h"
 
@@ -23,7 +25,11 @@ CGameInstance::CGameInstance()
 	, m_pLight_Manager{ CLight_Manager::GetInstance() }
 	, m_pCollisionManager{ CCollisionManager::GetInstance()}
 	, m_pCameraManager{ CCamera_Manager::GetInstance()}
+	, m_pFont_Manager{ CFont_Manager::GetInstance() }
+	, m_pFrustum{ CFrustum::GetInstance() }
 {
+	Safe_AddRef(m_pFrustum);
+	Safe_AddRef(m_pFont_Manager);
 	Safe_AddRef(m_pCollisionManager);
 	Safe_AddRef(m_pLight_Manager);
 	Safe_AddRef(m_pPipeLine);
@@ -56,10 +62,13 @@ HRESULT CGameInstance::Initialize_Engine(HINSTANCE hInst, _uint iNumLevels, cons
 	if (FAILED(m_pComponent_Manager->Reserve_Containers(iNumLevels)))
 		return E_FAIL;
 
+	if (FAILED(m_pFrustum->Initialize()))
+		return E_FAIL;
+
 	return S_OK;
 }
 
-void CGameInstance::Tick_Engine(_double TimeDelta)
+void CGameInstance::Tick_Engine(_float TimeDelta)
 {
 	if (nullptr == m_pLevel_Manager || 
 		nullptr == m_pObject_Manager || 
@@ -72,6 +81,8 @@ void CGameInstance::Tick_Engine(_double TimeDelta)
 	m_pObject_Manager->Tick(TimeDelta);
 
 	m_pPipeLine->Tick();
+
+	m_pFrustum->Tick();
 		
 	m_pObject_Manager->Late_Tick(TimeDelta);
 
@@ -193,7 +204,7 @@ bool CGameInstance::Mouse_Up(CInput_Device::MOUSEKEYSTATE eMouseID)
 	return m_pInput_Device->Mouse_Up(eMouseID);
 }
 
-_double CGameInstance::Get_Timer(const _tchar * pTimerTag)
+_float CGameInstance::Get_Timer(const _tchar * pTimerTag)
 {
 	if (nullptr == m_pTimer_Manager)
 		return  0.0;
@@ -555,6 +566,30 @@ void CGameInstance::Off_Shake()
 	m_pCameraManager->Off_Shake();
 }
 
+HRESULT CGameInstance::Add_Fonts(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const _tchar* pFontTag, const _tchar* pFontFilePath)
+{
+	if (nullptr == m_pFont_Manager)
+		return E_FAIL;
+
+	return m_pFont_Manager->Add_Fonts(pDevice, pContext, pFontTag, pFontFilePath);
+}
+
+HRESULT CGameInstance::Render_Font(const _tchar* pFontTag, const _tchar* pText, const _float2& vPosition, _fvector vColor, float fRotation, const _float2& vOrigin, _float fScale)
+{
+	if (nullptr == m_pFont_Manager)
+		return E_FAIL;
+
+	return m_pFont_Manager->Render_Font(pFontTag, pText, vPosition, vColor, fRotation, vOrigin, fScale);
+}
+
+_bool CGameInstance::isIn_WorldSpace(_fvector vWorldPos, _float fRange)
+{
+	if (nullptr == m_pFrustum)
+		return false;
+
+	return m_pFrustum->isIn_WorldSpace(vWorldPos, fRange);
+}
+
 void CGameInstance::Release_Engine()
 {	
 	CGameInstance::GetInstance()->DestroyInstance();
@@ -575,6 +610,10 @@ void CGameInstance::Release_Engine()
 
 	CLight_Manager::GetInstance()->DestroyInstance();
 
+	CFont_Manager::GetInstance()->DestroyInstance();
+
+	CFrustum::GetInstance()->DestroyInstance();
+
 	CInput_Device::GetInstance()->DestroyInstance();
 
 	CGraphic_Device::GetInstance()->DestroyInstance();
@@ -582,6 +621,8 @@ void CGameInstance::Release_Engine()
 
 void CGameInstance::Free()
 {
+	Safe_Release(m_pFrustum);
+	Safe_Release(m_pFont_Manager);
 	Safe_Release(m_pCameraManager);
 	Safe_Release(m_pLight_Manager);
 	Safe_Release(m_pCollisionManager);

@@ -46,7 +46,7 @@ HRESULT CAnimation::Initialize(ParsingData* pData)
 	return S_OK;
 }
 
-void CAnimation::Invalidate_TransformationMatrix(CModel::BONES& Bones, _double TimeDelta)
+void CAnimation::Invalidate_TransformationMatrix(CModel::BONES& Bones, _float TimeDelta)
 {
 	// 끝났으면 무조건 리턴하게 하면 안된다. 끝나고 포즈를 유지해야하는 경우가 있기 때문이다.
 	if (m_isFinished == true) return;
@@ -64,6 +64,7 @@ void CAnimation::Invalidate_TransformationMatrix(CModel::BONES& Bones, _double T
 		{
 			m_isFinished = true;
 			m_TimeAcc = 0.f;
+			return;
 		}
 			
 	}
@@ -79,13 +80,15 @@ void CAnimation::Invalidate_TransformationMatrix(CModel::BONES& Bones, _double T
 	}
 }
 
-void CAnimation::Invalidate_TransformationMatrix_Upper(CModel::BONES& Bones, _double TimeDelta, const unordered_set<_int>& UpperSet)
+void CAnimation::Invalidate_TransformationMatrix_Upper(CModel::BONES& Bones, _float TimeDelta, const unordered_set<_int>& UpperSet)
 {
 	// 끝났으면 무조건 리턴하게 하면 안된다. 끝나고 포즈를 유지해야하는 경우가 있기 때문이다.
 	if (m_isFinished == true) return;
 
 	if (m_isControlManual == false)
 		m_TimeAcc += m_TickPerSecond * TimeDelta;
+
+	//cout << m_TimeAcc << endl;
 
 	if (m_TimeAcc >= m_Duration)
 	{
@@ -118,7 +121,7 @@ void CAnimation::Invalidate_TransformationMatrix_Upper(CModel::BONES& Bones, _do
 	}
 }
 
-void CAnimation::Invalidate_TransformationMatrix_Lower(CModel::BONES& Bones, _double TimeDelta, const unordered_set<_int>& LowerSet)
+void CAnimation::Invalidate_TransformationMatrix_Lower(CModel::BONES& Bones, _float TimeDelta, const unordered_set<_int>& LowerSet)
 {
 	// 끝났으면 무조건 리턴하게 하면 안된다. 끝나고 포즈를 유지해야하는 경우가 있기 때문이다.
 	if (m_isFinished == true) return;
@@ -157,10 +160,14 @@ void CAnimation::Invalidate_TransformationMatrix_Lower(CModel::BONES& Bones, _do
 	}
 }
 
-_int CAnimation::Lerp_NextAnimation(CAnimation* pNextAnimation, CModel::BONES& Bones, _double Duration, _double LerpTimeAcc, unordered_set<_int>* BoneIndex)
+_int CAnimation::Lerp_NextAnimation(CAnimation* pNextAnimation, CModel::BONES& Bones, _float Duration, _float LerpTimeAcc, unordered_set<_int>* BoneIndex)
 {
 	_int iChannelIndex = 0;
 	_int iResult = 1;
+
+	// 디버그 용이니까 지워라.
+	_int debugSrcFrame = 0;
+	
 
 	for (auto& pPrevChannel : m_Channels)
 	{
@@ -172,8 +179,14 @@ _int CAnimation::Lerp_NextAnimation(CAnimation* pNextAnimation, CModel::BONES& B
 			if (nullptr == pNextChannel) 
 				return -1;
 
-			if (pPrevChannel->Get_BoneIndex() == pNextChannel->Get_BoneIndex() && (BoneIndex == nullptr || BoneIndex->find(pPrevChannel->Get_BoneIndex()) != BoneIndex->end()))
+			if ((pPrevChannel->Get_BoneIndex() == pNextChannel->Get_BoneIndex()) && (BoneIndex == nullptr || (BoneIndex->find(pPrevChannel->Get_BoneIndex()) != BoneIndex->end() && BoneIndex->find(pNextChannel->Get_BoneIndex()) != BoneIndex->end())))
 			{
+				// 디버그용
+				/*if (BoneIndex != nullptr)
+					cout << "디버그 진입!" << endl;*/
+				if (debugSrcFrame < m_ChannelCurrentKeyFrames[iChannelIndex])
+					debugSrcFrame = m_ChannelCurrentKeyFrames[iChannelIndex];
+
 				_int result = pPrevChannel->Lerp_TransformaitionMatrix(Bones, Duration, LerpTimeAcc, m_ChannelCurrentKeyFrames[iChannelIndex], pNextChannel->Get_FirstKeyFrame());
 
 				//cout << "Hit " << result << " BoneIndex:" << BoneIndex << " LerpTime" << LerpTimeAcc<< endl;
@@ -186,31 +199,54 @@ _int CAnimation::Lerp_NextAnimation(CAnimation* pNextAnimation, CModel::BONES& B
 		iChannelIndex++;
 	}
 
+	// 가장 컸던 소스 키프레임이 0 이라는 말은 첫번째와 보간하는게 맞음.
+	//cout << "가장 컸던 소스 키프레임 " << debugSrcFrame << endl;
+	if (debugSrcFrame == 0)
+		int i = 2;
+
 	return iResult;
 }
 
 void CAnimation::Erase_LastFrame_Animation()
 {
-	_double lastTime = -1.f;
+	_float lastTime = -1.f;
 	for (auto& channel : m_Channels)
 	{
-		_double tmpTime = channel->Erase_LastFrame();
+		_float tmpTime = channel->Erase_LastFrame();
 		if (lastTime < tmpTime)
 			lastTime = tmpTime;
 	}
 	m_Duration = lastTime;
 }
 
-void CAnimation::Erase_Frames_LessTime(_double time)
+void CAnimation::Erase_Frames_LessTime(_float time)
 {
-	_double lastTime = -1.f;
+	_float lastTime = -1.f;
 	for (auto& channel : m_Channels)
 	{
-		_double tmpTime = channel->Erase_Frames_LessTime(time);
+		_float tmpTime = channel->Erase_Frames_LessTime(time);
 		if (lastTime < tmpTime)
 			lastTime = tmpTime;
 	}
 	m_Duration = lastTime;
+
+	//// 내가 지웠던 가장 큰 프레임의 시간 그 다음으로 가장 작은 프레임을 찾아서 첫번째 프레임으로 만들어준다. 
+	//_float lastTime = 99999.f;
+	//for (auto& channel : m_Channels)
+	//{
+	//	_float tmpTime = channel->Erase_Frames_LessTime(time);
+	//	if (lastTime > tmpTime)
+	//		lastTime = tmpTime;
+	//}
+
+	//if (time > lastTime)
+	//	m_Duration -= lastTime;
+
+	//for (auto& channel : m_Channels)
+	//{
+	//	channel->Change_Start_Frame(lastTime);
+	//}
+
 }
 
 CAnimation * CAnimation::Create(ParsingData* pData)

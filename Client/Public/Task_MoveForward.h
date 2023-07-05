@@ -12,7 +12,7 @@ protected:
 	virtual ~CTask_MoveForward() = default;
 
 public:
-	virtual RESULT Run(const _double & TimeDelta, vector<CBehavior*>*LastRunningList = nullptr);
+	virtual RESULT Run(const _float & TimeDelta, vector<CBehavior*>*LastRunningList = nullptr);
 
 public:
 	static CTask_MoveForward* Create();

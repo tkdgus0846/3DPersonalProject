@@ -52,13 +52,13 @@ public:
 	virtual HRESULT Initialize_Prototype(const char* pModelFilePath, _fmatrix PivotMatrix);
 	virtual HRESULT Initialize(void* pArg);
 
-	virtual void Tick(_double TimeDelta) {};
+	virtual void Tick(_float TimeDelta) {};
 	virtual HRESULT Render(_uint iMeshIndex);
 
 public:
-	void Play_Animation(_double TimeDelta);
-	void Play_UpperBody_Animation(_double TimeDelta);
-	void Play_LowerBody_Animation(_double TimeDelta);
+	void Play_Animation(_float TimeDelta);
+	void Play_UpperBody_Animation(_float TimeDelta);
+	void Play_LowerBody_Animation(_float TimeDelta);
 
 public:
 	HRESULT Bind_Material(class CShader* pShader, const char* pConstantName, _uint iMeshIndex, aiTextureType MaterialType);
@@ -70,7 +70,7 @@ public:
 	_bool Is_Changing_Animation(ANIMTYPE eType = ANIM_ALLBODY);
 
 	void Erase_LastFrame_Animation(_uint iIndex);
-	void Erase_Frames_LessTime(_uint iIndex, _double time);
+	void Erase_Frames_LessTime(_uint iIndex, _float time);
 	void Remove_Mesh(const string& name, _uint iBoneNum);
 	void Motion_Cancel() { m_iPrevAnimIndex = m_iCurrentAnimIndex; }
 
@@ -81,8 +81,10 @@ private:
 	_bool Collect_UpperBodyBones_ByParentIndex(_int iCurIndex, _int iParentIndex);
 	_bool Collect_LowerBodyBones_ByParentIndex(_int iCurIndex, _int iParentIndex);
 
+	_bool Lerp_Finished(ANIMTYPE eCurType);
+
 	_bool Is_Changing_Animation(_int& iPrevIndex, const _int& iCurIndex);
-	_bool Lerp_NextAnimation(_int& iPrevAnimIndex, _int& iCurrentAnimIndex, _double& lerpTimeAcc, const _double& TimeDelta, const _double& lerpTimes, unordered_set<_int>* BoneIndex = nullptr);
+	_bool Lerp_NextAnimation(_int& iPrevAnimIndex, _int& iCurrentAnimIndex, _float& lerpTimeAcc, const _float& TimeDelta, const _float& lerpTimes, unordered_set<_int>* BoneIndex = nullptr);
 	ANIMCHANGE Decide_ChangeAnimState(ANIMTYPE eCurType);
 
 private: /* For.Meshes  */
@@ -108,15 +110,18 @@ public:
 private:
 	_int							m_iCurrentAnimIndex = { -1 };
 	_int							m_iPrevAnimIndex = { -1 };
-	_double							m_lerpTimeAcc = { 0.0 };
+	_float							m_lerpTimeAcc = { 0.0f };
+	_bool							m_bLerpFinished = { false };
 
 	_int							m_iUpperCurrentAnimIndex = { -1 };
 	_int							m_iUpperPrevAnimIndex = { -1 };
-	_double							m_UpperLerpTimeAcc = { 0.0 };
+	_float							m_UpperLerpTimeAcc = { 0.0f };
+	_bool							m_bUpperLerpFinished = { false };
 
 	_int							m_iLowerCurrentAnimIndex = { -1 };
 	_int							m_iLowerPrevAnimIndex = { -1 };
-	_double							m_LowerLerpTimeAcc = { 0.0 };
+	_float							m_LowerLerpTimeAcc = { 0.0f };
+	_bool							m_bLowerLerpFinished = { false };
 
 
 	_bool							m_bChange_AllBodyToUpperBody = { false };

@@ -25,8 +25,8 @@ private:
 public:
 	virtual HRESULT Initialize_Prototype() override;
 	virtual HRESULT Initialize(void* pArg) override;
-	virtual void Tick(_double TimeDelta) override;
-	virtual void Late_Tick(_double TimeDelta) override;
+	virtual void Tick(_float TimeDelta) override;
+	virtual void Late_Tick(_float TimeDelta) override;
 	virtual HRESULT Render() override;
 
 	void ChooseType(TYPE type, _fmatrix matrix = XMMatrixIdentity());

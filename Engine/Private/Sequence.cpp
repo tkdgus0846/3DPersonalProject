@@ -1,6 +1,6 @@
 #include "..\Public\Sequence.h"
 
-CSequence::RESULT CSequence::Run(const _double& TimeDelta, vector<CBehavior*>* LastRunningList)
+CSequence::RESULT CSequence::Run(const _float& TimeDelta, vector<CBehavior*>* LastRunningList)
 {
 	if (Pass_Decorator() == false)
 		return RESULT(FAIL);

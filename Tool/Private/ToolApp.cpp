@@ -42,7 +42,7 @@ HRESULT CToolApp::Initialize()
 	return S_OK;
 }
 
-void CToolApp::Tick(_double TimeDelta)
+void CToolApp::Tick(_float TimeDelta)
 {
 	if (nullptr == m_pGameInstance)
 		return;

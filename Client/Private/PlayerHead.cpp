@@ -35,14 +35,14 @@ HRESULT CPlayerHead::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CPlayerHead::Tick(_double TimeDelta)
+void CPlayerHead::Tick(_float TimeDelta)
 {
 	__super::Tick(TimeDelta);
 
 	
 }
 
-void CPlayerHead::Late_Tick(_double TimeDelta)
+void CPlayerHead::Late_Tick(_float TimeDelta)
 {
 	__super::Late_Tick(TimeDelta);
 }

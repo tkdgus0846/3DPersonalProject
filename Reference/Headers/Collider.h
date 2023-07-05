@@ -19,12 +19,14 @@ public:
 	virtual HRESULT Initialize_Prototype(TYPE eColliderType);
 	virtual HRESULT Initialize(class CBounding* pBounding, void* pArg);
 
-	virtual void Tick(_double TimeDelta) override;
-	virtual void Late_Tick(_double TimeDelta) override;
+	virtual void Tick(_float TimeDelta) override;
+	virtual void Late_Tick(_float TimeDelta) override;
 
 	void OnCollisionEnter(const Collision* collision);
 	void OnCollisionStay(const Collision* collision);
 	void OnCollisionExit(const Collision* collision);
+
+	void Add_ColGroup(COLGROUP eColGroup = COL_END);
 
 public:
 	void Set_Enable(_bool bEnabled) { m_bEnabled = bEnabled; }
@@ -32,6 +34,9 @@ public:
 
 	void Change_ColGroup(COLGROUP eGroup) { m_eColGroup = eGroup; }
 	void Erase_FromOtherCollisionList();
+
+private:
+	void Erase_NotEnabledCollision();
 	
 
 #ifdef _DEBUG

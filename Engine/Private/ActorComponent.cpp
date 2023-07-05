@@ -37,7 +37,7 @@ HRESULT CActorComponent::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CActorComponent::Tick(_double TimeDelta)
+void CActorComponent::Tick(_float TimeDelta)
 {
 	if (m_bEnabled == false) return;
 
@@ -47,7 +47,7 @@ void CActorComponent::Tick(_double TimeDelta)
 		m_pRendererCom->Add_RenderGroup(CRenderer::RENDER_NONBLEND, this);
 }
 
-void CActorComponent::Late_Tick(_double TimeDelta)
+void CActorComponent::Late_Tick(_float TimeDelta)
 {
 	if (m_bEnabled == false) return;
 

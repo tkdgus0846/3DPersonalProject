@@ -39,7 +39,7 @@ HRESULT CCamera_Player_Main::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CCamera_Player_Main::Tick(_double TimeDelta)
+void CCamera_Player_Main::Tick(_float TimeDelta)
 {
 	__super::Tick(TimeDelta);
 	
@@ -59,7 +59,7 @@ void CCamera_Player_Main::Tick(_double TimeDelta)
 	Safe_Release(pGameInstance);
 }
 
-void CCamera_Player_Main::Late_Tick(_double TimeDelta)
+void CCamera_Player_Main::Late_Tick(_float TimeDelta)
 {
 }
 
@@ -68,7 +68,7 @@ HRESULT CCamera_Player_Main::Render()
 	return S_OK;
 }
 
-void CCamera_Player_Main::Shake(const _double& TimeDelta)
+void CCamera_Player_Main::Shake(const _float& TimeDelta)
 {
 	// 오리진 포스가 바뀐경우를 체크
 

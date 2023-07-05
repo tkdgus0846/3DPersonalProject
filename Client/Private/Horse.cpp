@@ -42,17 +42,29 @@ HRESULT CHorse::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CHorse::Tick(_double TimeDelta)
+void CHorse::Tick(_float TimeDelta)
 {
 	__super::Tick(TimeDelta);
-
-	if (nullptr != m_pRendererCom)
-		m_pRendererCom->Add_RenderGroup((CRenderer::RENDERGROUP)m_eRenderGroup, this);
+	// 틱에서 프러스텀을 만들고있으므로 그 뒤인 레이트틱에 처리를해줘야한다.
 }
 
-void CHorse::Late_Tick(_double TimeDelta)
+void CHorse::Late_Tick(_float TimeDelta)
 {
 	__super::Late_Tick(TimeDelta);
+
+	CGameInstance* pGameInstance = CGameInstance::GetInstance();
+	Safe_AddRef(pGameInstance);
+
+	if (pGameInstance->isIn_WorldSpace(m_pTransformCom->Get_State(CTransform::STATE_POSITION),2.f))
+	{
+		if (m_pRendererCom != nullptr)
+			m_pRendererCom->Add_RenderGroup(CRenderer::RENDER_NONBLEND, this);
+		if (m_pColliderCom != nullptr)
+			m_pColliderCom->Add_ColGroup();
+	}
+		
+
+	Safe_Release(pGameInstance);
 }
 
 HRESULT CHorse::Render()

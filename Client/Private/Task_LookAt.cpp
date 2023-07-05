@@ -5,7 +5,7 @@
 #include "Paladin.h"
 #include "Transform.h"
 
-CTask_LookAt::RESULT CTask_LookAt::Run(const _double& TimeDelta, vector<CBehavior*>* LastRunningList)
+CTask_LookAt::RESULT CTask_LookAt::Run(const _float& TimeDelta, vector<CBehavior*>* LastRunningList)
 {
 	if (Pass_Decorator() == false)
 		return RESULT(FAIL);
@@ -16,7 +16,7 @@ CTask_LookAt::RESULT CTask_LookAt::Run(const _double& TimeDelta, vector<CBehavio
 
 	if (m_TurnTime <= m_TimeAcc)
 	{
-		m_TimeAcc = 0.0;
+		m_TimeAcc = 0.0f;
 		return RESULT(SUCCESS);
 	}
 	else
@@ -39,4 +39,5 @@ CTask_LookAt* CTask_LookAt::Create()
 
 void CTask_LookAt::Free()
 {
+	__super::Free();
 }

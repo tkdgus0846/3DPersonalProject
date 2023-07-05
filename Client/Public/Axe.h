@@ -16,8 +16,8 @@ protected:
 public:
 	virtual HRESULT Initialize_Prototype() override;
 	virtual HRESULT Initialize(void* pArg) override;
-	virtual void Tick(_double TimeDelta) override;
-	virtual void Late_Tick(_double TimeDelta) override;
+	virtual void Tick(_float TimeDelta) override;
+	virtual void Late_Tick(_float TimeDelta) override;
 	virtual HRESULT Render() override;
 
 	virtual HRESULT Add_Components() override;
@@ -31,8 +31,8 @@ public:
 	virtual void Free() override;
 
 	// CWeapon을(를) 통해 상속됨
-	virtual void Skill_Q(const _double& TimeDelta) override;
-	virtual void Skill_E(const _double& TimeDelta) override;
+	virtual void Skill_Q(const _float& TimeDelta) override;
+	virtual void Skill_E(const _float& TimeDelta) override;
 	virtual void Skill_Q_Setting() override;
 	virtual void Skill_E_Setting() override;
 	virtual _bool Skill_Q_End() override;
@@ -53,9 +53,9 @@ public:
 private:
 	// 도끼 Q 스킬 변수들
 	_float3						m_DashDir;
-	_double						m_AxeDashTimeAcc = { 0.0 };
-	const _double				m_AxeDashAccel = { -4.1 };
-	const _double				m_AxeDashInitSpeed = { 1.21 };
+	_float						m_AxeDashTimeAcc = { 0.0f };
+	const _float				m_AxeDashAccel = { -4.1f };
+	const _float				m_AxeDashInitSpeed = { 1.21f };
 	_bool						m_bAxeDashFinished = { false };	
 };
 

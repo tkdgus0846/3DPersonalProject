@@ -37,6 +37,7 @@
 #include <algorithm>
 #include <string>
 #include <string.h>
+#include <functional>
 
 #include <locale>
 #include <codecvt>

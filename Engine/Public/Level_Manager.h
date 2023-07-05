@@ -16,8 +16,8 @@ private:
 
 public:
 	HRESULT Open_Level(_uint iLevelIndex, class CLevel* pNewLevel);
-	void Tick(_double TimeDelta);
-	void Late_Tick(_double TimeDelta);
+	void Tick(_float TimeDelta);
+	void Late_Tick(_float TimeDelta);
 
 	_uint Get_CurLevelIndex() const { return m_iLevelIndex; }
 

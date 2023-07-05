@@ -40,7 +40,7 @@ HRESULT CCamera_Main::Initialize(void * pArg)
 	return S_OK;
 }
 
-void CCamera_Main::Tick(_double TimeDelta)
+void CCamera_Main::Tick(_float TimeDelta)
 {
 	CGameInstance* pGameInstance = CGameInstance::GetInstance();
 	Safe_AddRef(pGameInstance);
@@ -95,7 +95,7 @@ void CCamera_Main::Tick(_double TimeDelta)
 	__super::Tick(TimeDelta);
 }
 
-void CCamera_Main::Late_Tick(_double TimeDelta)
+void CCamera_Main::Late_Tick(_float TimeDelta)
 {
 }
 

@@ -13,8 +13,8 @@ private:
 
 public:
 	virtual HRESULT Initialize(LEVELID eNextLevelID);
-	virtual void Tick(_double TimeDelta);
-	virtual void Late_Tick(_double TimeDelta);
+	virtual void Tick(_float TimeDelta);
+	virtual void Late_Tick(_float TimeDelta);
 	virtual HRESULT Render();
 
 private:

@@ -79,7 +79,7 @@ CMapWindow* CMapWindow::Create(const WINDOWDESC& windowDesc)
 	return newWindow;
 }
 
-void CMapWindow::Tick(_double timeDelta)
+void CMapWindow::Tick(_float timeDelta)
 {
 	if (m_Desc.bOpen == true)
 		Brush_Function();

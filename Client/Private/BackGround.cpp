@@ -47,13 +47,13 @@ HRESULT CBackGround::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CBackGround::Tick(_double TimeDelta)
+void CBackGround::Tick(_float TimeDelta)
 {
 	__super::Tick(TimeDelta);
 }
  
 // 레이트틱 마지막에 렌더그룹 해줌.
-void CBackGround::Late_Tick(_double TimeDelta)
+void CBackGround::Late_Tick(_float TimeDelta)
 {
 	__super::Late_Tick(TimeDelta);
 

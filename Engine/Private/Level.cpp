@@ -13,11 +13,11 @@ HRESULT CLevel::Initialize()
 	return S_OK;
 }
 
-void CLevel::Tick(_double TimeDelta)
+void CLevel::Tick(_float TimeDelta)
 {
 }
 
-void CLevel::Late_Tick(_double TimeDelta)
+void CLevel::Late_Tick(_float TimeDelta)
 {
 }
 

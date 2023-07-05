@@ -67,7 +67,7 @@ HRESULT CImGuiManager::Initialize(ID3D11Device* pDevice, ID3D11DeviceContext* pC
 	return S_OK;
 }
 
-void CImGuiManager::Tick(_double TimeDelta)
+void CImGuiManager::Tick(_float TimeDelta)
 {
 	for (auto& item : m_WindowsMap)
 		item.second->Tick(TimeDelta);

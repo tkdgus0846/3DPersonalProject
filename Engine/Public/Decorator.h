@@ -12,17 +12,15 @@ class ENGINE_DLL CDecorator : public CBase
 protected:
 	CDecorator() = default;
 	virtual ~CDecorator() = default;
-
+	
 public:
-	void Bind_Func(_bool(*_IsExec)()) { IsExec = _IsExec; }
-	_bool Is_Exec() { return IsExec(); }
-	void Set_BlackBoard(CBlackBoard* pBlackBoard) { m_pBlackBoard = pBlackBoard; }
+	void Bind_Func(function<_bool(CBlackBoard*)> _IsExec) { m_Function = _IsExec; }
+	_bool Is_Exec(CBlackBoard* pBlackBoard) { return m_Function(pBlackBoard); }
 
-	static CDecorator* Create(_bool(*_IsExec)() = nullptr);
+	static CDecorator* Create(function<_bool(CBlackBoard*)> _IsExec = nullptr);
 	
 private:
-	_bool(*IsExec)() = nullptr;
-	CBlackBoard* m_pBlackBoard = { nullptr };
+	function<_bool(CBlackBoard*)> m_Function = nullptr;
 
 	// CBase을(를) 통해 상속됨
 	virtual void Free() override;

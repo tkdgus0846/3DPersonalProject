@@ -183,6 +183,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Bin\ShaderFiles\Shader_Client_Defines.hpp" />
     <ClInclude Include="..\Public\Axe.h" />
     <ClInclude Include="..\public\BackGround.h" />
     <ClInclude Include="..\Public\Camera_Free.h" />
@@ -204,9 +205,12 @@
     <ClInclude Include="..\public\PlayerHead.h" />
     <ClInclude Include="..\Public\PlayerParts.h" />
     <ClInclude Include="..\Public\Slasher.h" />
+    <ClInclude Include="..\Public\Sword.h" />
+    <ClInclude Include="..\Public\Task_Attack1.h" />
     <ClInclude Include="..\Public\Task_FollowTarget.h" />
     <ClInclude Include="..\public\Task_LookAt.h" />
     <ClInclude Include="..\Public\Task_MoveForward.h" />
+    <ClInclude Include="..\Public\Task_RandomMove.h" />
     <ClInclude Include="..\Public\Task_Wait.h" />
     <ClInclude Include="..\Public\Terrain.h" />
     <ClInclude Include="..\public\Weapon.h" />
@@ -236,9 +240,12 @@
     <ClCompile Include="..\private\PlayerHead.cpp" />
     <ClCompile Include="..\Private\PlayerParts.cpp" />
     <ClCompile Include="..\Private\Slasher.cpp" />
+    <ClCompile Include="..\Private\Sword.cpp" />
+    <ClCompile Include="..\Private\Task_Attack1.cpp" />
     <ClCompile Include="..\Private\Task_FollowTarget.cpp" />
     <ClCompile Include="..\private\Task_LookAt.cpp" />
     <ClCompile Include="..\Private\Task_MoveForward.cpp" />
+    <ClCompile Include="..\Private\Task_RandomMove.cpp" />
     <ClCompile Include="..\Private\Task_Wait.cpp" />
     <ClCompile Include="..\Private\Terrain.cpp" />
     <ClCompile Include="..\private\Weapon.cpp" />

@@ -2,7 +2,7 @@
 
 
 // 몇번째 이터레이터 부터 돌껀지 정해주자.
-CSelector::RESULT CSelector::Run(const _double& TimeDelta, vector<CBehavior*>* LastRunningList)
+CSelector::RESULT CSelector::Run(const _float& TimeDelta, vector<CBehavior*>* LastRunningList)
 {
 	if (Pass_Decorator() == false)
 		return RESULT(FAIL);

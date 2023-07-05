@@ -22,18 +22,32 @@ public:
 
 public:
 	HRESULT Initialize(ParsingData* pData);
-	void Invalidate_TransformationMatrix(CModel::BONES& Bones, _double TimeDelta);
-	void Invalidate_TransformationMatrix_Upper(CModel::BONES & Bones, _double TimeDelta, const unordered_set<_int>& UpperSet);
-	void Invalidate_TransformationMatrix_Lower(CModel::BONES & Bones, _double TimeDelta, const unordered_set<_int>& LowerSet);
+	void Invalidate_TransformationMatrix(CModel::BONES& Bones, _float TimeDelta);
+	void Invalidate_TransformationMatrix_Upper(CModel::BONES & Bones, _float TimeDelta, const unordered_set<_int>& UpperSet);
+	void Invalidate_TransformationMatrix_Lower(CModel::BONES & Bones, _float TimeDelta, const unordered_set<_int>& LowerSet);
 
-	_int Lerp_NextAnimation(CAnimation* pNextAnimation, CModel::BONES & Bones, _double Duration, _double LerpTimeAcc, unordered_set<_int>*BoneIndex);
+	_int Lerp_NextAnimation(CAnimation* pNextAnimation, CModel::BONES & Bones, _float Duration, _float LerpTimeAcc, unordered_set<_int>*BoneIndex);
 	void Reset_Channels()
 	{
+		string str = m_szName;
+		if (str.compare("VampireMale_Axes_Combo01_MoveCast_Exec") == 0)
+			int sibal = 2;
+
+		// 디버그 용으로 넣어놨다.
 		for (int i = 0; i < m_ChannelCurrentKeyFrames.size(); i++)
 			m_ChannelCurrentKeyFrames[i] = 0;
 
 		m_TimeAcc = 0.f;
 		m_isFinished = false;
+	}
+	_bool Is_Reseted()
+	{
+		_bool bResult = false;
+
+		for (int i = 0; i < m_ChannelCurrentKeyFrames.size(); i++)
+			bResult = (m_ChannelCurrentKeyFrames[i] == 0);
+
+		return bResult;
 	}
 
 	_char*	Get_Name() { return m_szName; }
@@ -41,20 +55,21 @@ public:
 	void	Set_Loop(_bool state) { m_isLoop = state; }
 	_bool	Get_Finished() { return m_isFinished; }
 	void	Erase_LastFrame_Animation();
-	void	Erase_Frames_LessTime(_double time);
+	void	Erase_Frames_LessTime(_float time);
 	void	Set_ControlManual(_bool state) { m_isControlManual = state; }
-	void	Set_TimeAcc(_double time) { m_TimeAcc = time; }
-	_double Get_TimeAcc() const { return m_TimeAcc; }
-	_double Get_Duration() const { return m_Duration; }
+	void	Set_TimeAcc(double time) { m_TimeAcc = time; }
+	double Get_TimeAcc() const { return m_TimeAcc; }
+	double Get_Duration() const { return m_Duration; }
+	vector<_uint>* Get_CurKeyframes() { return &m_ChannelCurrentKeyFrames; }
 
 private:
 	char						m_szName[MAX_PATH];
 	_uint						m_iNumChannels = { 0 };
 	vector<class CChannel*>		m_Channels;
 	vector<_uint>				m_ChannelCurrentKeyFrames;	
-	_double						m_Duration = { 0.0 };	
-	_double						m_TickPerSecond = { 0.0 };
-	_double						m_TimeAcc = { 0.0 };
+	double						m_Duration = { 0.0 };	
+	double						m_TickPerSecond = { 0.0 };
+	double						m_TimeAcc = { 0.0 };
 
 	_bool						m_isFinished = { false };
 	_bool						m_isLoop = { false };

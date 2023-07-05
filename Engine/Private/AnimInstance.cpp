@@ -25,16 +25,12 @@ HRESULT CAnimInstance::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CAnimInstance::Tick(_double TimeDelta)
+void CAnimInstance::Tick(_float TimeDelta)
 {
 	//if (m_pCurAnimNode == nullptr) return;
 	//if (m_bAnimationFinished == true) return;
 
 	__super::Tick(TimeDelta);
-
-	///* 지울것 */
-	//if (m_pCurLowerAnimNode)
-	//	Play_LowerBody_Animation(TimeDelta, m_pCurLowerAnimNode);
 
 	if (m_pCurUpperAnimNode && m_pCurLowerAnimNode)
 	{
@@ -54,7 +50,7 @@ void CAnimInstance::Push_Animation(const string& name, const AnimNode& animNode,
 	_uint iIndex = 0;
 	for (_uint animIndices : animNode.AnimIndices)
 	{
-		_double time = -1.0; 
+		_float time = -1.0; 
 
 		if (animNode.eraseLessTime.size() > iIndex)
 			time = animNode.eraseLessTime[iIndex++];
@@ -85,7 +81,8 @@ void CAnimInstance::Apply_Animation(const string& name, ANIMTYPE eType)
 		/*if (m_pCurAnimationName.compare("") != 0)
 				Reset_Animation(m_pCurAnimationName);*/
 		if (m_pCurAnimationName.compare(name) == 0) return;
-		//Reset_Animation(m_pCurAnimationName);
+
+		Reset_Animation(name);
 
 		m_pCurAnimationName = name;
 		m_pCurAnimNode = &m_AnimationNode[m_pCurAnimationName];
@@ -100,7 +97,7 @@ void CAnimInstance::Apply_Animation(const string& name, ANIMTYPE eType)
 		{
 			if (m_pCurLowerAnimNode)
 			{
-				Reset_Animation(m_pCurLowerAnimationName);
+				//Reset_Animation(m_pCurLowerAnimationName);
 				m_pCurLowerAnimationName = "";
 				m_pCurLowerAnimNode = nullptr;
 				m_pModel->m_bChange_LowerBodyToAllBody = true;
@@ -108,7 +105,7 @@ void CAnimInstance::Apply_Animation(const string& name, ANIMTYPE eType)
 
 			if (m_pCurUpperAnimNode)
 			{
-				Reset_Animation(m_pCurUpperAnimationName);
+				//Reset_Animation(m_pCurUpperAnimationName);
 				m_pCurUpperAnimationName = "";
 				m_pCurUpperAnimNode = nullptr;
 				m_pModel->m_bChange_UpperBodyToAllBody = true;
@@ -130,6 +127,8 @@ void CAnimInstance::Apply_Animation(const string& name, ANIMTYPE eType)
 		if (m_pCurLowerAnimationName.compare(name) == 0) return;
 		//Reset_Animation(m_pCurLowerAnimationName);
 
+		Reset_Animation(name);
+
 		m_pCurLowerAnimationName = name;
 		m_pCurLowerAnimNode = &m_AnimationNode[m_pCurLowerAnimationName];
 		m_bLowerAnimationFinished = false;
@@ -140,7 +139,7 @@ void CAnimInstance::Apply_Animation(const string& name, ANIMTYPE eType)
 
 		if (m_pCurAnimNode != nullptr)
 		{
-			Reset_Animation(m_pCurAnimationName);
+			//Reset_Animation(m_pCurAnimationName);
 			m_pCurAnimationName = "";
 			m_pCurAnimNode = nullptr;
 
@@ -158,6 +157,9 @@ void CAnimInstance::Apply_Animation(const string& name, ANIMTYPE eType)
 		if (m_pCurUpperAnimationName.compare(name) == 0) return;
 		//Reset_Animation(m_pCurUpperAnimationName);
 
+		
+		Reset_Animation(name);
+
 		m_pCurUpperAnimationName = name;
 		m_pCurUpperAnimNode = &m_AnimationNode[m_pCurUpperAnimationName];
 		m_bUpperAnimationFinished = false;
@@ -168,7 +170,7 @@ void CAnimInstance::Apply_Animation(const string& name, ANIMTYPE eType)
 
 		if (m_pCurAnimNode != nullptr)
 		{
-			Reset_Animation(m_pCurAnimationName);
+			//Reset_Animation(m_pCurAnimationName);
 			m_pCurAnimationName = "";
 			m_pCurAnimNode = nullptr;
 
@@ -217,17 +219,36 @@ _bool CAnimInstance::Next_Animation(ANIMTYPE eType)
 	
 }
 
-_bool CAnimInstance::Animation_Finished(ANIMTYPE eType)
+_bool CAnimInstance::Animation_Finished(_int iIndex, ANIMTYPE eType)
 {
-	switch (eType)
+	if (iIndex == -1)
 	{
-	case ANIM_ALLBODY:
-		return m_bAnimationFinished;
-	case ANIM_UPPERBODY:
-		return m_bUpperAnimationFinished;
-	case ANIM_LOWERBODY:
-		return m_bLowerAnimationFinished;
+		switch (eType)
+		{
+		case ANIM_ALLBODY:
+			return m_bAnimationFinished;
+		case ANIM_UPPERBODY:
+			return m_bUpperAnimationFinished;
+		case ANIM_LOWERBODY:
+			return m_bLowerAnimationFinished;
+		}
 	}
+	else
+	{
+		switch (eType)
+		{
+		case ANIM_ALLBODY:
+			if (m_pCurAnimNode == nullptr) return false;
+			return m_pModel->m_Animations[m_pCurAnimNode->AnimIndices[iIndex]]->Get_Finished();
+		case ANIM_UPPERBODY:
+			if (m_pCurUpperAnimNode == nullptr) return false;
+			return m_pModel->m_Animations[m_pCurUpperAnimNode->AnimIndices[iIndex]]->Get_Finished();
+		case ANIM_LOWERBODY:
+			if (m_pCurLowerAnimNode == nullptr) return false;
+			return m_pModel->m_Animations[m_pCurLowerAnimNode->AnimIndices[iIndex]]->Get_Finished();;
+		}
+	}
+	
 }
 
 const string& CAnimInstance::Get_NextNode_Name(ANIMTYPE eType)
@@ -249,6 +270,8 @@ const string& CAnimInstance::Get_NextNode_Name(ANIMTYPE eType)
 
 void CAnimInstance::Reset_Animation(const string& name)
 {
+	if (name.compare("VampireMale_Axes_Combo01_MoveCast_Exec") == 0)
+		int sibal = 2;
 	for (_uint index : m_AnimationNode[name].AnimIndices)
 	{
 		m_pModel->m_Animations[index]->Reset_Channels();
@@ -257,7 +280,7 @@ void CAnimInstance::Reset_Animation(const string& name)
 	// m_bAnimationFinished = false;
 }
 
-void CAnimInstance::Play_Animation(_double TimeDelta, AnimNode* node)
+void CAnimInstance::Play_Animation(_float TimeDelta, AnimNode* node)
 {
 	m_pModel->Play_Animation(TimeDelta);
 
@@ -288,9 +311,7 @@ void CAnimInstance::Play_Animation(_double TimeDelta, AnimNode* node)
 
 					// 애니메이션이 끝나기 전에 입력이 있었다라면 넘겨주는것이 필요하다. 생각해보자.
 
-					if (node->bResetAfterFinish)
-						Reset_Animation(m_pCurAnimationName);
-					//Apply_Animation(node->nextAnimNode);
+					
 					return;
 
 				}
@@ -309,12 +330,13 @@ void CAnimInstance::Play_Animation(_double TimeDelta, AnimNode* node)
 	}
 }
 
-void CAnimInstance::Play_UpperBody_Animation(_double TimeDelta, AnimNode* node)
+void CAnimInstance::Play_UpperBody_Animation(_float TimeDelta, AnimNode* node)
 {
 	m_pModel->Play_UpperBody_Animation(TimeDelta);
 
 	_uint* iCurIndex = &node->iCurIndex;
 
+	//cout << *iCurIndex << endl;
 	CAnimation* anim = m_pModel->m_Animations[node->AnimIndices[*iCurIndex]];
 	if (m_pModel->Is_Changing_Animation(ANIM_UPPERBODY))
 	{
@@ -340,9 +362,7 @@ void CAnimInstance::Play_UpperBody_Animation(_double TimeDelta, AnimNode* node)
 
 					// 애니메이션이 끝나기 전에 입력이 있었다라면 넘겨주는것이 필요하다. 생각해보자.
 
-					if (node->bResetAfterFinish)
-						Reset_Animation(m_pCurUpperAnimationName);
-					//Apply_Animation(node->nextAnimNode);
+					
 					return;
 
 				}
@@ -353,7 +373,7 @@ void CAnimInstance::Play_UpperBody_Animation(_double TimeDelta, AnimNode* node)
 	}
 }
 
-void CAnimInstance::Play_LowerBody_Animation(_double TimeDelta, AnimNode* node)
+void CAnimInstance::Play_LowerBody_Animation(_float TimeDelta, AnimNode* node)
 {
 	m_pModel->Play_LowerBody_Animation(TimeDelta);
 
@@ -383,9 +403,7 @@ void CAnimInstance::Play_LowerBody_Animation(_double TimeDelta, AnimNode* node)
 
 					// 애니메이션이 끝나기 전에 입력이 있었다라면 넘겨주는것이 필요하다. 생각해보자.
 
-					if (node->bResetAfterFinish)
-						Reset_Animation(m_pCurLowerAnimationName);
-					//Apply_Animation(node->nextAnimNode);
+					
 					return;
 
 				}

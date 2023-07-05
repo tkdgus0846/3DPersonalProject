@@ -5,7 +5,7 @@
 #include "Paladin.h"
 #include "Transform.h"
 
-CTask_Wait::RESULT CTask_Wait::Run(const _double& TimeDelta, vector<CBehavior*>* LastRunningList)
+CTask_Wait::RESULT CTask_Wait::Run(const _float& TimeDelta, vector<CBehavior*>* LastRunningList)
 {
 	if (Pass_Decorator() == false)
 		return RESULT(FAIL);
@@ -14,7 +14,7 @@ CTask_Wait::RESULT CTask_Wait::Run(const _double& TimeDelta, vector<CBehavior*>*
 
 	if (m_WaitTime <= m_TimeAcc)
 	{
-		m_TimeAcc = 0.0;
+		m_TimeAcc = 0.0f;
 		return RESULT(SUCCESS);
 	}
 	
@@ -30,4 +30,5 @@ CTask_Wait* CTask_Wait::Create()
 
 void CTask_Wait::Free()
 {
+	__super::Free();
 }

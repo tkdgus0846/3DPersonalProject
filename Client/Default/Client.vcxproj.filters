@@ -43,9 +43,6 @@
     <Filter Include="02.GameObjects\Camera\FreeCam">
       <UniqueIdentifier>{2540757b-fa0b-4298-a299-9f0d328edfdc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="02.GameObjects\TestObject">
-      <UniqueIdentifier>{e194f5f7-a53a-4b3b-b16b-88cc45dac25e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="02.GameObjects\Camera\PlayerCam">
       <UniqueIdentifier>{db3325dd-2c02-4e36-aaaa-0e280a398ae3}</UniqueIdentifier>
     </Filter>
@@ -72,6 +69,9 @@
     </Filter>
     <Filter Include="02.GameObjects\Creatures\Monster">
       <UniqueIdentifier>{39fb96ae-307a-4ec9-966b-923216c83606}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObjects\SkyBox">
+      <UniqueIdentifier>{e194f5f7-a53a-4b3b-b16b-88cc45dac25e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -118,7 +118,7 @@
       <Filter>02.GameObjects\Terrain</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\CubeObject.h">
-      <Filter>02.GameObjects\TestObject</Filter>
+      <Filter>02.GameObjects\SkyBox</Filter>
     </ClInclude>
     <ClInclude Include="..\Public\Player.h">
       <Filter>02.GameObjects\Creatures\Player</Filter>
@@ -171,6 +171,18 @@
     <ClInclude Include="..\Public\Task_FollowTarget.h">
       <Filter>03.Components\Task</Filter>
     </ClInclude>
+    <ClInclude Include="..\Bin\ShaderFiles\Shader_Client_Defines.hpp">
+      <Filter>97.ShaderFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Task_Attack1.h">
+      <Filter>03.Components\Task</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Task_RandomMove.h">
+      <Filter>03.Components\Task</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Sword.h">
+      <Filter>02.GameObjects\Creatures\Player\Parts\Weapon</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Client.cpp">
@@ -204,7 +216,7 @@
       <Filter>02.GameObjects\Terrain</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\CubeObject.cpp">
-      <Filter>02.GameObjects\TestObject</Filter>
+      <Filter>02.GameObjects\SkyBox</Filter>
     </ClCompile>
     <ClCompile Include="..\Private\Player.cpp">
       <Filter>02.GameObjects\Creatures\Player</Filter>
@@ -256,6 +268,15 @@
     </ClCompile>
     <ClCompile Include="..\Private\Task_FollowTarget.cpp">
       <Filter>03.Components\Task</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Task_Attack1.cpp">
+      <Filter>03.Components\Task</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Task_RandomMove.cpp">
+      <Filter>03.Components\Task</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Sword.cpp">
+      <Filter>02.GameObjects\Creatures\Player\Parts\Weapon</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

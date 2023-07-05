@@ -11,7 +11,7 @@ protected:
 	virtual ~CSelector() = default;
 
 public:
-	virtual RESULT Run(const _double & TimeDelta, vector<CBehavior*>* LastRunningList = nullptr) override;
+	virtual RESULT Run(const _float & TimeDelta, vector<CBehavior*>* LastRunningList = nullptr) override;
 
 public:
 	static CSelector* Create();

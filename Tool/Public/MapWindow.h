@@ -26,7 +26,7 @@ public:
 	virtual HRESULT Initialize(const WINDOWDESC& desc) override;
 	static CMapWindow* Create(const WINDOWDESC& windowDesc);
 
-	virtual void Tick(_double timeDelta) override;
+	virtual void Tick(_float timeDelta) override;
 
 	void			Set_Render_NavMesh(_bool bRender);
 	void			Set_CurTerrain(class CDummyObject* pTerrain);

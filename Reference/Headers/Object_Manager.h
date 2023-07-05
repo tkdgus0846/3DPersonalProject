@@ -36,8 +36,8 @@ public:/*실제 사용할 레벨의 갯수만큼 미리 공간을 할당하낟. */
 
 	HRESULT Clear_Layer(_uint iLevelIndex, const wstring& pLayerTag);
 	void Clear_LevelResources(_uint iLevelIndex);
-	void Tick(_double TimeDelta);
-	void Late_Tick(_double TimeDelta);
+	void Tick(_float TimeDelta);
+	void Late_Tick(_float TimeDelta);
 
 	// 어떤 레이어에 어떤 오브젝트 인지를 찾아와서 복사.
 	// 복사함과 동시에 Add_GameObject도 실행

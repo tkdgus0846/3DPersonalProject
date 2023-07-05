@@ -1,12 +1,12 @@
 #include "..\Public\Decorator.h"
 
-CDecorator* CDecorator::Create(_bool(*_IsExec)())
+CDecorator* CDecorator::Create(function<_bool(CBlackBoard*)> _IsExec)
 {
 	CDecorator* deco = new CDecorator;
 	if (_IsExec != nullptr)
-		deco->Bind_Func(_IsExec);
+		deco->m_Function = _IsExec;
 
-	return new CDecorator;
+	return deco;
 }
 
 void CDecorator::Free()

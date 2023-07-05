@@ -69,7 +69,7 @@ HRESULT CDummyObject::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CDummyObject::Tick(_double TimeDelta)
+void CDummyObject::Tick(_float TimeDelta)
 {
  	__super::Tick(TimeDelta);
 
@@ -77,7 +77,7 @@ void CDummyObject::Tick(_double TimeDelta)
 		m_pModelCom->Play_Animation(TimeDelta);
 }
 
-void CDummyObject::Late_Tick(_double TimeDelta)
+void CDummyObject::Late_Tick(_float TimeDelta)
 {
 	__super::Late_Tick(TimeDelta);
 

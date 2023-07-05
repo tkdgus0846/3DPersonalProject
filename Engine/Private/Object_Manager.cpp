@@ -178,7 +178,7 @@ void CObject_Manager::Clear_LevelResources(_uint iLevelIndex)
 	m_LoadedObjectDatas.clear();
 }
 
-void CObject_Manager::Tick(_double TimeDelta)
+void CObject_Manager::Tick(_float TimeDelta)
 {
 	for (_uint i = 0; i < m_iNumLevels; ++i)
 	{
@@ -189,7 +189,7 @@ void CObject_Manager::Tick(_double TimeDelta)
 	}
 }
 
-void CObject_Manager::Late_Tick(_double TimeDelta)
+void CObject_Manager::Late_Tick(_float TimeDelta)
 {
 	for (_uint i = 0; i < m_iNumLevels; ++i)
 	{

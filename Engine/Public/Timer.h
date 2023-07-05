@@ -12,7 +12,7 @@ private:
 	virtual ~CTimer() = default;
 
 public:
-	_double		Get_TimeDelta(void) { return m_TimeDelta; }
+	_float		Get_TimeDelta(void) { return m_TimeDelta; }
 
 public:
 	HRESULT		Ready_Timer(void);
@@ -24,7 +24,7 @@ private:
 	LARGE_INTEGER			m_tLastTime;
 	LARGE_INTEGER			m_CpuTick;
 
-	_double					m_TimeDelta;
+	_float					m_TimeDelta;
 
 public:
 	static CTimer*		Create(void);

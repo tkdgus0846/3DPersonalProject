@@ -31,7 +31,7 @@ public:
 public:
 	HRESULT Initialize(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 
-	void	Tick(_double TimeDelta);
+	void	Tick(_float TimeDelta);
 	void	Render();
 
 	void				ShowWindow(const char* WindowName);

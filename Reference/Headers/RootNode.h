@@ -11,7 +11,7 @@ protected:
 	virtual ~CRootNode() = default;
 
 public:
-	virtual RESULT Run(const _double& TimeDelta, vector<CBehavior*>* LastRunningList = nullptr);
+	virtual RESULT Run(const _float& TimeDelta, vector<CBehavior*>* LastRunningList = nullptr);
 
 private:
 	// 진행하고 있던 노드를 파악해서 찾아가자. Running이라면.

@@ -15,6 +15,7 @@
 #include "Hand.h"
 #include "Horse.h"
 #include "Paladin.h"
+#include "Sword.h"
 
 CLoader::CLoader(ID3D11Device * pDevice, ID3D11DeviceContext * pContext)
 	: m_pDevice(pDevice)
@@ -136,7 +137,7 @@ HRESULT CLoader::Loading_For_GamePlay()
 
 	/* For.Prototype_Component_Texture_Cube */
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Texture_Cube"),
-		CTexture::Create(m_pDevice, m_pContext, TEXT("../Bin/Resources/Textures/SkyBox/Sky_3.dds")))))
+		CTexture::Create(m_pDevice, m_pContext, TEXT("../../Texture/Noise_Clouds/Noise_Clouds.dds")))))
 		return E_FAIL;
 
 	lstrcpy(m_szLoading, TEXT("모델 로딩 중."));
@@ -195,6 +196,10 @@ HRESULT CLoader::Loading_For_GamePlay()
 		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/NonAnimModels/SteelSlasher_2H_Standard_GEO/SteelSlasher_2H_Standard_GEO.dat", PivotMatrix))))
 		return E_FAIL;
 
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Sword_GEO"),
+		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/NonAnimModels/Sword_GEO/Sword_GEO.dat", PivotMatrix))))
+		return E_FAIL;
+
 	/////////////////////// 장비들 ////////////////////////////
 
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Bear_GEO2"),
@@ -220,8 +225,6 @@ HRESULT CLoader::Loading_For_GamePlay()
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Pants_GEO #210964"),
 		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/NonAnimModels/Pants_GEO #210964/Pants_GEO #210964.dat", PivotMatrix))))
 		return E_FAIL;
-
-	
 
 	lstrcpy(m_szLoading, TEXT("네비게이션 로딩 중."));
 
@@ -315,6 +318,10 @@ HRESULT CLoader::Loading_For_GamePlay()
 
 	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Mace"),
 		CMace::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Sword"),
+		CSword::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Hand"),

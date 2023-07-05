@@ -36,14 +36,14 @@ HRESULT CAxe::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CAxe::Tick(_double TimeDelta)
+void CAxe::Tick(_float TimeDelta)
 {
 	__super::Tick(TimeDelta);
 
 	
 }
 
-void CAxe::Late_Tick(_double TimeDelta)
+void CAxe::Late_Tick(_float TimeDelta)
 {
 	__super::Late_Tick(TimeDelta);
 }
@@ -135,7 +135,7 @@ void CAxe::Free()
 	__super::Free();
 }
 
-void CAxe::Skill_Q(const _double& TimeDelta)
+void CAxe::Skill_Q(const _float& TimeDelta)
 {
 	if ((m_AxeDashInitSpeed + (m_AxeDashAccel * m_AxeDashTimeAcc)) < 0.f)
 	{
@@ -149,14 +149,14 @@ void CAxe::Skill_Q(const _double& TimeDelta)
 	m_pPlayer->m_pTransformCom->Go_Dir(XMLoadFloat3(&m_DashDir), m_AxeDashInitSpeed, m_AxeDashAccel, m_AxeDashTimeAcc, m_pPlayer->m_pNavigationCom);
 }
 
-void CAxe::Skill_E(const _double& TimeDelta)
+void CAxe::Skill_E(const _float& TimeDelta)
 {
 }
 
 void CAxe::Skill_Q_Setting()
 {
 	XMStoreFloat3(&m_DashDir, m_pPlayer->m_pTransformCom->Get_State(CTransform::STATE_LOOK));
-	m_AxeDashTimeAcc = 0.0;
+	m_AxeDashTimeAcc = 0.0f;
 	m_bAxeDashFinished = false;
 	m_pPlayer->m_pAnimInstance->Apply_Animation("Axe_Dash");
 }

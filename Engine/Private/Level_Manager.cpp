@@ -28,7 +28,7 @@ HRESULT CLevel_Manager::Open_Level(_uint iLevelIndex, CLevel * pNewLevel)
 	return S_OK;
 }
 
-void CLevel_Manager::Tick(_double TimeDelta)
+void CLevel_Manager::Tick(_float TimeDelta)
 {
 	if (nullptr == m_pCurrentLevel)
 		return;
@@ -36,7 +36,7 @@ void CLevel_Manager::Tick(_double TimeDelta)
 	m_pCurrentLevel->Tick(TimeDelta);
 }
 
-void CLevel_Manager::Late_Tick(_double TimeDelta)
+void CLevel_Manager::Late_Tick(_float TimeDelta)
 {
 	if (nullptr == m_pCurrentLevel)
 		return;

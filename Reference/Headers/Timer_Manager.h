@@ -13,7 +13,7 @@ private:
 	virtual ~CTimer_Manager() = default;
 
 public:
-	_double		Get_Timer(const _tchar* pTimerTag);
+	_float		Get_Timer(const _tchar* pTimerTag);
 	void		Set_Timer(const _tchar* pTimerTag);
 
 public:

@@ -29,14 +29,14 @@ HRESULT CPlayerParts::Initialize(void* pArg)
 	return S_OK;
 }
 
-void CPlayerParts::Tick(_double TimeDelta)
+void CPlayerParts::Tick(_float TimeDelta)
 {
 	__super::Tick(TimeDelta);
 
 	
 }
 
-void CPlayerParts::Late_Tick(_double TimeDelta)
+void CPlayerParts::Late_Tick(_float TimeDelta)
 {
 	__super::Late_Tick(TimeDelta);
 }

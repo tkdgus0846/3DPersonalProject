@@ -9,7 +9,7 @@ CTimer_Manager::CTimer_Manager()
 
 
 
-_double Engine::CTimer_Manager::Get_Timer(const _tchar* pTimerTag)
+_float Engine::CTimer_Manager::Get_Timer(const _tchar* pTimerTag)
 {
 	CTimer*		pTimer = Find_Timer(pTimerTag);
 	if (nullptr == pTimer)

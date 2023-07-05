@@ -108,7 +108,7 @@ HRESULT CComposite::Initialize(void* pArg)
 	return result;
 }
 
-void CComposite::Tick(_double TimeDelta)
+void CComposite::Tick(_float TimeDelta)
 {
 	for (auto& comp : m_Components)
 	{
@@ -116,7 +116,7 @@ void CComposite::Tick(_double TimeDelta)
 	}
 }
 
-void CComposite::Late_Tick(_double TimeDelta)
+void CComposite::Late_Tick(_float TimeDelta)
 {
 	for (auto& comp : m_Components)
 	{

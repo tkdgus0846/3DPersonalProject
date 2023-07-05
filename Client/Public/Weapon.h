@@ -18,13 +18,21 @@ protected:
 	virtual ~CWeapon() = default;
 
 public:
-	virtual void Skill_Q(const _double& TimeDelta) PURE;
-	virtual void Skill_E(const _double& TimeDelta) PURE;
+	virtual void Skill_Q(const _float& TimeDelta) PURE;
+	virtual void Skill_E(const _float& TimeDelta) PURE;
 	virtual void Skill_Q_Setting() PURE;
 	virtual void Skill_E_Setting() PURE;
 
 	virtual _bool Skill_Q_End() PURE;
 	virtual _bool Skill_E_End() PURE;
+
+	virtual void SkillQ_Collision_Enter(const Collision* collision) {}
+	virtual void SkillQ_Collision_Stay(const Collision* collision) {}
+	virtual void SkillQ_Collision_Exit(const Collision* collision) {}
+
+	virtual void SkillE_Collision_Enter(const Collision* collision) {}
+	virtual void SkillE_Collision_Stay(const Collision* collision) {}
+	virtual void SkillE_Collision_Exit(const Collision* collision) {}
 
 	virtual void N_Walk_Animation() PURE;
 	virtual void NE_Walk_Animation() PURE;
@@ -41,11 +49,15 @@ public:
 	virtual void Standing_Attack_Animation() PURE;
 
 
-	void EnableDashAttack() { m_bDashAttack = true; }
-	void SetPlayer() { m_pPlayer = (CPlayer*)m_pOwner; }
+	void		EnableDashAttack() { m_bDashAttack = true; }
+	void		SetPlayer() { m_pPlayer = (CPlayer*)m_pOwner; }
+	_float		Get_AttackRate() const { return m_AttackRate; }
+	_int		Get_Damage() const { return m_Damage; }
 
 protected:
-	_bool	m_bDashAttack = { false };
+	_bool		m_bDashAttack = { false };
+	_float		m_AttackRate = { 0.5 };
+	_int		m_Damage = { 5 };
 
 	class CPlayer* m_pPlayer = { nullptr };
 };

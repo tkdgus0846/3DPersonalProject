@@ -11,8 +11,8 @@ private:
 
 public:
 	virtual HRESULT Initialize();
-	virtual void Tick(_double TimeDelta);
-	virtual void Late_Tick(_double TimeDelta);
+	virtual void Tick(_float TimeDelta);
+	virtual void Late_Tick(_float TimeDelta);
 	virtual HRESULT Render();
 
 	HRESULT Ready_Layer_Camera(const _tchar* pLayerTag);

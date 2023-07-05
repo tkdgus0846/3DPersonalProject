@@ -18,15 +18,15 @@ public:
 	typedef struct tagTransformDesc
 	{
 		tagTransformDesc() = default;
-		tagTransformDesc(_double _SpeedPerSec, _double _RoationPerSec)
+		tagTransformDesc(_float _SpeedPerSec, _float _RoationPerSec)
 		: SpeedPerSec { _SpeedPerSec }
 		, RotationPerSec { _RoationPerSec }
 		{
 
 		}
 
-		_double		SpeedPerSec = { 0.0 };
-		_double		RotationPerSec = { 0.0 };
+		_float		SpeedPerSec = { 0.0 };
+		_float		RotationPerSec = { 0.0 };
 	}TRANSFORMDESC;
 
 
@@ -67,23 +67,24 @@ public:
 	virtual HRESULT Initialize(void* pArg);
 
 public:
-	void Change_Speed(_double fSpeed);
-	void Change_RotSpeed(_double fRotSpeed);
+	void Change_Speed(_float fSpeed);
+	void Change_RotSpeed(_float fRotSpeed);
 	void Set_Position(_fvector vPos);
-	void Go_Dir(_fvector dir, _double TimeDelta, class CNavigation* pNavigation = nullptr);
-	void Go_Dir(_fvector dir, const _double& InitSpeed, const _double& Accel, const _double& TimeAcc, class CNavigation* pNavigation = nullptr);
-	void Go_Straight(_double TimeDelta, class CNavigation* pNavigation = nullptr);
-	void Go_Backward(_double TimeDelta);
-	void Go_Left(_double TimeDelta);
-	void Go_Right(_double TimeDelta);
-	void Go_Up(_double TimeDelta);
-	void Go_Down(_double TimeDelta);
-	_bool Chase(_fvector vTargetPosition, _double TimeDelta, class CNavigation* pNavigation = nullptr, _float fMinDistance = 0.1f);
+	void Go_Dir(_fvector dir, _float TimeDelta, class CNavigation* pNavigation = nullptr);
+	void Go_Dir(_fvector dir, const _float& InitSpeed, const _float& Accel, const _float& TimeAcc, class CNavigation* pNavigation = nullptr);
+	void Go_Straight(_float TimeDelta, class CNavigation* pNavigation = nullptr);
+	void Go_Backward(_float TimeDelta);
+	void Go_Left(_float TimeDelta);
+	void Go_Right(_float TimeDelta);
+	void Go_Up(_float TimeDelta);
+	void Go_Down(_float TimeDelta);
+	_bool Chase(_fvector vTargetPosition, _float TimeDelta, class CNavigation* pNavigation = nullptr, _float fMinDistance = 0.1f);
 	void LookAt(_fvector vTargetPosition, MOVETYPE eMoveType);
+	void LookDir(_fvector vDir, MOVETYPE eMoveType);
 	void Rotation(_fvector vAxis, _float fDegree);
 	void Rotation(AXIS eAxis, _float fDegree);
-	void Rotation(AXIS eAxis, _float fAngle, _double TimeDelta);
-	void Turn(_fvector vAxis, _double TimeDelta);
+	void Rotation(AXIS eAxis, _float fAngle, _float TimeDelta);
+	void Turn(_fvector vAxis, _float TimeDelta);
 	
 
 	void Scaled(const _float3 & vScale);

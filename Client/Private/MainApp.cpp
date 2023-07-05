@@ -37,7 +37,7 @@ HRESULT Client::CMainApp::Initialize()
 	return S_OK;
 }
 
-void CMainApp::Tick(_double TimeDelta)
+void CMainApp::Tick(_float TimeDelta)
 {
 	if (nullptr == m_pGameInstance)
 		return;

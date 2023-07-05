@@ -30,11 +30,11 @@ private:
 public:
 	virtual HRESULT Initialize_Prototype() override;
 	virtual HRESULT Initialize(void* pArg) override;
-	virtual void	Tick(_double TimeDelta) override;
-	virtual void	Late_Tick(_double TimeDelta) override;
+	virtual void	Tick(_float TimeDelta) override;
+	virtual void	Late_Tick(_float TimeDelta) override;
 	virtual HRESULT Render() override;
 
-	virtual void	Shake(const _double& TimeDelta) override;
+	virtual void	Shake(const _float& TimeDelta) override;
 
 	virtual void	On_Shake(void* pArg = nullptr) override;
 

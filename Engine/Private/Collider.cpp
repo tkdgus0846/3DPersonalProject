@@ -95,17 +95,30 @@ void CCollider::OnCollisionExit(const Collision* collision)
 		m_pOwnerObject->OnCollisionExit(collision);
 }
 
-void CCollider::Tick(_double TimeDelta)
+void CCollider::Add_ColGroup(COLGROUP eColGroup)
+{
+	if (eColGroup == COL_END)
+	{
+		CGameInstance::GetInstance()->Add_ColGroup(m_eColGroup, this);
+	}
+	else
+	{
+		CGameInstance::GetInstance()->Add_ColGroup(eColGroup, this);
+	}
+
+	
+}
+
+void CCollider::Tick(_float TimeDelta)
 {
 	if (m_bEnabled == false)
 	{
 		m_CollisionList.clear();
-		return;
 	}
 	if (m_pBounding == nullptr) return;
 
 	__super::Tick(TimeDelta);
-	CGameInstance::GetInstance()->Add_ColGroup(m_eColGroup, this);
+	
 
 	if (m_pOwnerObject == nullptr)
 	{
@@ -117,17 +130,10 @@ void CCollider::Tick(_double TimeDelta)
 		m_pBounding->Tick(m_pOwnerTransform->Get_WorldMatrix());
 
 
-	/// 지금은 콜라이더가 사용중이 아니면 그냥 빼버리는데 나중에 게임의 성격에 따라 Exit 를 불러줘도 된다.
-	for (auto it = m_CollisionList.begin(); it != m_CollisionList.end();)
-	{
-		if (it->first->Get_Enable() == false)
-			it = m_CollisionList.erase(it);
-		else
-			it++;
-	}
+	Erase_NotEnabledCollision();
 }
 
-void CCollider::Late_Tick(_double TimeDelta)
+void CCollider::Late_Tick(_float TimeDelta)
 {
 	if (m_bEnabled == false) return;
 
@@ -139,9 +145,44 @@ void CCollider::Erase_FromOtherCollisionList()
 {
 	for (auto& item : m_CollisionList)
 	{
+		Collision collision;
+
+		collision.MyCollider = item.first;
+		collision.OtherCollider = this;
+		collision.OtherGameObject = (CGameObject*)m_pOwner;
+
+		item.first->OnCollisionExit(&collision);
 		item.first->m_CollisionList.erase(this);
 	}
 	m_CollisionList.clear();
+}
+
+void CCollider::Erase_NotEnabledCollision()
+{
+
+	for (auto it = m_CollisionList.begin(); it != m_CollisionList.end();)
+	{
+		if (it->first->Get_Enable() == false)
+		{
+			Collision collision;
+
+			collision.MyCollider = it->first;
+			collision.OtherCollider = this;
+			collision.OtherGameObject = (CGameObject*)m_pOwner;
+
+			it->first->OnCollisionExit(&collision);
+			it->first->m_CollisionList.erase(this);
+
+			collision.MyCollider = this;
+			collision.OtherCollider = it->first;
+			collision.OtherGameObject = (CGameObject*)it->first->GetOwner();
+
+			OnCollisionExit(&collision);
+			it = m_CollisionList.erase(it);
+		}
+		else
+			it++;
+	}
 }
 
 #ifdef _DEBUG

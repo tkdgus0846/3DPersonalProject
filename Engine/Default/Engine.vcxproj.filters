@@ -154,6 +154,12 @@
     <Filter Include="01.Utility\03.Components\AIComponent\Behavior\RootNode">
       <UniqueIdentifier>{3c0627f1-e352-4352-81eb-ff6d042b5ff8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Utility\06.Fonts">
+      <UniqueIdentifier>{4b9e33f3-a61f-4915-8a6f-be95f4e67e0e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Utility\07.Frustum">
+      <UniqueIdentifier>{763341c0-084b-496d-aa32-e86e0a9b3068}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\public\Base.h">
@@ -331,6 +337,15 @@
     <ClInclude Include="..\public\Decorator.h">
       <Filter>01.Utility\03.Components\AIComponent\Decorator</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\CustomFont.h">
+      <Filter>01.Utility\06.Fonts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Font_Manager.h">
+      <Filter>01.Utility\06.Fonts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Frustum.h">
+      <Filter>01.Utility\07.Frustum</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\private\Base.cpp">
@@ -491,6 +506,15 @@
     </ClCompile>
     <ClCompile Include="..\private\Decorator.cpp">
       <Filter>01.Utility\03.Components\AIComponent\Decorator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\CustomFont.cpp">
+      <Filter>01.Utility\06.Fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Font_Manager.cpp">
+      <Filter>01.Utility\06.Fonts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Frustum.cpp">
+      <Filter>01.Utility\07.Frustum</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

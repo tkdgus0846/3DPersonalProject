@@ -11,7 +11,7 @@ protected:
 	virtual ~CSequence() = default;
 
 public:
-	virtual RESULT Run(const _double & TimeDelta, vector<CBehavior*>* LastRunningList = nullptr);
+	virtual RESULT Run(const _float & TimeDelta, vector<CBehavior*>* LastRunningList = nullptr);
 
 public:
 	static CSequence* Create();

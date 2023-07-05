@@ -57,7 +57,7 @@ public:
 	virtual ~CImGuiWindow() = default;
 
 	virtual HRESULT Initialize(const WINDOWDESC& desc);
-	virtual void Tick(_double timeDelta) {}
+	virtual void Tick(_float timeDelta) {}
 	void Render();
 
 	void Open_Window();

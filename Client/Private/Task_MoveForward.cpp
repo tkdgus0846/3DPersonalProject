@@ -5,7 +5,7 @@
 #include "Paladin.h"
 #include "Transform.h"
 
-CTask_MoveForward::RESULT CTask_MoveForward::Run(const _double& TimeDelta, vector<CBehavior*>* LastRunningList)
+CTask_MoveForward::RESULT CTask_MoveForward::Run(const _float& TimeDelta, vector<CBehavior*>* LastRunningList)
 {
 	if (Pass_Decorator() == false)
 		return RESULT(FAIL);
@@ -25,4 +25,5 @@ CTask_MoveForward* CTask_MoveForward::Create()
 
 void CTask_MoveForward::Free()
 {
+	__super::Free();
 }

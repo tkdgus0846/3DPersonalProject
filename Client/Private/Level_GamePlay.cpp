@@ -28,12 +28,12 @@ HRESULT CLevel_GamePlay::Initialize()
 	return S_OK;
 }
 
-void CLevel_GamePlay::Tick(_double TimeDelta)
+void CLevel_GamePlay::Tick(_float TimeDelta)
 {
 	__super::Tick(TimeDelta);
 }
 
-void CLevel_GamePlay::Late_Tick(_double TimeDelta)
+void CLevel_GamePlay::Late_Tick(_float TimeDelta)
 {
 	__super::Late_Tick(TimeDelta);
 
