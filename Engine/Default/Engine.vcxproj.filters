@@ -160,6 +160,9 @@
     <Filter Include="01.Utility\07.Frustum">
       <UniqueIdentifier>{763341c0-084b-496d-aa32-e86e0a9b3068}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Utility\03.Components\AIComponent\Behavior\RandomChooser">
+      <UniqueIdentifier>{2386a54d-51d5-4c98-9926-94b24a8e5d68}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\public\Base.h">
@@ -346,6 +349,12 @@
     <ClInclude Include="..\Public\Frustum.h">
       <Filter>01.Utility\07.Frustum</Filter>
     </ClInclude>
+    <ClInclude Include="..\Public\RandomChooser.h">
+      <Filter>01.Utility\03.Components\AIComponent\Behavior\RandomChooser</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\QuadTree.h">
+      <Filter>01.Utility\03.Components\VIBuffer\Terrain</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\private\Base.cpp">
@@ -515,6 +524,12 @@
     </ClCompile>
     <ClCompile Include="..\Private\Frustum.cpp">
       <Filter>01.Utility\07.Frustum</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\RandomChooser.cpp">
+      <Filter>01.Utility\03.Components\AIComponent\Behavior\RandomChooser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\QuadTree.cpp">
+      <Filter>01.Utility\03.Components\VIBuffer\Terrain</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

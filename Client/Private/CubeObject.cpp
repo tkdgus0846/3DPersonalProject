@@ -28,9 +28,6 @@ HRESULT CCubeObject::Initialize(void* pArg)
 	if (FAILED(__super::Initialize(pArg)))
 		return E_FAIL;
 
-	if (FAILED(Add_Components()))
-		return E_FAIL;
-
 	/*m_pTransformCom->Set_Position({ 10.f,2.f,10.f,1.f });
 	m_pTransformCom->Scaled({ 4.f,4.f,4.f });*/
 
@@ -44,9 +41,9 @@ void CCubeObject::Tick(_float TimeDelta)
 	__super::Tick(TimeDelta);
 }
 
-void CCubeObject::Late_Tick(_float TimeDelta)
+_int CCubeObject::Late_Tick(_float TimeDelta)
 {
-	__super::Late_Tick(TimeDelta);
+	_int result = __super::Late_Tick(TimeDelta);
 
 	
 	CGameInstance* pGameInstance = CGameInstance::GetInstance();
@@ -58,14 +55,13 @@ void CCubeObject::Late_Tick(_float TimeDelta)
 
 	if (nullptr != m_pRendererCom)
 		m_pRendererCom->Add_RenderGroup((CRenderer::RENDERGROUP)m_eRenderGroup, this);
+
+	return result;
 }
 
 HRESULT CCubeObject::Render()
 {
 	if (FAILED(__super::Render()))
-		return E_FAIL;
-
-	if (FAILED(SetUp_ShaderResources()))
 		return E_FAIL;
 
 	m_pShaderCom->Begin(m_iPassNum);

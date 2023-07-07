@@ -95,8 +95,9 @@ void CCamera_Main::Tick(_float TimeDelta)
 	__super::Tick(TimeDelta);
 }
 
-void CCamera_Main::Late_Tick(_float TimeDelta)
+_int CCamera_Main::Late_Tick(_float TimeDelta)
 {
+	return OBJ_NOEVENT;
 }
 
 HRESULT CCamera_Main::Render()

@@ -2,6 +2,7 @@
 #include "..\Public\Sword.h"
 #include "GameInstance.h"
 #include "Player.h"
+#include "Camera_Player_Main.h"
 
 CSword::CSword(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: CWeapon(pDevice, pContext)
@@ -43,9 +44,9 @@ void CSword::Tick(_float TimeDelta)
 	
 }
 
-void CSword::Late_Tick(_float TimeDelta)
+_int CSword::Late_Tick(_float TimeDelta)
 {
-	__super::Late_Tick(TimeDelta);
+	return __super::Late_Tick(TimeDelta);
 }
 
 HRESULT CSword::Render()
@@ -135,6 +136,64 @@ void CSword::Free()
 	__super::Free();
 }
 
+void CSword::SkillQ_Collision_Enter(const Collision* collision)
+{
+	
+}
+
+void CSword::SkillQ_Collision_Stay(const Collision* collision)
+{
+	CCollider* myCollider = m_pPlayer->Get_Collider(CPlayer::COLLIDER_SWORD_Q);
+
+	CCreature* creature = (CCreature*)collision->OtherGameObject;
+	if (creature && myCollider == collision->MyCollider)
+	{
+		creature->Get_Damaged(m_QDamage);
+	}
+}
+
+void CSword::SkillQ_Collision_Exit(const Collision* collision)
+{
+}
+
+void CSword::SkillE_Collision_Enter(const Collision* collision)
+{
+	
+}
+
+void CSword::SkillE_Collision_Stay(const Collision* collision)
+{
+	CCollider* myCollider = m_pPlayer->Get_Collider(CPlayer::COLLIDER_SWORD_E);
+
+	CCreature* creature = (CCreature*)collision->OtherGameObject;
+	if (creature && myCollider == collision->MyCollider)
+	{
+		
+		if (m_SwordSpinTickAcc >= m_SwordSpinTickTime)
+		{
+			m_SwordSpinTickAcc = 0.f;
+			creature->Get_Damaged(m_EDamage);
+
+			CGameInstance* pGameInstance = CGameInstance::GetInstance();
+			if (pGameInstance->Is_Shacking() == true) return;
+
+			CCamera_Player_Main::MAINCAMERASHAKE desc;
+
+			// 데미지에 따라서 쉐이크 계수를 다르게 해보자. 
+			desc.fShakeMagnitude = 0.2f;
+			desc.fShakeDuration = 0.10f;
+
+			pGameInstance->On_Shake(&desc);
+		}
+	}
+
+	
+}
+
+void CSword::SkillE_Collision_Exit(const Collision* collision)
+{
+}
+
 // 스킬 Q 가 활성화되어잇을대 틱에서 처리할것
 void CSword::Skill_Q(const _float& TimeDelta)
 {
@@ -158,12 +217,14 @@ void CSword::Skill_E(const _float& TimeDelta)
 		return;
 	}
 	m_SwordSpinTimeAcc += TimeDelta;
+	m_SwordSpinTickAcc += TimeDelta;
 	
 }
 
 // q 스킬을 시작할때 세팅
 void CSword::Skill_Q_Setting()
 {
+	m_pPlayer->Collider_On(CPlayer::COLLIDER_SWORD_Q);
 	XMStoreFloat3(&m_DashDir, m_pPlayer->m_pTransformCom->Get_State(CTransform::STATE_LOOK));
 	m_SwordDashTimeAcc = 0.0f;
 	m_bSwordDashFinished = false;
@@ -176,12 +237,14 @@ void CSword::Skill_E_Setting()
 	m_bSwordSpinFinished = false;
 	m_pPlayer->m_pAnimInstance->Apply_Animation("Sword_Spin");
 	m_pPlayer->m_pTransformCom->Change_Speed(m_SpinMoveSpeed);
+	m_pPlayer->Collider_On(CPlayer::COLLIDER_SWORD_E);
 }
 
 // q 스킬이 끝나는 시점 bool 리턴
 _bool CSword::Skill_Q_End()
 {
-	// 방향이 역방향이 되는 순간. 멈춰라.
+	m_pPlayer->Collider_Off(CPlayer::COLLIDER_SWORD_Q);
+	
 	if (m_bSwordDashFinished == true)
 		return true;
 	return false;
@@ -190,7 +253,11 @@ _bool CSword::Skill_Q_End()
 _bool CSword::Skill_E_End()
 {
 	if (m_bSwordSpinFinished == true)
+	{
+		m_pPlayer->Collider_Off(CPlayer::COLLIDER_SWORD_E);
+		m_SwordSpinTickAcc = 0.f;
 		return true;
+	}
 	return false;
 }
 

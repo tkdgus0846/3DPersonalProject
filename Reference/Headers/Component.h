@@ -21,7 +21,7 @@ public:
 	virtual HRESULT Initialize(void* pArg);
 
 	virtual void Tick(_float TimeDelta) {}
-	virtual void Late_Tick(_float TimeDelta) {}
+	virtual _int Late_Tick(_float TimeDelta) { return OBJ_NOEVENT; }
 	virtual HRESULT Render() { return S_OK; }
 
 	const wstring GetName() const { return m_pName; }
@@ -66,7 +66,7 @@ public:
 	virtual HRESULT Initialize_Prototype();
 	virtual HRESULT Initialize(void* pArg);
 	virtual void Tick(_float TimeDelta);
-	virtual void Late_Tick(_float TimeDelta);
+	virtual _int Late_Tick(_float TimeDelta);
 
 	list<class CComponent*> Get_ComponentsByList();
 	unordered_map<wstring, CComponent*>* Get_ComponentsByUmap() { return &m_Components; }

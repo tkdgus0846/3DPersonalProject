@@ -47,9 +47,9 @@ void CMace::Tick(_float TimeDelta)
 	
 }
 
-void CMace::Late_Tick(_float TimeDelta)
+_int CMace::Late_Tick(_float TimeDelta)
 {
-	__super::Late_Tick(TimeDelta);
+	return __super::Late_Tick(TimeDelta);
 }
 
 HRESULT CMace::Render()
@@ -168,12 +168,15 @@ void CMace::Skill_Q(const _float& TimeDelta)
 		CGameInstance::GetInstance()->On_Shake(&desc);
 		m_pPlayer->m_bClimbNavMesh = true;
 		m_bMaceDashFinished = true;
+		m_pPlayer->Collider_Off(CPlayer::COLLIDER_MACE_E);
 	}
 }
 
 void CMace::Skill_E(const _float& TimeDelta)
 {
 	m_MaceDashTimeAcc += TimeDelta;
+	if (m_MaceDashTimeAcc > 0.7f)
+		m_pPlayer->Collider_Off(CPlayer::COLLIDER_MACE_E);
 	if ((m_MaceSpinInitSpeed + (m_MaceSpinAccel * m_MaceDashTimeAcc)) >= 0.f)
 	{
 		XMStoreFloat3(&m_DashDir, m_pPlayer->m_pTransformCom->Get_State(CTransform::STATE_LOOK));
@@ -187,6 +190,8 @@ void CMace::Skill_E(const _float& TimeDelta)
 
 void CMace::Skill_Q_Setting()
 {
+	m_pPlayer->Collider_On(CPlayer::COLLIDER_MACE_E);
+
 	XMStoreFloat3(&m_DashDir, m_pPlayer->m_pTransformCom->Get_State(CTransform::STATE_LOOK));
 	m_MaceDashJumpOriginHeight = m_pPlayer->m_pTransformCom->Get_State(CTransform::STATE_POSITION).m128_f32[1];
 	m_MaceDashTimeAcc = 0.0f;
@@ -205,6 +210,7 @@ void CMace::Skill_E_Setting()
 
 _bool CMace::Skill_Q_End()
 {
+	m_pPlayer->Collider_Off(CPlayer::COLLIDER_MACE_E);
 	_bool bResult = false;
 	if (m_bMaceDashFinished == true)
 	{
@@ -216,12 +222,13 @@ _bool CMace::Skill_Q_End()
 
 _bool CMace::Skill_E_End()
 {
+	
 	_bool bResult = false;
 	if (m_bMaceSpinFinished == true)
 	{
 		bResult = true;
 		m_bMaceSpinFinished = false;
-		m_pPlayer->Collider_Off(CPlayer::COLLIDER_MACE_E);
+		
 	}
 	return bResult;
 }
@@ -292,6 +299,7 @@ void CMace::SkillQ_Collision_Enter(const Collision* collision)
 
 void CMace::SkillQ_Collision_Stay(const Collision* collision)
 {
+	SkillE_Collision_Stay(collision);
 }
 
 void CMace::SkillQ_Collision_Exit(const Collision* collision)
@@ -306,7 +314,7 @@ void CMace::SkillE_Collision_Enter(const Collision* collision)
 
 void CMace::SkillE_Collision_Stay(const Collision* collision)
 {
-	CMonster* monster = (CMonster*)collision->OtherGameObject;
+	CMonster* monster = dynamic_cast<CMonster*>(collision->OtherGameObject);
 	CCollider* collider = m_pPlayer->m_pColliderCom[CPlayer::COLLIDER_MACE_E];
 
 	if (monster != nullptr && collider == collision->MyCollider)
@@ -318,7 +326,12 @@ void CMace::SkillE_Collision_Stay(const Collision* collision)
 		if (monsterTransform == nullptr) return;
 
 		_vector vPos = monsterTransform->Get_State(CTransform::STATE_POSITION);
-		monsterTransform->Go_Dir(vPos + vLookDir, 0.015f, nullptr);
+
+		CNavigation* monsterNavigation = (CNavigation*)monster->Get_Component(NAVIGATION_W);
+
+		
+
+		monsterTransform->Go_Dir(vLookDir, 0.02f, monsterNavigation);
 
 	}
 }

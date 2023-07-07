@@ -28,11 +28,6 @@ HRESULT CHorse::Initialize(void* pArg)
 	if (FAILED(__super::Initialize(pArg)))
 		return E_FAIL;
 
-	if (FAILED(Add_Components()))
-		return E_FAIL;
-
-	Add_Animations();
-
 	m_pAnimInstance[HORSE_NATURAL]->Apply_Animation("Idle");
 
 	m_pTransformCom->Set_Position({ 10.f,0.f,0.f,1.f });
@@ -48,9 +43,9 @@ void CHorse::Tick(_float TimeDelta)
 	// 틱에서 프러스텀을 만들고있으므로 그 뒤인 레이트틱에 처리를해줘야한다.
 }
 
-void CHorse::Late_Tick(_float TimeDelta)
+_int CHorse::Late_Tick(_float TimeDelta)
 {
-	__super::Late_Tick(TimeDelta);
+	_int result = __super::Late_Tick(TimeDelta);
 
 	CGameInstance* pGameInstance = CGameInstance::GetInstance();
 	Safe_AddRef(pGameInstance);
@@ -65,14 +60,12 @@ void CHorse::Late_Tick(_float TimeDelta)
 		
 
 	Safe_Release(pGameInstance);
+	return result;
 }
 
 HRESULT CHorse::Render()
 {
 	if (FAILED(__super::Render()))
-		return E_FAIL;
-
-	if (FAILED(SetUp_ShaderResources()))
 		return E_FAIL;
 
 	_uint		iNumMeshes = m_pModelCom[m_eCurHorseType]->Get_NumMeshes();
@@ -92,7 +85,7 @@ HRESULT CHorse::Render()
 	return S_OK;
 }
 
-void CHorse::Add_Animations()
+HRESULT CHorse::Add_Animations()
 {
 	AnimNode node;
 
@@ -123,6 +116,7 @@ void CHorse::Add_Animations()
 	node.AnimIndices = { 486, 487, 488 };
 	node.eraseLessTime = { 0.05, 0.05, 0.04 };
 
+	return S_OK;
 }
 
 HRESULT CHorse::Add_Components()

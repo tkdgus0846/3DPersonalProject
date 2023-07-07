@@ -1,4 +1,6 @@
 #include "..\Public\VIBuffer_Terrain.h"
+#include "QuadTree.h"
+#include "Frustum.h"
 
 CVIBuffer_Terrain::CVIBuffer_Terrain(ID3D11Device * pDevice, ID3D11DeviceContext * pContext)
 	: CVIBuffer(pDevice, pContext)
@@ -11,7 +13,10 @@ CVIBuffer_Terrain::CVIBuffer_Terrain(const CVIBuffer_Terrain & rhs)
 	, m_iNumVerticesZ{ rhs.m_iNumVerticesZ }
 	, m_fInterval{ rhs.m_fInterval }
 	, m_VerticesPos{ rhs.m_VerticesPos}
+	, m_pIndices(rhs.m_pIndices)
+	, m_pQuadTree(rhs.m_pQuadTree)
 {
+	Safe_AddRef(m_pQuadTree);
 }
 
 HRESULT CVIBuffer_Terrain::Initialize_Prototype(const _tchar* pHeightMap, TYPE eType)
@@ -51,13 +56,16 @@ HRESULT CVIBuffer_Terrain::Initialize_Prototype(const _tchar* pHeightMap, TYPE e
 	VTXPOSNORTEX*		pVertices = new VTXPOSNORTEX[m_iNumVertices];
 	ZeroMemory(pVertices, sizeof(VTXPOSNORTEX) * m_iNumVertices);
 
+	m_pVerticesPos = new _float3[m_iNumVertices];
+	ZeroMemory(m_pVerticesPos, sizeof(_float3) * m_iNumVertices);
+
 	for (_uint i = 0; i < m_iNumVerticesZ; ++i)
 	{
 		for (_uint j = 0; j < m_iNumVerticesX; j++)
 		{
 			_uint		iIndex = i * m_iNumVerticesX + j;
 						
-			pVertices[iIndex].vPosition = _float3(j * m_fInterval, (pPixel[iIndex] & 0x000000ff) / 10.0f, i * m_fInterval);
+			m_pVerticesPos[iIndex] = pVertices[iIndex].vPosition = _float3(j * m_fInterval, (pPixel[iIndex] & 0x000000ff) / 10.0f, i * m_fInterval);
 			pVertices[iIndex].vNormal = _float3(0.f, 0.f, 0.f);
 			pVertices[iIndex].vTexCoord = _float2(j / (m_iNumVerticesX - 1.f), i / (m_iNumVerticesZ - 1.f));
 		}
@@ -72,6 +80,9 @@ HRESULT CVIBuffer_Terrain::Initialize_Prototype(const _tchar* pHeightMap, TYPE e
 
 	_ulong*		pIndices = new _ulong[m_iNumIndices];
 	ZeroMemory(pIndices, sizeof(_ulong) * m_iNumIndices);
+
+	m_pIndices = new _ulong[m_iNumIndices];
+	ZeroMemory(m_pIndices, sizeof(_ulong) * m_iNumIndices);
 
 	_uint		iNumIndices = { 0 };
 
@@ -151,10 +162,10 @@ HRESULT CVIBuffer_Terrain::Initialize_Prototype(const _tchar* pHeightMap, TYPE e
 	ZeroMemory(&m_BufferDesc, sizeof m_BufferDesc);
 
 	m_BufferDesc.ByteWidth = { m_iIndexStride * m_iNumIndices };
-	m_BufferDesc.Usage = { D3D11_USAGE_DEFAULT };
+	m_BufferDesc.Usage = { D3D11_USAGE_DYNAMIC };
 	m_BufferDesc.BindFlags = { D3D11_BIND_INDEX_BUFFER };
 	m_BufferDesc.StructureByteStride = { 0 };
-	m_BufferDesc.CPUAccessFlags = { 0 };
+	m_BufferDesc.CPUAccessFlags = { D3D11_CPU_ACCESS_WRITE };
 	m_BufferDesc.MiscFlags = { 0 };
 
 	ZeroMemory(&m_SubResourceData, sizeof m_SubResourceData);
@@ -166,6 +177,15 @@ HRESULT CVIBuffer_Terrain::Initialize_Prototype(const _tchar* pHeightMap, TYPE e
 	Safe_Delete_Array(pIndices);
 
 #pragma endregion
+
+	m_pQuadTree = CQuadTree::Create(m_iNumVerticesX * m_iNumVerticesZ - m_iNumVerticesX,
+		m_iNumVerticesX * m_iNumVerticesZ - 1,
+		m_iNumVerticesX - 1,
+		0);
+
+
+	if (FAILED(m_pQuadTree->Make_Neighbors()))
+		return E_FAIL;
 
 	return S_OK;
 }
@@ -192,13 +212,16 @@ HRESULT CVIBuffer_Terrain::Initialize_Prototype(const _uint& sizeX, const _uint&
 	VTXPOSNORTEX* pVertices = new VTXPOSNORTEX[m_iNumVertices];
 	ZeroMemory(pVertices, sizeof(VTXPOSNORTEX) * m_iNumVertices);
 
+	m_pVerticesPos = new _float3[m_iNumVertices];
+	ZeroMemory(m_pVerticesPos, sizeof(_float3) * m_iNumVertices);
+
 	for (_uint i = 0; i < m_iNumVerticesZ; ++i)
 	{
 		for (_uint j = 0; j < m_iNumVerticesX; j++)
 		{
 			_uint		iIndex = i * m_iNumVerticesX + j;
 
-			pVertices[iIndex].vPosition = _float3(j * m_fInterval, 0.f , i * m_fInterval);
+			m_pVerticesPos[iIndex] = pVertices[iIndex].vPosition = _float3(j * m_fInterval, 0.f , i * m_fInterval);
 			pVertices[iIndex].vNormal = _float3(0.f, 0.f, 0.f);
 			pVertices[iIndex].vTexCoord = _float2(j / (m_iNumVerticesX - 1.f), i / (m_iNumVerticesZ - 1.f));
 		}
@@ -213,6 +236,9 @@ HRESULT CVIBuffer_Terrain::Initialize_Prototype(const _uint& sizeX, const _uint&
 
 	_ulong* pIndices = new _ulong[m_iNumIndices];
 	ZeroMemory(pIndices, sizeof(_ulong) * m_iNumIndices);
+
+	m_pIndices = new _ulong[m_iNumIndices];
+	ZeroMemory(m_pIndices, sizeof(_ulong) * m_iNumIndices);
 
 	_uint		iNumIndices = { 0 };
 
@@ -290,10 +316,10 @@ HRESULT CVIBuffer_Terrain::Initialize_Prototype(const _uint& sizeX, const _uint&
 	ZeroMemory(&m_BufferDesc, sizeof m_BufferDesc);
 
 	m_BufferDesc.ByteWidth = { m_iIndexStride * m_iNumIndices };
-	m_BufferDesc.Usage = { D3D11_USAGE_DEFAULT };
+	m_BufferDesc.Usage = { D3D11_USAGE_DYNAMIC };
 	m_BufferDesc.BindFlags = { D3D11_BIND_INDEX_BUFFER };
 	m_BufferDesc.StructureByteStride = { 0 };
-	m_BufferDesc.CPUAccessFlags = { 0 };
+	m_BufferDesc.CPUAccessFlags = { D3D11_CPU_ACCESS_WRITE };
 	m_BufferDesc.MiscFlags = { 0 };
 
 	ZeroMemory(&m_SubResourceData, sizeof m_SubResourceData);
@@ -303,6 +329,15 @@ HRESULT CVIBuffer_Terrain::Initialize_Prototype(const _uint& sizeX, const _uint&
 		return E_FAIL;
 
 	Safe_Delete_Array(pIndices);
+
+	m_pQuadTree = CQuadTree::Create(m_iNumVerticesX * m_iNumVerticesZ - m_iNumVerticesX,
+		m_iNumVerticesX * m_iNumVerticesZ - 1,
+		m_iNumVerticesX - 1,
+		0);
+
+
+	if (FAILED(m_pQuadTree->Make_Neighbors()))
+		return E_FAIL;
 
 	return S_OK;
 }
@@ -339,13 +374,16 @@ HRESULT CVIBuffer_Terrain::Initialize_Prototype(const wstring& pCustomHeightMap,
 	VTXPOSNORTEX* pVertices = new VTXPOSNORTEX[m_iNumVertices];
 	ZeroMemory(pVertices, sizeof(VTXPOSNORTEX) * m_iNumVertices);
 
+	m_pVerticesPos = new _float3[m_iNumVertices];
+	ZeroMemory(m_pVerticesPos, sizeof(_float3) * m_iNumVertices);
+
 	for (_uint i = 0; i < m_iNumVerticesZ; ++i)
 	{
 		for (_uint j = 0; j < m_iNumVerticesX; j++)
 		{
 			_uint		iIndex = i * m_iNumVerticesX + j;
 
-			pVertices[iIndex].vPosition = _float3(j * m_fInterval, pPixel[iIndex], i * m_fInterval);
+			m_pVerticesPos[iIndex] = pVertices[iIndex].vPosition = _float3(j * m_fInterval, pPixel[iIndex], i * m_fInterval);
 			pVertices[iIndex].vNormal = _float3(0.f, 0.f, 0.f);
 			pVertices[iIndex].vTexCoord = _float2(j / (m_iNumVerticesX - 1.f), i / (m_iNumVerticesZ - 1.f));
 		}
@@ -360,6 +398,9 @@ HRESULT CVIBuffer_Terrain::Initialize_Prototype(const wstring& pCustomHeightMap,
 
 	_ulong* pIndices = new _ulong[m_iNumIndices];
 	ZeroMemory(pIndices, sizeof(_ulong) * m_iNumIndices);
+
+	m_pIndices = new _ulong[m_iNumIndices];
+	ZeroMemory(m_pIndices, sizeof(_ulong) * m_iNumIndices);
 
 	_uint		iNumIndices = { 0 };
 
@@ -439,10 +480,10 @@ HRESULT CVIBuffer_Terrain::Initialize_Prototype(const wstring& pCustomHeightMap,
 	ZeroMemory(&m_BufferDesc, sizeof m_BufferDesc);
 
 	m_BufferDesc.ByteWidth = { m_iIndexStride * m_iNumIndices };
-	m_BufferDesc.Usage = { D3D11_USAGE_DEFAULT };
+	m_BufferDesc.Usage = { D3D11_USAGE_DYNAMIC };
 	m_BufferDesc.BindFlags = { D3D11_BIND_INDEX_BUFFER };
 	m_BufferDesc.StructureByteStride = { 0 };
-	m_BufferDesc.CPUAccessFlags = { 0 };
+	m_BufferDesc.CPUAccessFlags = { D3D11_CPU_ACCESS_WRITE };
 	m_BufferDesc.MiscFlags = { 0 };
 
 	ZeroMemory(&m_SubResourceData, sizeof m_SubResourceData);
@@ -455,7 +496,82 @@ HRESULT CVIBuffer_Terrain::Initialize_Prototype(const wstring& pCustomHeightMap,
 
 #pragma endregion
 
+	m_pQuadTree = CQuadTree::Create(m_iNumVerticesX * m_iNumVerticesZ - m_iNumVerticesX,
+		m_iNumVerticesX * m_iNumVerticesZ - 1,
+		m_iNumVerticesX - 1,
+		0);
+
+
+	if (FAILED(m_pQuadTree->Make_Neighbors()))
+		return E_FAIL;
+
 	return S_OK;
+}
+
+void CVIBuffer_Terrain::Culling(_fmatrix WorldMatrix)
+{
+	CFrustum* pFrustum = CFrustum::GetInstance();
+	Safe_AddRef(pFrustum);
+
+	pFrustum->Transform_ToLocalSpace(WorldMatrix);
+
+	_uint		iNumIndices = { 0 };
+
+	m_pQuadTree->Culling(pFrustum, m_pVerticesPos, m_pIndices, &iNumIndices);
+
+	//for (_uint i = 0; i < m_iNumVerticesZ - 1; ++i)
+	//{
+	//	for (_uint j = 0; j < m_iNumVerticesX - 1; j++)
+	//	{
+	//		_uint		iIndex = i * m_iNumVerticesX + j;
+
+	//		_uint		iIndices[4] = {
+	//			iIndex + m_iNumVerticesX,
+	//			iIndex + m_iNumVerticesX + 1,
+	//			iIndex + 1,
+	//			iIndex
+	//		};
+
+	//		_bool		isIn[4] = {
+	//			pFrustum->isIn_LocalSpace(XMLoadFloat3(&m_pVerticesPos[iIndices[0]]), 0.0f),
+	//			pFrustum->isIn_LocalSpace(XMLoadFloat3(&m_pVerticesPos[iIndices[1]]), 0.0f),
+	//			pFrustum->isIn_LocalSpace(XMLoadFloat3(&m_pVerticesPos[iIndices[2]]), 0.0f),
+	//			pFrustum->isIn_LocalSpace(XMLoadFloat3(&m_pVerticesPos[iIndices[3]]), 0.0f),
+	//		};
+
+	//		/* 오른쪽 위 삼각형을 구성하는 정점 중, 최소 하나라도 절두체 안에 있다. */
+	//		if (true == isIn[0] ||
+	//			true == isIn[1] ||
+	//			true == isIn[2])
+	//		{
+	//			m_pIndices[iNumIndices++] = iIndices[0];
+	//			m_pIndices[iNumIndices++] = iIndices[1];
+	//			m_pIndices[iNumIndices++] = iIndices[2];
+	//		}
+
+	//		/* 왼쪽 아래 삼각형을 구성하는 정점 중, 최소 하나라도 절두체 안에 있다. */
+	//		if (true == isIn[0] ||
+	//			true == isIn[2] ||
+	//			true == isIn[3])
+	//		{
+	//			m_pIndices[iNumIndices++] = iIndices[0];
+	//			m_pIndices[iNumIndices++] = iIndices[2];
+	//			m_pIndices[iNumIndices++] = iIndices[3];
+	//		}
+	//	}
+	//}
+
+	D3D11_MAPPED_SUBRESOURCE		SubResource;
+
+	m_pContext->Map(m_pIB, 0, D3D11_MAP_WRITE_DISCARD, 0, &SubResource);
+
+	memcpy(SubResource.pData, m_pIndices, sizeof(_ulong) * iNumIndices);
+
+	m_pContext->Unmap(m_pIB, 0);
+
+	m_iNumIndices = iNumIndices;
+
+	Safe_Release(pFrustum);
 }
 
 HRESULT CVIBuffer_Terrain::Initialize(void * pArg)
@@ -519,6 +635,7 @@ void CVIBuffer_Terrain::Picking_Height_Cos(_uint index, _float radius, _float po
 
 	for (auto& item : resultVec)
 	{
+		m_pVerticesPos[item.first].y += item.second;
 		vertices[item.first].vPosition.y += item.second;
 	}
 
@@ -668,6 +785,11 @@ CComponent * CVIBuffer_Terrain::Clone(void * pArg)
 void CVIBuffer_Terrain::Free()
 {
 	__super::Free();
+
+	if (false == m_isCloned)
+		Safe_Delete_Array(m_pIndices);
+
+	Safe_Release(m_pQuadTree);
 
 }
 

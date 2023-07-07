@@ -1,12 +1,20 @@
 #include "..\Public\Behavior.h"
 #include "Decorator.h"
+#include "BlackBoard.h"
 
-void CBehavior::AddNode(CBehavior* pNode)
+void CBehavior::AddNode(CBehavior* pNode, _int iOrder)
 {
 	if (pNode == nullptr) return;
 	
 	pNode->m_pParent = this;
-	m_ChildList.push_back(pNode);
+
+	if (iOrder == -1)
+		m_ChildList.push_back(pNode);
+	else
+	{
+		m_ChildList.insert(m_ChildList.begin() + iOrder, pNode);
+	}
+
 
 	//if (m_ChildList.size() >= 2)
 	//{
@@ -45,12 +53,17 @@ _bool CBehavior::Pass_Decorator()
 {
 	_bool result = true;
 
+	
+
 	for (auto deco : m_DecoratorList)
 	{
 		result = result && deco->Is_Exec(m_pBlackBoard);
 		if (result == false)
 			return false;
 	}
+
+	if (m_ChildList.size() == 0)
+		m_pBlackBoard->ClearData();
 
 	return result;
 }

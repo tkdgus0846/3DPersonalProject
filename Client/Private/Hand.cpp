@@ -28,8 +28,9 @@ void CHand::Tick(_float TimeDelta)
 {
 }
 
-void CHand::Late_Tick(_float TimeDelta)
+_int CHand::Late_Tick(_float TimeDelta)
 {
+	return __super::Late_Tick(TimeDelta);
 }
 
 HRESULT CHand::Render()

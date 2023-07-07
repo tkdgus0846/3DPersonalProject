@@ -20,7 +20,7 @@ public:
 	virtual HRESULT Initialize(class CBounding* pBounding, void* pArg);
 
 	virtual void Tick(_float TimeDelta) override;
-	virtual void Late_Tick(_float TimeDelta) override;
+	virtual _int Late_Tick(_float TimeDelta) override;
 
 	void OnCollisionEnter(const Collision* collision);
 	void OnCollisionStay(const Collision* collision);

@@ -27,8 +27,21 @@ HRESULT CGameObject::Initialize(void* pArg)
 {
 	HRESULT result = __super::Initialize(pArg);
 
+	if (FAILED(Add_Components()))
+		return E_FAIL;
+
 	m_iPassNum = 0;
 	m_eRenderGroup = CRenderer::RENDER_NONBLEND;
 
 	return result;
+}
+
+HRESULT CGameObject::Render()
+{
+	HRESULT hr = __super::Render();
+
+	if (FAILED(SetUp_ShaderResources()))
+		return E_FAIL;
+
+	return hr;
 }

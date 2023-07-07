@@ -63,9 +63,6 @@ HRESULT CDummyObject::Initialize(void* pArg)
 	if (FAILED(__super::Initialize(pArg)))
 		return E_FAIL;
 
-	if (FAILED(Add_Components()))
-		return E_FAIL;	
-
 	return S_OK;
 }
 
@@ -77,12 +74,31 @@ void CDummyObject::Tick(_float TimeDelta)
 		m_pModelCom->Play_Animation(TimeDelta);
 }
 
-void CDummyObject::Late_Tick(_float TimeDelta)
+_int CDummyObject::Late_Tick(_float TimeDelta)
 {
 	__super::Late_Tick(TimeDelta);
 
-	if (nullptr != m_pRendererCom)
-		m_pRendererCom->Add_RenderGroup((CRenderer::RENDERGROUP)m_eRenderGroup, this);
+	if (m_pName.compare(L"Terrain") == 0)
+	{
+		((CVIBuffer_Terrain*)m_pVIBufferCom)->Culling(m_pTransformCom->Get_WorldMatrix());
+
+		if (nullptr != m_pRendererCom)
+			m_pRendererCom->Add_RenderGroup((CRenderer::RENDERGROUP)m_eRenderGroup, this);
+	}
+	else
+	{
+		if (CGameInstance::GetInstance()->isIn_WorldSpace(m_pTransformCom->Get_State(CTransform::STATE_POSITION), 2.f))
+		{
+			if (nullptr != m_pRendererCom)
+				m_pRendererCom->Add_RenderGroup((CRenderer::RENDERGROUP)m_eRenderGroup, this);
+		}
+	}
+	
+
+	
+	
+
+	return OBJ_NOEVENT;
 }
 
 HRESULT CDummyObject::Render()

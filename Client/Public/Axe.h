@@ -17,7 +17,7 @@ public:
 	virtual HRESULT Initialize_Prototype() override;
 	virtual HRESULT Initialize(void* pArg) override;
 	virtual void Tick(_float TimeDelta) override;
-	virtual void Late_Tick(_float TimeDelta) override;
+	virtual _int Late_Tick(_float TimeDelta) override;
 	virtual HRESULT Render() override;
 
 	virtual HRESULT Add_Components() override;
@@ -29,6 +29,19 @@ public:
 	/* 사본(실제 사용할 객체)을 생성한다. */
 	virtual CGameObject* Clone(void* pArg) override;
 	virtual void Free() override;
+
+	virtual void SkillQ_Collision_Enter(const Collision* collision);
+	virtual void SkillQ_Collision_Stay(const Collision* collision);
+	virtual void SkillQ_Collision_Exit(const Collision* collision);
+
+	virtual void SkillE_Collision_Enter(const Collision* collision);
+	virtual void SkillE_Collision_Stay(const Collision* collision);
+	virtual void SkillE_Collision_Exit(const Collision* collision);
+
+	virtual void Attack_Collision_Enter(const Collision* collision);
+	virtual void Attack_Collision_Stay(const Collision* collision);
+	virtual void Attack_Collision_Exit(const Collision* collision);
+
 
 	// CWeapon을(를) 통해 상속됨
 	virtual void Skill_Q(const _float& TimeDelta) override;

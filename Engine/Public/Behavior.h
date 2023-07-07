@@ -6,7 +6,7 @@ BEGIN(Engine)
 
 class CBlackBoard;
 class CDecorator;
-
+//
 class ENGINE_DLL CBehavior : public CBase
 {
 	friend class CBehaviorTree;
@@ -28,7 +28,7 @@ protected:
 
 public:
 	virtual RESULT	Run(const _float& TimeDelta, vector<CBehavior*>* LastRunningList = nullptr) PURE;
-	void			AddNode(CBehavior* pNode);
+	void			AddNode(CBehavior* pNode, _int iOrder = -1);
 	void			Set_BlackBoard(CBlackBoard* pBlackBoard);
 	CBehavior*		Get_Parent() { return m_pParent; }
 	void			Add_Decorator(CDecorator* deco);

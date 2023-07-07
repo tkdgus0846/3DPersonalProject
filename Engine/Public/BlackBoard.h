@@ -12,7 +12,7 @@ protected:
 	virtual ~CBlackBoard() = default;
 
 public:
-	virtual void	ClearData() {};
+	void			ClearData();
 	void			AddData(const string& name, any Data);
 	void			ChangeData(const string& name, any Data);
 

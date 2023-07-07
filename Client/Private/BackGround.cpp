@@ -28,9 +28,6 @@ HRESULT CBackGround::Initialize(void* pArg)
 	if (FAILED(__super::Initialize(pArg)))
 		return E_FAIL;
 
-	if (FAILED(Add_Components()))
-		return E_FAIL;
-
 	m_fSizeX = g_iWinSizeX;
 	m_fSizeY = g_iWinSizeY;
 	m_fX = g_iWinSizeX * 0.5f;
@@ -53,20 +50,19 @@ void CBackGround::Tick(_float TimeDelta)
 }
  
 // ·¹ÀÌÆ®Æ½ ¸¶Áö¸·¿¡ ·»´õ±×·ì ÇØÁÜ.
-void CBackGround::Late_Tick(_float TimeDelta)
+_int CBackGround::Late_Tick(_float TimeDelta)
 {
-	__super::Late_Tick(TimeDelta);
+	_int result = __super::Late_Tick(TimeDelta);
 
 	if (nullptr != m_pRendererCom)
 		m_pRendererCom->Add_RenderGroup((CRenderer::RENDERGROUP)m_eRenderGroup, this);
+
+	return result;
 }
 
 HRESULT CBackGround::Render()
 {
 	if (FAILED(__super::Render()))
-		return E_FAIL;
-
-	if (FAILED(SetUp_ShaderResources()))
 		return E_FAIL;
 
 	m_pShaderCom->Begin(m_iPassNum);

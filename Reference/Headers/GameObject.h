@@ -14,6 +14,10 @@ protected:
 public:
 	virtual HRESULT Initialize_Prototype() override;
 	virtual HRESULT Initialize(void* pArg) override;
+	virtual HRESULT Render();
+
+	
+
 	virtual CGameObject* Clone(void* pArg) override PURE;
 
 	virtual void OnCollisionEnter(const Collision * collision) {}
@@ -21,10 +25,14 @@ public:
 	virtual void OnCollisionExit(const Collision * collision) {}
 
 	virtual void SetDead(_bool bDead = true) { m_bDead = bDead; }
-	virtual _bool GetDead() const { return m_bDead; }
+	virtual _bool GetDead() { return m_bDead; }
 
 	void	Change_RenderGroup(_uint eRenderGroup) { m_eRenderGroup = eRenderGroup; }
 	void	Change_PassNum(_uint iPassNum) { m_iPassNum = iPassNum; }
+
+protected:
+	virtual HRESULT Add_Components() { return S_OK; }
+	virtual HRESULT SetUp_ShaderResources() { return S_OK; }
 
 protected:
 	_uint		m_iPassNum = { 0 };

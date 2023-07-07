@@ -231,3 +231,18 @@ _int CCalculator::Picking_Sphere(HWND hWnd, _uint winSizeX, _uint winSizeY, cons
 	_int resultIndex = Raycast(vRayPos, vRayDir, SphereList, resultPos, dist);
 	return resultIndex;
 }
+
+_float CCalculator::Distance_Vector_XZ(_fvector AVector, _fvector BVector)
+{
+	_vector AClipVec = _vector({ AVector.m128_f32[0],0.f,AVector.m128_f32[2] });
+	_vector BClipVec = _vector({ BVector.m128_f32[0],0.f,BVector.m128_f32[2] });
+
+	_vector subVec = AClipVec - BClipVec;
+	return XMVector3Length(subVec).m128_f32[0];
+}
+
+_float CCalculator::Distance_Vector_XYZ(_fvector AVector, _fvector BVector)
+{
+	_vector subVec = AVector - BVector;
+	return XMVector3Length(subVec).m128_f32[0];
+}

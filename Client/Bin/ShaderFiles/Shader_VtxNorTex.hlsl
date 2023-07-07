@@ -61,7 +61,7 @@ float4	PS_MAIN(PS_IN In) : SV_TARGET0
 {
 	float4		vColor = (float4)0;
 
-	vector albedo = g_Texture[0].Sample(LinearSampler, In.vTexUV * 30.f);
+	vector albedo = g_Texture[0].Sample(LinearSampler, In.vTexUV * 50.f);
 
 	float3 diffuse = saturate(In.Diffuse);
 

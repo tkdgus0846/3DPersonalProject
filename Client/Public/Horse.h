@@ -29,7 +29,7 @@ public:
 	virtual HRESULT Initialize_Prototype() override;
 	virtual HRESULT Initialize(void* pArg) override;
 	virtual void Tick(_float TimeDelta) override;
-	virtual void Late_Tick(_float TimeDelta) override;
+	virtual _int Late_Tick(_float TimeDelta) override;
 	virtual HRESULT Render() override;
 	//void Ride() override;
 
@@ -38,7 +38,10 @@ public:
 	virtual void OnCollisionExit(const Collision* collision) { cout << "Horse Exit!" << endl; }
 
 private:
-	void Add_Animations();
+	virtual HRESULT Add_Animations() override;
+	virtual HRESULT Add_Components() override;
+	virtual HRESULT SetUp_ShaderResources() override;
+	virtual void	Select_AnimationKey() override {}
 
 private:
 	CShader*				m_pShaderCom = { nullptr };
@@ -50,9 +53,7 @@ private:
 
 	HORSETYPE				m_eCurHorseType = { HORSE_NATURAL };
 
-public:
-	HRESULT Add_Components();
-	HRESULT SetUp_ShaderResources();
+
 
 public:
 	/* 원형을 생성한다. */

@@ -206,7 +206,7 @@
     <ClInclude Include="..\Public\PlayerParts.h" />
     <ClInclude Include="..\Public\Slasher.h" />
     <ClInclude Include="..\Public\Sword.h" />
-    <ClInclude Include="..\Public\Task_Attack1.h" />
+    <ClInclude Include="..\Public\Task_Attack.h" />
     <ClInclude Include="..\Public\Task_FollowTarget.h" />
     <ClInclude Include="..\public\Task_LookAt.h" />
     <ClInclude Include="..\Public\Task_MoveForward.h" />
@@ -241,7 +241,7 @@
     <ClCompile Include="..\Private\PlayerParts.cpp" />
     <ClCompile Include="..\Private\Slasher.cpp" />
     <ClCompile Include="..\Private\Sword.cpp" />
-    <ClCompile Include="..\Private\Task_Attack1.cpp" />
+    <ClCompile Include="..\Private\Task_Attack.cpp" />
     <ClCompile Include="..\Private\Task_FollowTarget.cpp" />
     <ClCompile Include="..\private\Task_LookAt.cpp" />
     <ClCompile Include="..\Private\Task_MoveForward.cpp" />

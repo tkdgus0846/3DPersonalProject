@@ -4,6 +4,8 @@
 #include "RootNode.h"
 #include "BlackBoard.h"
 #include <Player.h>
+#include "Camera_Player_Main.h"
+#include "Calculator.h"
 
 CPaladin::CPaladin(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: CMonster(pDevice, pContext)
@@ -31,17 +33,30 @@ HRESULT CPaladin::Initialize(void* pArg)
 	if (FAILED(__super::Initialize(pArg)))
 		return E_FAIL;
 
-	if (FAILED(Add_Components()))
-		return E_FAIL;
-
-	Add_Animations();
-
 	m_pAnimInstance->Apply_Animation("Idle");
 
 	m_pTransformCom->Set_Position({ 10.f,0.f,5.f,1.f });
 	m_pTransformCom->Change_Speed(m_WalkSpeed);
 
+	m_pBehaviorTreeCom->ChangeData("StandardDistance", 12.f);
+
 	m_eRenderGroup = CRenderer::RENDER_NONBLEND;
+
+	Set_HP(100);
+
+	return S_OK;
+}
+
+HRESULT CPaladin::Ready_BehaviorTree()
+{
+	////////////////////////// 비해비어 트리  ///////////////
+	CBehaviorTree::BTDesc btDesc(this);
+
+	// 블랙보드 정보를 추가하면 자동으로 데코레이터를 만들면 어떨까?
+	btDesc.pRootNode->AddNode((CBehavior*)PaladinAI(3.0f, 2.0f, 3));
+
+	if (FAILED(__super::Add_Component(LEVEL_STATIC, TEXT("Prototype_Component_BehaviorTree"), L"Behavior", (CComponent**)&m_pBehaviorTreeCom, &btDesc)))
+		return E_FAIL;
 
 	return S_OK;
 }
@@ -50,22 +65,20 @@ void CPaladin::Tick(_float TimeDelta)
 {
 	__super::Tick(TimeDelta);
 
-	State();
-	Damaged(TimeDelta);
-	SuperArmor(TimeDelta);
-
-	Select_AnimationKey();
-
-	if (nullptr != m_pRendererCom)
-		m_pRendererCom->Add_RenderGroup((CRenderer::RENDERGROUP)m_eRenderGroup, this);
+	m_pBehaviorTreeCom->ChangeData("TargetDistance", Compute_TargetDistance());
+	ClimbNavMesh();
+	Navigation_CurIndex();
 }
 
-void CPaladin::Late_Tick(_float TimeDelta)
+_int CPaladin::Late_Tick(_float TimeDelta)
 {
 	__super::Late_Tick(TimeDelta);
 
 	CGameInstance* pGameInstance = CGameInstance::GetInstance();
 	Safe_AddRef(pGameInstance);
+
+	if (GetDead())
+		int i = 2;
 
 	if (pGameInstance->isIn_WorldSpace(m_pTransformCom->Get_State(CTransform::STATE_POSITION), 2.f))
 	{
@@ -79,14 +92,16 @@ void CPaladin::Late_Tick(_float TimeDelta)
 			m_pAttackRangeColliderCom->Add_ColGroup();
 	}
 	Safe_Release(pGameInstance);
+
+	if (GetDead())
+		return OBJ_DEAD;
+	
+	return OBJ_NOEVENT;
 }
 
 HRESULT CPaladin::Render()
 {
 	if (FAILED(__super::Render()))
-		return E_FAIL;
-
-	if (FAILED(SetUp_ShaderResources()))
 		return E_FAIL;
 
 	_uint		iNumMeshes = m_pModelCom->Get_NumMeshes();
@@ -123,6 +138,7 @@ void CPaladin::OnCollisionEnter(const Collision* collision)
 		if (collision->MyCollider == m_pDetectionColliderCom)
 		{
 			m_pBehaviorTreeCom->ChangeData("Target", collision->OtherGameObject);
+			m_pBehaviorTreeCom->ChangeData("InDetectionRange", true);
 		}
 
 		if (collision->MyCollider == m_pAttackRangeColliderCom)
@@ -135,7 +151,7 @@ void CPaladin::OnCollisionEnter(const Collision* collision)
 }
 
 void CPaladin::OnCollisionStay(const Collision* collision)
-{
+{	
 }
 
 void CPaladin::OnCollisionExit(const Collision* collision)
@@ -162,9 +178,18 @@ void CPaladin::OnCollisionExit(const Collision* collision)
 	{
 		m_pBehaviorTreeCom->ChangeData("InAttackRange", false);
 	}
+
+	// 디텍션 콜라이더에서 나갔을때. 
+	if (bPlayerBodyCollider)
+	{
+		if (collision->MyCollider == m_pDetectionColliderCom)
+		{
+			m_pBehaviorTreeCom->ChangeData("InDetectionRange", false);
+		}
+	}
 }
 
-void CPaladin::Add_Animations()
+HRESULT CPaladin::Add_Animations()
 {
 	AnimNode node;
 
@@ -186,18 +211,90 @@ void CPaladin::Add_Animations()
 	node.eraseLessTime = { 9999, 999, 0.04 };
 	m_pAnimInstance->Push_Animation("Smash", node);
 
+	node.AnimIndices = { 4, 5 };
+	node.eraseLessTime = {  };
+	m_pAnimInstance->Push_Animation("LeftSwing", node, "RightSwing");
+
+	node.AnimIndices = { 8, 9, 10 };
+	node.eraseLessTime = {  };
+	m_pAnimInstance->Push_Animation("RightSwing", node);
+
+	node.AnimIndices = { 11, 12, 13 };
+	node.eraseLessTime = {  };
+	m_pAnimInstance->Push_Animation("LeftFullSwing", node);
+
+	node.AnimIndices = { 14, 15, 16 };
+	node.eraseLessTime = {  };
+	m_pAnimInstance->Push_Animation("FullHammerDown", node);
+
+	node.AnimIndices = { 17, 18 };
+	node.eraseLessTime = { 9999, 999 };
+	m_pAnimInstance->Push_Animation("Dash", node);
+
+	node.AnimIndices = { 19, 20, 21, 22, 23 };
+	node.eraseLessTime = { 9999, 999, 9999, 999, 9999 };
+	m_pAnimInstance->Push_Animation("FloorSkill", node);
+
+	node.AnimIndices = { 24, 26, 27 };
+	node.eraseLessTime = { 9999, 999, 9999 };
+	m_pAnimInstance->Push_Animation("HammerDownAfterLaunch", node);
+
+	node.AnimIndices = { 28, 29, 30 };
+	node.eraseLessTime = { 9999, 999, 9999 };
+	m_pAnimInstance->Push_Animation("Joke", node);
+
+	node.AnimIndices = { 36, 37, 38 };
+	node.eraseLessTime = { 9999, 999, 9999 };
+	m_pAnimInstance->Push_Animation("ThunderSkill", node);
+
 	node.AnimIndices = { 60 };
 	node.eraseLessTime = {  };
 	m_pAnimInstance->Push_Animation("Damaged", node);
+
+	node.AnimIndices = { 40 };
+	node.eraseLessTime = {  };
+	m_pAnimInstance->Push_Animation("TargetLock", node);
+
+	node.AnimIndices = { 55 };
+	node.eraseLessTime = {  };
+	m_pAnimInstance->Push_Animation("Death", node);
+
+	return S_OK;
 }
 
-void CPaladin::Attack()
+void CPaladin::Attack(const _float& TimeDelta)
 {
+	
+	if (m_IsAttack4)
+	{
+		cout << "대쉬 인 !!!!!!!!!!!!!!!" << endl;
+		DashAttack(TimeDelta);
+		return;
+	}
+
+	if (m_IsAttack1)
+	{
+		HammerDownAttack(TimeDelta);
+		return;
+	}
+	
+	if (m_IsAttack2)
+	{
+		SwingAttack(TimeDelta);
+		return;
+	}
+
+	if (m_IsAttack3)
+	{
+		ThunderAttack(TimeDelta);
+		return;
+	}
+		
 }
 
 void CPaladin::Damaged(const _float& TimeDelta)
 {
-	if (m_isDamaged == false ) return;
+	m_pAnimInstance->Apply_Animation("Damaged");
 
 	cout << "Damaged" << endl;
 	m_pBehaviorTreeCom->Stop();
@@ -205,23 +302,66 @@ void CPaladin::Damaged(const _float& TimeDelta)
 	m_DamagedStunTimeAcc += TimeDelta;
 	if (m_DamagedStunTimeAcc >= m_DamagedStunTime)
 	{
+		m_pBehaviorTreeCom->Resume();
+
 		m_isDamaged = false;
 		m_isSuperArmor = true;
 		m_DamagedStunTimeAcc = 0.f;
 	}
 }
 
+// 슈퍼 아머때 맞으면 지가 하던 애니메이션 실행하다가 데미지 받은 애니메이션을 실행한다.
 void CPaladin::SuperArmor(const _float& TimeDelta)
-{
-	if (m_isSuperArmor == false) return;
-	
-	m_pBehaviorTreeCom->Resume();
-
+{	
 	m_SuperArmorTimeAcc += TimeDelta;
 	if (m_SuperArmorTimeAcc >= m_SuperArmorTime)
 	{
 		m_isSuperArmor = false;
 		m_SuperArmorTimeAcc = 0.f;
+	}
+
+	m_isDamaged = false;
+}
+
+void CPaladin::Walk(const _float& TimeDelta)
+{
+	m_pAnimInstance->Apply_Animation("Walk");
+	m_pTransformCom->Change_Speed(m_WalkSpeed);
+}
+
+void CPaladin::Run(const _float& TimeDelta)
+{
+	m_pAnimInstance->Apply_Animation("Run");
+	m_pTransformCom->Change_Speed(m_RunSpeed);
+}
+
+void CPaladin::KnockBack(const _float& TimeDelta)
+{
+}
+
+void CPaladin::Stun(const _float& TimeDelta)
+{
+}
+
+void CPaladin::Idle(const _float& TimeDelta)
+{
+	m_pAnimInstance->Apply_Animation("Idle");
+}
+
+void CPaladin::Death(const _float& TimeDelta)
+{
+	m_pAnimInstance->Apply_Animation("Death");
+	m_pBehaviorTreeCom->Stop();
+
+	m_pBodyColliderCom->Set_Enable(false);
+	m_pDetectionColliderCom->Set_Enable(false);
+	m_pAttackRangeColliderCom->Set_Enable(false);
+
+	m_DeathTimeAcc += TimeDelta;
+
+	if (m_DeathTimeAcc >= m_DeathTime)
+	{
+		m_isDeathFinished = true;
 	}
 }
 
@@ -229,71 +369,198 @@ void CPaladin::State()
 {
 	m_isRun = any_cast<_bool>(m_pBehaviorTreeCom->GetData("IsRun"));
 	m_isWalk = any_cast<_bool>(m_pBehaviorTreeCom->GetData("IsWalk"));
-	m_isAttack1 = any_cast<_bool>(m_pBehaviorTreeCom->GetData("IsAttack1"));
-	// 랜덤 위치는 어디서 잡아주나?
-}
+	m_IsAttack1 = any_cast<_bool>(m_pBehaviorTreeCom->GetData("IsAttack1"));
+	m_IsAttack2 = any_cast<_bool>(m_pBehaviorTreeCom->GetData("IsAttack2"));
+	m_IsAttack3 = any_cast<_bool>(m_pBehaviorTreeCom->GetData("IsAttack3"));
+	m_IsAttack4 = any_cast<_bool>(m_pBehaviorTreeCom->GetData("IsAttack4"));
+	/*if (m_isRun == true) cout << " m_isRun !!" << endl;
 
-void CPaladin::Select_DamagedKey()
-{
-	if (m_isDamaged)
+	if (m_IsAttack1 == true) cout << " m_IsAttack1 !!" << endl;
+	if (m_IsAttack2 == true) cout << " m_IsAttack2 !!" << endl;
+	if (m_IsAttack3 == true) cout << " m_IsAttack3 !!" << endl;*/
+
+	/*cout << any_cast<_bool>(m_pBehaviorTreeCom->GetData("IsAttacking")) << endl;*/
+
+	_int iPriority = 0;
+
+	if (m_isDeathReserve == true)
 	{
-		m_pAnimInstance->Apply_Animation("Damaged");
+		Add_State(STATE_DEATH, iPriority++);
+		return;
 	}
-}
 
-void CPaladin::Select_MoveKey()
-{
-	if (m_isRun == true)
-	{
-		m_pAnimInstance->Apply_Animation("Run");
-		m_pTransformCom->Change_Speed(m_RunSpeed);
-	}
-	else if (m_isWalk == true)
-	{
-		m_pAnimInstance->Apply_Animation("Walk");
-		m_pTransformCom->Change_Speed(m_WalkSpeed);
-	}
-		
-}
-
-void CPaladin::Select_IdleKey()
-{
-	m_pAnimInstance->Apply_Animation("Idle");
-}
-
-void CPaladin::Select_AttackKey()
-{
-	if (m_isAttack1)
-	{
-		m_pAnimInstance->Apply_Animation("Smash");
-	}
-}
-
-void CPaladin::Select_AnimationKey()
-{
 	if (m_isDamaged && !m_isSuperArmor)
 	{
-		Select_DamagedKey();
+		Add_State(STATE_DAMAGED, iPriority++);
 		return;
 	}
-
-
-	if (m_isAttack1)
+	else if (m_isSuperArmor)
 	{
-		Select_AttackKey();
-		return;
+		Add_State(STATE_SUPERARMOR, iPriority++);
 	}
 
 
+	if (m_IsAttack1 || m_IsAttack2 || m_IsAttack3 || m_IsAttack4)
+	{
+		m_pBehaviorTreeCom->ChangeData("IsAttacking", true);
+		Add_State(STATE_ATTACK, iPriority++);
+		return;
+	}
+	else
+	{
+		m_pBehaviorTreeCom->ChangeData("IsAttack1Finished", false);
+		m_pBehaviorTreeCom->ChangeData("IsAttack2Finished", false);
+		m_pBehaviorTreeCom->ChangeData("IsAttack3Finished", false);
+		m_pBehaviorTreeCom->ChangeData("IsAttack4Finished", false);
+
+		m_IsAttack1Started = true;
+		m_IsAttack2Started = true;
+		m_IsAttack3Started = true;
+		m_IsAttack4Started = true;
+	}
+	
+	
 	if (m_isWalk == true || m_isRun == true)
 	{
-		Select_MoveKey();
+		if (m_isRun == true)
+			Add_State(STATE_RUN, iPriority++);
+		else if (m_isWalk == true && any_cast<_bool>(m_pBehaviorTreeCom->GetData("InAttackRange")) == false)
+			Add_State(STATE_WALK, iPriority++);
+
+		return;
+	}
+	
+	Add_State(STATE_IDLE, iPriority++);
+}
+
+void CPaladin::DashAttack(const _float& TimeDelta)
+{
+	if (m_pAnimInstance->Animation_Finished() && m_bMaceDashFinished == true)
+	{
+		m_pBehaviorTreeCom->ChangeData("IsAttack4Finished", true);
+		m_pBehaviorTreeCom->ChangeData("IsAttacking", false);
+		m_pBehaviorTreeCom->ChangeData("IsAttack4Started", true);
+		// 애니메이션이 끝났을때 IsAttacking을 false 로 만든다. IsAttacking이 false 일때 해당 공격동작 말고 다른 태스크를 이용하게 하기 위함이다.
+		m_IsAttack4Started = true;
 		return;
 	}
 
-	Select_IdleKey();
+	if (m_IsAttack4Started)
+	{
+		LookTarget();
+		m_pAnimInstance->Apply_Animation("HammerDownAfterLaunch");
+		m_IsAttack4Started = false;
+		m_pBehaviorTreeCom->ChangeData("IsAttack4Started", false);
+		m_bMaceDashFinished = false;
 
+		m_MaceDashJumpOriginHeight = m_pTransformCom->Get_State(CTransform::STATE_POSITION).m128_f32[1];
+		m_MaceDashTimeAcc = 0.0f;
+		XMStoreFloat3(&m_MaceDashTargetPos, Compute_TargetPos());
+		XMStoreFloat3(&m_MaceDashDir, m_pTransformCom->Get_State(CTransform::STATE_LOOK));
+	}
+	else
+	{
+		if (m_bMaceDashFinished == true) return;
+
+		m_MaceDashTimeAcc += TimeDelta;
+
+		// x z 로만 거리를 재야한다.
 		
+		_float distanceDashPos = CCalculator::Distance_Vector_XZ((XMLoadFloat3(&m_MaceDashTargetPos)), m_pTransformCom->Get_State(CTransform::STATE_POSITION));
+
+		if (distanceDashPos > 0.5f && ((m_MaceDashInitSpeed + (m_MaceDashAccel * m_MaceDashTimeAcc)) >= 0.f))
+		{
+			m_pTransformCom->Go_Dir(XMLoadFloat3(&m_MaceDashDir), m_MaceDashInitSpeed, m_MaceDashAccel, m_MaceDashTimeAcc, m_pNavigationCom);
+		}
+
+		_float height = m_MaceDashJumpOriginHeight + (m_MaceDashJumpSpeed * m_MaceDashTimeAcc) - (0.5 * m_MaceDashJumpGravity * m_MaceDashTimeAcc * m_MaceDashTimeAcc);
+
+		if (Compute_NavMesh_Height() <= height)
+		{
+			_vector myPos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
+
+			myPos.m128_f32[1] = height;
+			m_pTransformCom->Set_Position(myPos);
+
+			m_bClimbNavMesh = false;
+		}
+		else
+		{
+			CCamera_Player_Main::MAINCAMERASHAKE desc;
+			desc.fShakeMagnitude = 0.2f;
+			CGameInstance::GetInstance()->On_Shake(&desc);
+			m_bClimbNavMesh = true;
+			m_bMaceDashFinished = true;
+		}
+	}
+}
+
+void CPaladin::SwingAttack(const _float& TimeDelta)
+{
+	if (m_pAnimInstance->Animation_Finished())
+	{
+		_bool bNext = m_pAnimInstance->Next_Animation();
+		if (bNext == false)
+		{
+			//cout << "IsAttack2Finished" << endl;
+			m_pBehaviorTreeCom->ChangeData("IsAttack2Finished", true);
+			m_pBehaviorTreeCom->ChangeData("IsAttacking", false);
+			m_IsAttack2Started = true;
+			return;
+		}
+	}
+
+	if (m_IsAttack2Started)
+	{
+		//cout << "IsAttack2Start" << endl;
+		LookTarget();
+		m_pAnimInstance->Apply_Animation("LeftSwing");
+		m_IsAttack2Started = false;
+	}
+}
+
+void CPaladin::HammerDownAttack(const _float& TimeDelta)
+{
+	if (m_pAnimInstance->Animation_Finished())
+	{
+		m_pBehaviorTreeCom->ChangeData("IsAttack1Finished", true);
+		m_pBehaviorTreeCom->ChangeData("IsAttacking", false);
+		// 애니메이션이 끝났을때 IsAttacking을 false 로 만든다. IsAttacking이 false 일때 해당 공격동작 말고 다른 태스크를 이용하게 하기 위함이다.
+		m_IsAttack1Started = true;
+		return;
+	}
+
+	if (m_IsAttack1Started)
+	{
+		LookTarget();
+		m_pAnimInstance->Apply_Animation("Smash");
+		m_IsAttack1Started = false;
+	}
+
+	//cout << "IsAttack1Start" << endl;
+}
+
+void CPaladin::ThunderAttack(const _float& TimeDelta)
+{
+	if (m_pAnimInstance->Animation_Finished())
+	{
+		_bool bNext = m_pAnimInstance->Next_Animation();
+		if (bNext == false)
+		{
+			//cout << "IsAttack3Finished" << endl;
+			m_pBehaviorTreeCom->ChangeData("IsAttack3Finished", true);
+			m_pBehaviorTreeCom->ChangeData("IsAttacking", false);
+			m_IsAttack3Started = true;
+			return;
+		}
+	}
+
+	if (m_IsAttack3Started)
+	{
+		LookTarget();
+		m_pAnimInstance->Apply_Animation("ThunderSkill");
+		m_IsAttack3Started = false;
+	}
 }
 
 HRESULT CPaladin::Add_Components()
@@ -337,7 +604,7 @@ HRESULT CPaladin::Add_Components()
 	CBounding_Sphere::BOUNDINGSPHERE SphereDesc;
 
 	SphereDesc.eColGroup = COL_DETECTION;
-	SphereDesc.fRadius = 7.f;
+	SphereDesc.fRadius = 8.f;
 	SphereDesc.vPosition = _float3(0.f, 0.f, 0.f);
 
 	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Collider_Sphere"),
@@ -356,33 +623,6 @@ HRESULT CPaladin::Add_Components()
 	if (FAILED(__super::Add_Component(LEVEL_STATIC, TEXT("Prototype_Component_AnimInstance"), L"AnimInstance", (CComponent**)&m_pAnimInstance, m_pModelCom)))
 		return E_FAIL;
 
-
-	
-	////////////////////////// 비해비어 트리  ///////////////
-	CBehaviorTree::BTDesc btDesc;
-	btDesc.pRootNode = CRootNode::Create();
-	btDesc.pBlackBoard = CBlackBoard::Create();
-
-	btDesc.pBlackBoard->AddData("Owner", (CGameObject*)this);
-	btDesc.pBlackBoard->AddData("Target", (CGameObject*)nullptr);
-	btDesc.pBlackBoard->AddData("InAttackRange", false);
-
-	btDesc.pBlackBoard->AddData("IsAttack1", false);
-	btDesc.pBlackBoard->AddData("IsWalk", false);
-	btDesc.pBlackBoard->AddData("IsRun", false);
-	btDesc.pBlackBoard->AddData("RandomPos", _float3(0.f, 0.f, 0.f));
-
-
-	
-
-	// 블랙보드 정보를 추가하면 자동으로 데코레이터를 만들면 어떨까?
-	btDesc.pRootNode->AddNode((CBehavior*)Test(3.0f,2.0f));
-
-	if (FAILED(__super::Add_Component(LEVEL_STATIC, TEXT("Prototype_Component_BehaviorTree"), L"Behavior", (CComponent**)&m_pBehaviorTreeCom, &btDesc)))
-		return E_FAIL;
-
-	
-	
 	return S_OK;
 }
 

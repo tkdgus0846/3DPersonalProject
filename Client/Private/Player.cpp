@@ -38,12 +38,7 @@ HRESULT CPlayer::Initialize(void* pArg)
 
 	/* 원형생성할 때 받아왔던 데이터 외의 추가적인 값들을 더 저장해주낟. */
 	if (FAILED(__super::Initialize(pArg)))
-		return E_FAIL;
-
-	if (FAILED(Add_Components()))
-		return E_FAIL;
-
-	Add_Animations();
+		return E_FAIL; 
 
 	m_pTransformCom->Set_State(CTransform::STATE_POSITION, XMVectorSet(1.f, 1.f, 1.f, 1.f));
 
@@ -53,6 +48,8 @@ HRESULT CPlayer::Initialize(void* pArg)
 	Change_Weapon();
 
 	m_pTransformCom->Change_Speed(m_fNormalSpeed);
+
+	Set_HP(10000000);
 
 	return S_OK;
 }
@@ -81,16 +78,15 @@ void CPlayer::Tick(_float TimeDelta)
 		CameraZoom(TimeDelta);
 	}
 
-	m_CurIndex = m_pNavigationCom->Get_CurrentIndex();
-
+	Navigation_CurIndex();
 
 	// 애니메이션 관련된 변수 조작은 이 위에서
 	Select_AnimationKey();
 }
 
-void CPlayer::Late_Tick(_float TimeDelta)
+_int CPlayer::Late_Tick(_float TimeDelta)
 {
-	__super::Late_Tick(TimeDelta);	
+	__super::Late_Tick(TimeDelta);
 
 	
 	if (CGameInstance::GetInstance()->Key_Down(DIK_1))
@@ -110,17 +106,14 @@ void CPlayer::Late_Tick(_float TimeDelta)
 		if (m_pColliderCom[i] != nullptr && m_pColliderCom[i]->Get_Enable())
 			m_pColliderCom[i]->Add_ColGroup();
 	}
+
+	return OBJ_NOEVENT;
 }
 
 HRESULT CPlayer::Render()
 {
 	if (FAILED(__super::Render()))
 		return E_FAIL;
-
-	if (FAILED(SetUp_ShaderResources()))
-		return E_FAIL;
-
-
 
 	_uint		iNumMeshes = m_pModelCom->Get_NumMeshes();
 
@@ -151,13 +144,14 @@ void CPlayer::OnCollisionEnter(const Collision* collision)
 {
 	m_Weapons[m_eWeaponType].front()->SkillQ_Collision_Enter(collision);
 	m_Weapons[m_eWeaponType].front()->SkillE_Collision_Enter(collision);
-
+	m_Weapons[m_eWeaponType].front()->Attack_Collision_Enter(collision);
 }
 
 void CPlayer::OnCollisionStay(const Collision* collision)
 {
 	m_Weapons[m_eWeaponType].front()->SkillQ_Collision_Stay(collision);
 	m_Weapons[m_eWeaponType].front()->SkillE_Collision_Stay(collision);
+	m_Weapons[m_eWeaponType].front()->Attack_Collision_Stay(collision);
 
 	HitShake_Collision(collision);
 }
@@ -166,7 +160,7 @@ void CPlayer::OnCollisionExit(const Collision* collision)
 {
 	m_Weapons[m_eWeaponType].front()->SkillQ_Collision_Exit(collision);
 	m_Weapons[m_eWeaponType].front()->SkillE_Collision_Exit(collision);
-
+	m_Weapons[m_eWeaponType].front()->Attack_Collision_Exit(collision);
 }
 
 void CPlayer::HitShake_Collision(const Collision* collision)
@@ -196,8 +190,26 @@ void CPlayer::HitShake_Collision(const Collision* collision)
 	}
 }
 
+void CPlayer::Get_Damaged(_int Damage)
+{	
+	m_pAnimInstance->Apply_Animation("Damaged");
+	__super::Get_Damaged(Damage);
+}
+
+void CPlayer::All_Collider_Off()
+{
+	for (_int i = 0; i < COLLIDER_END; i++)
+	{
+		if (i != COLLIDER_PLAYER)
+		{
+			Collider_Off((COLLIDER)i);
+		}
+	}
+}
+
 void CPlayer::Collider_On(COLLIDER eCollider)
 {
+	All_Collider_Off();
 	if (m_pColliderCom[eCollider] != nullptr)
 		m_pColliderCom[eCollider]->Set_Enable(true);
 }
@@ -206,6 +218,11 @@ void CPlayer::Collider_Off(COLLIDER eCollider)
 {
 	if (m_pColliderCom[eCollider] != nullptr)
 		m_pColliderCom[eCollider]->Set_Enable(false);
+}
+
+CCollider* CPlayer::Get_Collider(COLLIDER eCollider)
+{
+	return m_pColliderCom[eCollider];
 }
 
 void CPlayer::Move(_float TimeDelta)
@@ -392,41 +409,6 @@ void CPlayer::AttackMove(_float TimeDelta)
 	
 }
 
-void CPlayer::ClimbNavMesh()
-{
-	if (m_CurIndex == -1 || m_bClimbNavMesh == false) return;
-
-	_vector myPos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
-	myPos.m128_f32[1] = Compute_NavMesh_Height();
-
-	m_pTransformCom->Set_Position(myPos);
-}
-
-_float CPlayer::Compute_NavMesh_Height()
-{
-	_vector myPos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
-
-	vector<Triangle>* vec = m_pNavigationCom->Get_TriangleList();
-
-	// 평면의 방정식으로 점과 노말벡터를 넣으면 A B C D 를 뽑아줌
-	_vector equationVec = XMPlaneFromPoints(XMLoadFloat3(&(*vec)[m_CurIndex].vVertex1), XMLoadFloat3(&(*vec)[m_CurIndex].vVertex2), XMLoadFloat3(&(*vec)[m_CurIndex].vVertex3));
-
-	_float x = myPos.m128_f32[0];
-	_float y = myPos.m128_f32[1];
-	_float z = myPos.m128_f32[2];
-
-	// 평면 방정식의 계수
-	_float A = equationVec.m128_f32[0];
-	_float B = equationVec.m128_f32[1];
-	_float C = equationVec.m128_f32[2];
-	_float D = equationVec.m128_f32[3];
-
-	// 평면 위로의 이동량 계산
-	_float offsetY = (-A * x - C * z - D) / B;
-
-	return offsetY;
-}
-
 void CPlayer::CameraRotate(_float TimeDelta)
 {
 	if (CGameInstance::GetInstance()->Mouse_Up(CInput_Device::DIMK_RBUTTON))
@@ -606,6 +588,7 @@ void CPlayer::Dash(_float TimeDelta)
 	{
 		if (CGameInstance::GetInstance()->Key_Down(DIK_SPACE))
 		{
+			All_Collider_Off();
 			m_bDash = true;
 
 			m_pAnimInstance->Apply_Animation("Dash");
@@ -847,7 +830,7 @@ void CPlayer::Attack_Combo()
 	
 }
 
-void CPlayer::Add_Animations()
+HRESULT CPlayer::Add_Animations()
 {
 	AnimNode node;
 
@@ -874,6 +857,10 @@ void CPlayer::Add_Animations()
 	m_pAnimInstance->Push_Animation("Idle", node);
 
 	node.bLoop = false;
+
+	node.AnimIndices = { 268 };
+	node.eraseLessTime = { };
+	m_pAnimInstance->Push_Animation("Damaged", node);
 	
 	node.AnimIndices = {486, 487, 488 };
 	node.eraseLessTime = { 0.05f, 0.05f, 0.04f };
@@ -923,31 +910,31 @@ void CPlayer::Add_Animations()
 	node.bLoop = false;
 
 	node.AnimIndices = { 138, 139, 143 };
-	node.eraseLessTime = { 0.03, 0.05, 0.04 };
+	node.eraseLessTime = { 0.03f, 0.05f, 0.04f };
 	m_pAnimInstance->Push_Animation("Axe_Right", node, "Axe_Left");
 
 	node.AnimIndices = { 140, 141, 142 };
-	node.eraseLessTime = { 0.03, 0.05, 0.04 };
+	node.eraseLessTime = { 0.03f, 0.05f, 0.04f };
 	m_pAnimInstance->Push_Animation("Axe_Right_MoveCast", node, "Axe_Left_MoveCast");
 
 	node.AnimIndices = { 144, 145, 149 };
-	node.eraseLessTime = { 0.05, 0.05, 0.04 };
+	node.eraseLessTime = { 0.05f, 0.05f, 0.04f };
 	m_pAnimInstance->Push_Animation("Axe_Left", node, "Axe_Smash");
 
 	node.AnimIndices = { 146, 147, 148 };
-	node.eraseLessTime = { 0.05, 0.05, 0.04 };
+	node.eraseLessTime = { 0.05f, 0.05f, 0.04f };
 	m_pAnimInstance->Push_Animation("Axe_Left_MoveCast", node, "Axe_Smash_MoveCast");
 
 	node.AnimIndices = { 150, 151, 155 };
-	node.eraseLessTime = { 0.06, 0.05, 0.3 };
+	node.eraseLessTime = { 0.06f, 0.05f, 0.3f };
 	m_pAnimInstance->Push_Animation("Axe_Smash", node);
 
 	node.AnimIndices = { 152, 153, 154 };
-	node.eraseLessTime = { 0.06, 0.05, 0.3 };
+	node.eraseLessTime = { 0.06f, 0.05f, 0.3f };
 	m_pAnimInstance->Push_Animation("Axe_Smash_MoveCast", node);
 
 	node.AnimIndices = { 157, 158 };
-	node.eraseLessTime = {  0.01f, 0.06f };
+	node.eraseLessTime = {  0.1f, 0.76f };
 	m_pAnimInstance->Push_Animation("Axe_Dash", node);
 
 	node.AnimIndices = { 159, 160, 161, 162 };
@@ -1034,15 +1021,15 @@ void CPlayer::Add_Animations()
 	node.bLoop = false;
 
 	node.AnimIndices = { 277, 278, 279 };
-	node.eraseLessTime = { 0.02, 0.02, 0.02 };
+	node.eraseLessTime = { 0.02f, 0.02f, 0.02f };
 	m_pAnimInstance->Push_Animation("Mace_Right", node, "Mace_Left");
 
 	node.AnimIndices = { 280, 281, 282 };
-	node.eraseLessTime = { 0.02, 0.001, 0.00001 };
+	node.eraseLessTime = { 0.02f, 0.001f, 0.00001f };
 	m_pAnimInstance->Push_Animation("Mace_Left", node, "Mace_Smash");
 
 	node.AnimIndices = { 283, 284, 285 };
-	node.eraseLessTime = { 0.05, 0.05, 0.35 };
+	node.eraseLessTime = { 0.05f, 0.05f, 0.35f };
 	m_pAnimInstance->Push_Animation("Mace_Smash", node);
 
 	node.AnimIndices = { 286, 287, 288 };
@@ -1088,7 +1075,7 @@ void CPlayer::Add_Animations()
 	node.bLoop = false;
 
 	node.AnimIndices = { 120, 121, 122 };
-	node.eraseLessTime = { 0.15f, 0.15f, 0.15f };
+	node.eraseLessTime = { 0.01f, 0.01f, 0.01f };
 	m_pAnimInstance->Push_Animation("Sword_Right", node, "Sword_Left");
 
 	node.AnimIndices = { 129, 130, 131 };
@@ -1096,15 +1083,15 @@ void CPlayer::Add_Animations()
 	m_pAnimInstance->Push_Animation("Sword_Right_MoveCast", node, "Sword_Left_MoveCast");
 
 	node.AnimIndices = { 123, 124, 125 };
-	node.eraseLessTime = { 0.05f, 0.05f, 0.05f };
+	node.eraseLessTime = { 0.003f, 0.003f, 0.003f };
 	m_pAnimInstance->Push_Animation("Sword_Left", node, "Sword_Smash");
 
 	node.AnimIndices = { 132, 133, 134 };
-	node.eraseLessTime = { 0.05f, 0.05f, 0.05f };
+	node.eraseLessTime = { 0.05f, 0.05f, 0.45f };
 	m_pAnimInstance->Push_Animation("Sword_Left_MoveCast", node);
 
 	node.AnimIndices = { 126, 127, 128 };
-	node.eraseLessTime = { 0.05f, 0.05f, 0.35 };
+	node.eraseLessTime = { 0.003f, 0.033f, 0.033f };
 	m_pAnimInstance->Push_Animation("Sword_Smash", node);
 
 	/*node.AnimIndices = { 135, 136 };
@@ -1130,6 +1117,8 @@ void CPlayer::Add_Animations()
 	node.AnimIndices = { 71 };
 	node.eraseLessTime = { 0.1f };
 	m_pAnimInstance->Push_Animation("Sword_Equip", node);
+
+	return S_OK;
 }
 
 void CPlayer::Skills(const _float& TimeDelta)
@@ -1436,7 +1425,7 @@ HRESULT CPlayer::Add_Components()
 	CBounding_OBB::BOUNDINGBOX AttackColliderDesc;
 
 	AttackColliderDesc.eColGroup = COL_PLAYERWEAPON;
-	AttackColliderDesc.vExtents = _float3(0.3f, 0.3f, 0.3f);
+	AttackColliderDesc.vExtents = _float3(0.3f, 0.3f, 0.9f);
 	AttackColliderDesc.vPosition = _float3(0.f, 0.4f, 1.4f);
 	AttackColliderDesc.vRotation = _float3(0.f, XMConvertToRadians(0.0f), 0.f);
 
@@ -1450,7 +1439,7 @@ HRESULT CPlayer::Add_Components()
 	//./////////////////////// 밀치기 용도를 위한 콜라이더 ///////////
 	
 	AttackColliderDesc.eColGroup = COL_PLAYERWEAPON;
-	AttackColliderDesc.vExtents = _float3(2.f, 1.0f, 0.6f);
+	AttackColliderDesc.vExtents = _float3(2.f, 1.8f, 0.6f);
 	AttackColliderDesc.vPosition = _float3(0.f, 0.4f, 1.f);
 	AttackColliderDesc.vRotation = _float3(0.f, XMConvertToRadians(0.0f), 0.f);
 
@@ -1459,6 +1448,34 @@ HRESULT CPlayer::Add_Components()
 		return E_FAIL;
 
 	m_pColliderCom[COLLIDER_MACE_E]->Set_Enable(false);
+
+
+	/// /////// 도끼 돌진, 슬래셔 돌진, 칼 돌진 콜라이더 /////////////
+
+	AttackColliderDesc.eColGroup = COL_PLAYERWEAPON;
+	AttackColliderDesc.vExtents = _float3(2.f, 0.4f, 0.4f);
+	AttackColliderDesc.vPosition = _float3(0.f, 0.6f, 1.f);
+	AttackColliderDesc.vRotation = _float3(0.f, XMConvertToRadians(0.0f), 0.f);
+
+	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Collider_OBB"),
+		L"COLLIDER_SWORD_Q", (CComponent**)&m_pColliderCom[COLLIDER_SWORD_Q], &AttackColliderDesc)))
+		return E_FAIL;
+
+	m_pColliderCom[COLLIDER_SWORD_Q]->Set_Enable(false);
+
+
+	//////////////////////////// 칼 스핀 ///////////////////////////////
+
+	AttackColliderDesc.eColGroup = COL_PLAYERWEAPON;
+	AttackColliderDesc.vExtents = _float3(2.f, 0.5f, 2.0f);
+	AttackColliderDesc.vPosition = _float3(0.f, 0.2f, 0.f);
+	AttackColliderDesc.vRotation = _float3(0.f, XMConvertToRadians(0.0f), 0.f);
+
+	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Collider_AABB"),
+		L"COLLIDER_SWORD_E", (CComponent**)&m_pColliderCom[COLLIDER_SWORD_E], &AttackColliderDesc)))
+		return E_FAIL;
+
+	m_pColliderCom[COLLIDER_SWORD_E]->Set_Enable(false);
 	
 
 	CGameInstance* pGameInstance = CGameInstance::GetInstance();
@@ -1746,6 +1763,4 @@ void CPlayer::Free()
 	Safe_Release(m_pModelCom);
 	Safe_Release(m_pRendererCom);
 	Safe_Release(m_pCameraCom);
-	Safe_Release(m_pColliderCom[COLLIDER_PLAYER]);
-	Safe_Release(m_pColliderCom[COLLIDER_ATTACK]);
 }

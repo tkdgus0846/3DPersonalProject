@@ -14,6 +14,8 @@ CTask_RandomMove::RESULT CTask_RandomMove::Run(const _float& TimeDelta, vector<C
 	if (Pass_Decorator() == false)
 		return RESULT(FAIL);
 
+	
+
 	//cout << "Turn ÁøÀÔ!!" << endl;
 	if (m_TimeAcc == 0.0)
 	{

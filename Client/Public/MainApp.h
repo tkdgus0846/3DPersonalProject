@@ -40,7 +40,12 @@ public:
 	/* 최초 보여 줄 레벨을 결정한다. */
 	HRESULT Open_Level(LEVELID eLevelIndex);
 	
-
+#ifdef _DEBUG
+private:
+	_double					m_TimeAcc = { 0.0 };
+	_tchar					m_szFPS[MAX_PATH] = TEXT("");
+	_uint					m_iNumRenders = { 0 };
+#endif
 
 public:
 	static CMainApp* Create();

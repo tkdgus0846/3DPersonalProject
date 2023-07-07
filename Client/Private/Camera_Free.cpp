@@ -93,8 +93,9 @@ void CCamera_Free::Tick(_float TimeDelta)
 	Safe_Release(pGameInstance);
 }
 
-void CCamera_Free::Late_Tick(_float TimeDelta)
+_int CCamera_Free::Late_Tick(_float TimeDelta)
 {
+	return __super::Late_Tick(TimeDelta);
 }
 
 HRESULT CCamera_Free::Render()

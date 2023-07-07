@@ -23,6 +23,13 @@ RasterizerState RS_Default
 	FrontCounterClockwise = false;
 };
 
+RasterizerState RS_Wireframe
+{
+	FillMode = Wireframe;
+	CullMode = Back;
+	FrontCounterClockwise = false;
+};
+
 RasterizerState RS_Cull_CW
 {
 	FillMode = Solid;

@@ -21,6 +21,9 @@ public:
 
     // 구의 인덱스를 뱉어주는 형태의 함수 -1 이면 피킹이 되지않은것
     static _int Picking_Sphere(HWND hWnd, _uint winSizeX, _uint winSizeY, const vector<BoundingSphere>* SphereList, _float4* resultPos);
+
+    static _float Distance_Vector_XZ(_fvector AVector, _fvector BVector);
+    static _float Distance_Vector_XYZ(_fvector AVector, _fvector BVector);
 };
 
 END

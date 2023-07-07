@@ -116,12 +116,14 @@ void CComposite::Tick(_float TimeDelta)
 	}
 }
 
-void CComposite::Late_Tick(_float TimeDelta)
+_int CComposite::Late_Tick(_float TimeDelta)
 {
 	for (auto& comp : m_Components)
 	{
 		comp.second->Late_Tick(TimeDelta);
 	}
+
+	return OBJ_NOEVENT;
 }
 
 list<CComponent*> CComposite::Get_ComponentsByList()

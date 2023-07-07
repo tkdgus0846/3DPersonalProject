@@ -73,6 +73,18 @@
     <Filter Include="02.GameObjects\SkyBox">
       <UniqueIdentifier>{e194f5f7-a53a-4b3b-b16b-88cc45dac25e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="03.Components\Task\Attack">
+      <UniqueIdentifier>{51876870-4c96-454b-bcfb-7c958055d165}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03.Components\Task\Turn">
+      <UniqueIdentifier>{19fac2a5-bb83-465f-a07f-2ce537607c65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03.Components\Task\Move">
+      <UniqueIdentifier>{dfc52fd0-4345-4bd7-8449-56b8f1498fbb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03.Components\Task\Wait">
+      <UniqueIdentifier>{98fc5aba-86f8-4afc-acc2-1837841c42e5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -156,32 +168,32 @@
     <ClInclude Include="..\public\Monster.h">
       <Filter>02.GameObjects\Creatures\Monster</Filter>
     </ClInclude>
-    <ClInclude Include="..\public\Task_LookAt.h">
-      <Filter>03.Components\Task</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\Paladin.h">
       <Filter>02.GameObjects\Creatures\Monster</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Task_MoveForward.h">
-      <Filter>03.Components\Task</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Task_Wait.h">
-      <Filter>03.Components\Task</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Task_FollowTarget.h">
-      <Filter>03.Components\Task</Filter>
     </ClInclude>
     <ClInclude Include="..\Bin\ShaderFiles\Shader_Client_Defines.hpp">
       <Filter>97.ShaderFiles</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\Task_Attack1.h">
-      <Filter>03.Components\Task</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Public\Task_RandomMove.h">
-      <Filter>03.Components\Task</Filter>
-    </ClInclude>
     <ClInclude Include="..\Public\Sword.h">
       <Filter>02.GameObjects\Creatures\Player\Parts\Weapon</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Task_Attack.h">
+      <Filter>03.Components\Task\Attack</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Task_FollowTarget.h">
+      <Filter>03.Components\Task\Move</Filter>
+    </ClInclude>
+    <ClInclude Include="..\public\Task_LookAt.h">
+      <Filter>03.Components\Task\Turn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Task_MoveForward.h">
+      <Filter>03.Components\Task\Move</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Task_RandomMove.h">
+      <Filter>03.Components\Task\Move</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Task_Wait.h">
+      <Filter>03.Components\Task\Wait</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -254,29 +266,29 @@
     <ClCompile Include="..\private\Monster.cpp">
       <Filter>02.GameObjects\Creatures\Monster</Filter>
     </ClCompile>
-    <ClCompile Include="..\private\Task_LookAt.cpp">
-      <Filter>03.Components\Task</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\Paladin.cpp">
       <Filter>02.GameObjects\Creatures\Monster</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\Task_MoveForward.cpp">
-      <Filter>03.Components\Task</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Task_Wait.cpp">
-      <Filter>03.Components\Task</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Task_FollowTarget.cpp">
-      <Filter>03.Components\Task</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Task_Attack1.cpp">
-      <Filter>03.Components\Task</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Private\Task_RandomMove.cpp">
-      <Filter>03.Components\Task</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\Sword.cpp">
       <Filter>02.GameObjects\Creatures\Player\Parts\Weapon</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Task_Attack.cpp">
+      <Filter>03.Components\Task\Attack</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Task_FollowTarget.cpp">
+      <Filter>03.Components\Task\Move</Filter>
+    </ClCompile>
+    <ClCompile Include="..\private\Task_LookAt.cpp">
+      <Filter>03.Components\Task\Turn</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Task_MoveForward.cpp">
+      <Filter>03.Components\Task\Move</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Task_RandomMove.cpp">
+      <Filter>03.Components\Task\Move</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Task_Wait.cpp">
+      <Filter>03.Components\Task\Wait</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -133,11 +133,11 @@ void CCollider::Tick(_float TimeDelta)
 	Erase_NotEnabledCollision();
 }
 
-void CCollider::Late_Tick(_float TimeDelta)
+_int CCollider::Late_Tick(_float TimeDelta)
 {
-	if (m_bEnabled == false) return;
+	if (m_bEnabled == false) return OBJ_NOEVENT;
 
-	__super::Late_Tick(TimeDelta);
+	return __super::Late_Tick(TimeDelta);
 
 }
 

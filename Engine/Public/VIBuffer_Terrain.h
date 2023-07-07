@@ -21,6 +21,8 @@ public:
 	HRESULT Initialize_Prototype(const _uint & sizeX, const _uint & sizeZ, const _float& fInterval, TYPE eType);
 	HRESULT Initialize_Prototype(const wstring& pCustomHeightMap, TYPE eType);
 
+	void			Culling(_fmatrix WorldMatrix);
+
 	virtual HRESULT Initialize(void* pArg) override;
 	vector<Triangle>* Get_VerticesPos() { return &m_VerticesPos; }
 
@@ -37,7 +39,10 @@ private:
 	_uint				m_iNumVerticesX = { 0 };
 	_uint				m_iNumVerticesZ = { 0 };
 	_float				m_fInterval = { 1.f };
+
 	vector<Triangle>	m_VerticesPos;
+	_ulong*				m_pIndices = { nullptr };
+	class CQuadTree*	m_pQuadTree = { nullptr };
 
 public:
 	static CVIBuffer_Terrain* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext, const _tchar* pHeightMap, TYPE eType = STATIC);

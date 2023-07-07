@@ -178,7 +178,7 @@ void CCollisionManager::Reset_ColGroup()
 	{
 		for (auto& collider : m_ColliderList[i])
 		{
-			if (collider->GetRef() == 1)
+			if (collider->GetRef() == 0)
 			{
 				collider->Erase_FromOtherCollisionList();
 			}

@@ -60,7 +60,6 @@ public:
 	AnimNode* Get_LowerBody_CurAnimNode() { return m_pCurLowerAnimNode; }
 
 
-
 private:
 	// 다음 애니메이션으로 넘어갈때 원래의 진행상황 정보를 초기화해주자.
 	void Reset_Animation(const string& name);

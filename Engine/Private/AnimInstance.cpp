@@ -82,6 +82,8 @@ void CAnimInstance::Apply_Animation(const string& name, ANIMTYPE eType)
 				Reset_Animation(m_pCurAnimationName);*/
 		if (m_pCurAnimationName.compare(name) == 0) return;
 
+		//cout << name << endl;
+
 		Reset_Animation(name);
 
 		m_pCurAnimationName = name;

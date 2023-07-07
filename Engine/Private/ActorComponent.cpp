@@ -29,11 +29,6 @@ HRESULT CActorComponent::Initialize(void* pArg)
 	if (FAILED(__super::Initialize(pArg)))
 		return E_FAIL;
 
-	if (FAILED(Add_Components()))
-		return E_FAIL;	
-
-	
-
 	return S_OK;
 }
 
@@ -47,14 +42,14 @@ void CActorComponent::Tick(_float TimeDelta)
 		m_pRendererCom->Add_RenderGroup(CRenderer::RENDER_NONBLEND, this);
 }
 
-void CActorComponent::Late_Tick(_float TimeDelta)
+_int CActorComponent::Late_Tick(_float TimeDelta)
 {
-	if (m_bEnabled == false) return;
+	if (m_bEnabled == false) return OBJ_NOEVENT;
 
 	if (m_pModelCom == nullptr || m_pShaderCom == nullptr || m_pRendererCom == nullptr || m_pTransformCom == nullptr) 
-		return;
+		return OBJ_NOEVENT;
 
-	__super::Late_Tick(TimeDelta);
+	_int result = __super::Late_Tick(TimeDelta);
 
 	_matrix BoneMatrix;
 
@@ -70,6 +65,8 @@ void CActorComponent::Late_Tick(_float TimeDelta)
 
 
 	XMStoreFloat4x4(&m_WorldMatrix, m_pTransformCom->Get_WorldMatrix() * BoneMatrix * XMLoadFloat4x4(m_ParentDesc.pParentWorldMatrix));
+
+	return result;
 }
 
 HRESULT CActorComponent::Render()

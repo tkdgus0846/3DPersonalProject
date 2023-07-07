@@ -43,9 +43,9 @@ void CAxe::Tick(_float TimeDelta)
 	
 }
 
-void CAxe::Late_Tick(_float TimeDelta)
+_int CAxe::Late_Tick(_float TimeDelta)
 {
-	__super::Late_Tick(TimeDelta);
+	return __super::Late_Tick(TimeDelta);
 }
 
 HRESULT CAxe::Render()
@@ -133,6 +133,45 @@ CGameObject* CAxe::Clone(void* pArg)
 void CAxe::Free()
 {
 	__super::Free();
+}
+
+void CAxe::SkillQ_Collision_Enter(const Collision* collision)
+{
+}
+
+void CAxe::SkillQ_Collision_Stay(const Collision* collision)
+{
+}
+
+void CAxe::SkillQ_Collision_Exit(const Collision* collision)
+{
+}
+
+void CAxe::SkillE_Collision_Enter(const Collision* collision)
+{
+}
+
+void CAxe::SkillE_Collision_Stay(const Collision* collision)
+{
+}
+
+void CAxe::SkillE_Collision_Exit(const Collision* collision)
+{
+}
+
+void CAxe::Attack_Collision_Enter(const Collision* collision)
+{
+	__super::Attack_Collision_Enter(collision);
+}
+
+void CAxe::Attack_Collision_Stay(const Collision* collision)
+{
+	__super::Attack_Collision_Stay(collision);
+}
+
+void CAxe::Attack_Collision_Exit(const Collision* collision)
+{
+	__super::Attack_Collision_Exit(collision);
 }
 
 void CAxe::Skill_Q(const _float& TimeDelta)

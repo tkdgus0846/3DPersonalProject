@@ -25,8 +25,11 @@ protected:
 public:
 	virtual HRESULT Initialize_Prototype() override;
 	virtual HRESULT Initialize(void* pArg) override;
+	virtual HRESULT Ready_BehaviorTree() override;
+
+
 	virtual void Tick(_float TimeDelta) override;
-	virtual void Late_Tick(_float TimeDelta) override;
+	virtual _int Late_Tick(_float TimeDelta) override;
 	virtual HRESULT Render() override;
 	//void Ride() override;
 
@@ -34,59 +37,60 @@ public:
 	virtual void OnCollisionStay(const Collision* collision); 
 	virtual void OnCollisionExit(const Collision* collision); 
 
-private:
-	void Add_Animations();
+	
 
-	void Attack();
-	void Damaged(const _float& TimeDelta);
-	void SuperArmor(const _float& TimeDelta);
+private:
+	virtual void	Attack(const _float& TimeDelta) override;
+	virtual void	Damaged(const _float& TimeDelta) override;
+	virtual void	SuperArmor(const _float& TimeDelta) override;
+	virtual void	Walk(const _float& TimeDelta) override;
+	virtual void	Run(const _float& TimeDelta) override; 
+	virtual void	KnockBack(const _float& TimeDelta) override; 
+	virtual void	Stun(const _float& TimeDelta) override; 
+	virtual void	Idle(const _float& TimeDelta) override; 
+	virtual void	Death(const _float& TimeDelta) override;
 
 
 	// 블랙보드 변수들을 객체로 옮겨주는 작업을 한다.
-	void State();
-	void Select_DamagedKey();
-	void Select_MoveKey();
-	void Select_IdleKey();
-	void Select_AttackKey();
-	void Select_AnimationKey();
+	virtual void State() override;
+
+
+	void			DashAttack(const _float& TimeDelta);
+	void			SwingAttack(const _float& TimeDelta);
+	void			HammerDownAttack(const _float& TimeDelta);
+	void			ThunderAttack(const _float& TimeDelta);
+
+	
 
 private:
 	CShader*				m_pShaderCom = { nullptr };
 	CRenderer*				m_pRendererCom = { nullptr };	
-	CTransform*				m_pTransformCom = { nullptr };
 	CModel*					m_pModelCom = { nullptr };
 
 	CCollider*				m_pBodyColliderCom = { nullptr };
 	CCollider*				m_pDetectionColliderCom = { nullptr };
 	CCollider*				m_pAttackRangeColliderCom = { nullptr };
+
 	CAnimInstance*			m_pAnimInstance = { nullptr };
-	CNavigation*			m_pNavigationCom = { nullptr };
 
-
-	// AI 관련 변수들
-	_bool					m_isAttack1 = { false };
-	_bool					m_isWalk = { false };
-	_bool					m_isRun = { false };
-	_bool					m_isDamaged = { false };
-	_bool					m_isSuperArmor = { false };
-
-	// 피격과 슈퍼아머 변수들
-	_float					m_DamagedStunTimeAcc = { 0.f };
-	_float					m_SuperArmorTimeAcc = { 0.f };
-	const _float			m_DamagedStunTime = { 0.5f };
-	const _float			m_SuperArmorTime = { 4.f };
-
-	// 이동 관련 변수들
-	const _float			m_WalkSpeed = { 2.0f };
-	const _float			m_RunSpeed = { 5.0f };
-	
-	
+	// 애니메이션을 NextNext 진행해야하는데 계속 Apply 초기화 되어서 만들었음
 	
 
+	// 대쉬 공격 변수들
+	_float						m_MaceDashTimeAcc = { 0.0f };
+	const _float				m_MaceDashAccel = { -0.01f };
+	const _float				m_MaceDashInitSpeed = { 0.2f };
+	_bool						m_bMaceDashFinished = { false };
+	const _float				m_MaceDashJumpSpeed = { 6.0f };
+	const _float				m_MaceDashJumpGravity = { 4.5f };
+	_float						m_MaceDashJumpOriginHeight = { 0.0f };
+	_float3						m_MaceDashTargetPos = { -1.f, -1.f, -1.f };
+	_float3						m_MaceDashDir = { -1.f, -1.f, -1.f };;
 
-public:
-	HRESULT Add_Components();
-	HRESULT SetUp_ShaderResources();
+private:
+	virtual HRESULT Add_Animations() override;
+	virtual HRESULT Add_Components() override;
+	virtual HRESULT SetUp_ShaderResources() override;
 
 public:
 	/* 원형을 생성한다. */

@@ -227,6 +227,8 @@ call Copy.bat</Command>
     <ClInclude Include="..\Public\Navigation.h" />
     <ClInclude Include="..\public\Object_Manager.h" />
     <ClInclude Include="..\Public\PipeLine.h" />
+    <ClInclude Include="..\Public\QuadTree.h" />
+    <ClInclude Include="..\Public\RandomChooser.h" />
     <ClInclude Include="..\public\Renderer.h" />
     <ClInclude Include="..\public\RootNode.h" />
     <ClInclude Include="..\public\Selector.h" />
@@ -285,6 +287,8 @@ call Copy.bat</Command>
     <ClCompile Include="..\Private\Navigation.cpp" />
     <ClCompile Include="..\private\Object_Manager.cpp" />
     <ClCompile Include="..\Private\PipeLine.cpp" />
+    <ClCompile Include="..\Private\QuadTree.cpp" />
+    <ClCompile Include="..\Private\RandomChooser.cpp" />
     <ClCompile Include="..\private\Renderer.cpp" />
     <ClCompile Include="..\private\RootNode.cpp" />
     <ClCompile Include="..\private\Selector.cpp" />

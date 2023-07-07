@@ -47,6 +47,10 @@ void CMainApp::Tick(_float TimeDelta)
 	m_pGameInstance->Check_Collision(COL_PLAYER, COL_ENEMY);
 	m_pGameInstance->Check_Collision(COL_PLAYER, COL_DETECTION);
 	m_pGameInstance->Check_Collision(COL_PLAYERWEAPON, COL_ENEMY);
+
+#ifdef _DEBUG
+	m_TimeAcc += TimeDelta;
+#endif
 }
 
 HRESULT CMainApp::Render()
@@ -61,6 +65,17 @@ HRESULT CMainApp::Render()
 	m_pRenderer->Draw_RenderGroup();
 #ifdef _DEBUG
 	m_pGameInstance->Render_Collider();
+
+	++m_iNumRenders;
+	if (m_TimeAcc >= 1.0)
+	{
+		wsprintf(m_szFPS, TEXT("fps : %d"), m_iNumRenders);
+
+
+		m_iNumRenders = 0;
+		m_TimeAcc = 0;
+	}
+	m_pGameInstance->Render_Font(TEXT("Font_135"), m_szFPS, _float2(0.f, 0.f));
 #endif
 
 
@@ -133,68 +148,71 @@ HRESULT CMainApp::Ready_Gara()
 	if (nullptr == m_pDevice)
 		return E_FAIL;
 
-	ID3D11Texture2D* pTexture = { nullptr };
-
-	D3D11_TEXTURE2D_DESC	TextureDesc;
-	ZeroMemory(&TextureDesc, sizeof(D3D11_TEXTURE2D_DESC));
-
-	TextureDesc.Width = 128;
-	TextureDesc.Height = 128;
-	TextureDesc.MipLevels = 1;
-	TextureDesc.ArraySize = 1;
-	TextureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-
-	TextureDesc.SampleDesc.Quality = 0;
-	TextureDesc.SampleDesc.Count = 1;
-
-	TextureDesc.Usage = D3D11_USAGE_DYNAMIC;
-	TextureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	TextureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	TextureDesc.MiscFlags = 0;
-
-	D3D11_SUBRESOURCE_DATA	SubResourceData;
-	ZeroMemory(&SubResourceData, sizeof SubResourceData);
-
-	_ulong* pPixel = new _ulong[TextureDesc.Width * TextureDesc.Height];
-	ZeroMemory(pPixel, sizeof(_ulong) * TextureDesc.Width * TextureDesc.Height);
-
-	for (size_t i = 0; i < TextureDesc.Height; i++)
-	{
-		for (size_t j = 0; j < TextureDesc.Width; j++)
-		{
-			size_t iIndex = i * TextureDesc.Width + j;
-
-			if (j < 64)
-				pPixel[iIndex] = D3DCOLOR_ARGB(255, 0, 0, 255);
-			else
-				pPixel[iIndex] = D3DCOLOR_ARGB(255, 0, 0, 0);
-		}
-	}
-
-	SubResourceData.pSysMem = pPixel;
-	SubResourceData.SysMemPitch = TextureDesc.Width * 4;
-	// 텍스쳐 가로 줄의 크기
-
-	if (FAILED(m_pDevice->CreateTexture2D(&TextureDesc, &SubResourceData, &pTexture)))
+	if (FAILED(m_pGameInstance->Add_Fonts(m_pDevice, m_pContext, TEXT("Font_135"), TEXT("../Bin/Resources/Fonts/135ex.spritefont"))))
 		return E_FAIL;
 
+	//ID3D11Texture2D* pTexture = { nullptr };
 
-	pPixel[0] = D3DCOLOR_ARGB(255, 0, 0, 255);
+	//D3D11_TEXTURE2D_DESC	TextureDesc;
+	//ZeroMemory(&TextureDesc, sizeof(D3D11_TEXTURE2D_DESC));
 
-	D3D11_MAPPED_SUBRESOURCE		MappedSubResource;
+	//TextureDesc.Width = 128;
+	//TextureDesc.Height = 128;
+	//TextureDesc.MipLevels = 1;
+	//TextureDesc.ArraySize = 1;
+	//TextureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 
-	m_pContext->Map(pTexture, 0, D3D11_MAP_WRITE_DISCARD/*D3D11_MAP_WRITE_NO_OVERWRITE */, 0, &MappedSubResource);
+	//TextureDesc.SampleDesc.Quality = 0;
+	//TextureDesc.SampleDesc.Count = 1;
 
-	memcpy(MappedSubResource.pData, pPixel, sizeof(_ulong) * TextureDesc.Width * TextureDesc.Height);
+	//TextureDesc.Usage = D3D11_USAGE_DYNAMIC;
+	//TextureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	//TextureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	//TextureDesc.MiscFlags = 0;
 
-	m_pContext->Unmap(pTexture, 0);
+	//D3D11_SUBRESOURCE_DATA	SubResourceData;
+	//ZeroMemory(&SubResourceData, sizeof SubResourceData);
+
+	//_ulong* pPixel = new _ulong[TextureDesc.Width * TextureDesc.Height];
+	//ZeroMemory(pPixel, sizeof(_ulong) * TextureDesc.Width * TextureDesc.Height);
+
+	//for (size_t i = 0; i < TextureDesc.Height; i++)
+	//{
+	//	for (size_t j = 0; j < TextureDesc.Width; j++)
+	//	{
+	//		size_t iIndex = i * TextureDesc.Width + j;
+
+	//		if (j < 64)
+	//			pPixel[iIndex] = D3DCOLOR_ARGB(255, 0, 0, 255);
+	//		else
+	//			pPixel[iIndex] = D3DCOLOR_ARGB(255, 0, 0, 0);
+	//	}
+	//}
+
+	//SubResourceData.pSysMem = pPixel;
+	//SubResourceData.SysMemPitch = TextureDesc.Width * 4;
+	//// 텍스쳐 가로 줄의 크기
+
+	//if (FAILED(m_pDevice->CreateTexture2D(&TextureDesc, &SubResourceData, &pTexture)))
+	//	return E_FAIL;
 
 
-	if (FAILED(SaveDDSTextureToFile(m_pContext, pTexture, TEXT("../Bin/Resources/Textures/Terrain/Filter.dds"))))
-		return E_FAIL;
+	//pPixel[0] = D3DCOLOR_ARGB(255, 0, 0, 255);
 
-	Safe_Release(pTexture);
-	Safe_Delete_Array(pPixel);
+	//D3D11_MAPPED_SUBRESOURCE		MappedSubResource;
+
+	//m_pContext->Map(pTexture, 0, D3D11_MAP_WRITE_DISCARD/*D3D11_MAP_WRITE_NO_OVERWRITE */, 0, &MappedSubResource);
+
+	//memcpy(MappedSubResource.pData, pPixel, sizeof(_ulong) * TextureDesc.Width * TextureDesc.Height);
+
+	//m_pContext->Unmap(pTexture, 0);
+
+
+	//if (FAILED(SaveDDSTextureToFile(m_pContext, pTexture, TEXT("../Bin/Resources/Textures/Terrain/Filter.dds"))))
+	//	return E_FAIL;
+
+	//Safe_Release(pTexture);
+	//Safe_Delete_Array(pPixel);
 
 
 	return S_OK;

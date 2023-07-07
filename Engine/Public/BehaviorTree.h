@@ -1,17 +1,31 @@
 #pragma once
 
 #include "Component.h"
+#include "BlackBoard.h"
+#include "RootNode.h"
 
 BEGIN(Engine)
 
-class CBlackBoard;
-class CRootNode;
+class CGameObject;
 
 class ENGINE_DLL CBehaviorTree : public CComponent
 {
 public:
 	struct BTDesc
 	{
+		BTDesc(CGameObject* pOwner)
+			: pBlackBoard(CBlackBoard::Create())
+			, pRootNode(CRootNode::Create()) 
+		{
+			pBlackBoard->AddData("Owner", pOwner);
+		}
+		BTDesc(CGameObject* pOwner, CBlackBoard* _pBlackBoard, CRootNode* _pRootNode)
+			: pBlackBoard(_pBlackBoard)
+			, pRootNode(_pRootNode)
+		{
+			pBlackBoard->AddData("Owner", pOwner);
+		}
+
 		CBlackBoard*	pBlackBoard = { nullptr };
 		CRootNode*		pRootNode = { nullptr };
 	};

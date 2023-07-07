@@ -23,8 +23,25 @@ void CLayer::Tick(_float TimeDelta)
 
 void CLayer::Late_Tick(_float TimeDelta)
 {
-	for (auto& pGameObject : m_GameObjects)
-		pGameObject->Late_Tick(TimeDelta);
+	for (auto& it = m_GameObjects.begin(); it != m_GameObjects.end();)
+	{
+		_int result = (*it)->Late_Tick(TimeDelta);
+
+		if (result == OBJ_DEAD)
+		{
+			Safe_Release(*it);
+			it = m_GameObjects.erase(it);
+		}
+		else if (result == OBJ_RETPOOL)
+		{
+
+		}
+		else if (result == OBJ_NOEVENT)
+		{
+			it++;
+		}
+	}
+		
 }
 
 CGameObject* CLayer::Find_Object(const wstring& objName)

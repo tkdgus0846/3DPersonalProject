@@ -42,9 +42,9 @@ void CPlayerHead::Tick(_float TimeDelta)
 	
 }
 
-void CPlayerHead::Late_Tick(_float TimeDelta)
+_int CPlayerHead::Late_Tick(_float TimeDelta)
 {
-	__super::Late_Tick(TimeDelta);
+	return __super::Late_Tick(TimeDelta);
 }
 
 HRESULT CPlayerHead::Render()

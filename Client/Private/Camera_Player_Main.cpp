@@ -59,8 +59,9 @@ void CCamera_Player_Main::Tick(_float TimeDelta)
 	Safe_Release(pGameInstance);
 }
 
-void CCamera_Player_Main::Late_Tick(_float TimeDelta)
+_int CCamera_Player_Main::Late_Tick(_float TimeDelta)
 {
+	return __super::Late_Tick(TimeDelta);
 }
 
 HRESULT CCamera_Player_Main::Render()

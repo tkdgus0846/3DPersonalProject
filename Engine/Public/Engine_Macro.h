@@ -2,6 +2,10 @@
 
 #define FILE_NAME_SIZE 128
 
+#define OBJ_NOEVENT 0
+#define OBJ_DEAD	1
+#define OBJ_RETPOOL 2
+
 #define TRANSFORM_W		L"Transform"
 #define RENDERER_W		L"Renderer" 
 #define VIBUFFER_W		L"VIBuffer" 

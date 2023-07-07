@@ -37,6 +37,7 @@ protected:
 
 	_uint						m_iIndexStride = { 0 }; /* 인덱스 하나의 크기. */
 	_uint						m_iNumIndices = { 0 };
+	_float3*					m_pVerticesPos = { nullptr };
 
 protected:
 	HRESULT Create_Buffer(ID3D11Buffer** ppOut);

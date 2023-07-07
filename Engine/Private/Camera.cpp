@@ -69,9 +69,9 @@ void CCamera::Tick(_float TimeDelta)
 	m_pPipeLine->Set_Transform(CPipeLine::D3DTS_PROJ, XMMatrixPerspectiveFovLH(m_fFovy, m_fAspect, m_fNear, m_fFar));
 }
 
-void CCamera::Late_Tick(_float TimeDelta)
+_int CCamera::Late_Tick(_float TimeDelta)
 {
-	__super::Late_Tick(TimeDelta);
+	return __super::Late_Tick(TimeDelta);
 }
 
 HRESULT CCamera::Render()

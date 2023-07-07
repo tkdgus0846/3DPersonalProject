@@ -28,9 +28,6 @@ HRESULT CTerrain::Initialize(void* pArg)
 	if (FAILED(__super::Initialize(pArg)))
 		return E_FAIL;
 
-	if (FAILED(Add_Components()))
-		return E_FAIL;
-
 	m_eRenderGroup = CRenderer::RENDER_NONBLEND;
 
 	return S_OK;
@@ -40,23 +37,20 @@ void CTerrain::Tick(_float TimeDelta)
 {
 	__super::Tick(TimeDelta);
 
+	m_pVIBufferCom->Culling(m_pTransformCom->Get_WorldMatrix());
 
 	if (nullptr != m_pRendererCom)
 		m_pRendererCom->Add_RenderGroup((CRenderer::RENDERGROUP)m_eRenderGroup, this);
 }
 
-void CTerrain::Late_Tick(_float TimeDelta)
+_int CTerrain::Late_Tick(_float TimeDelta)
 {
-	__super::Late_Tick(TimeDelta);
-
+	return __super::Late_Tick(TimeDelta);
 }
 
 HRESULT CTerrain::Render()
 {
 	if (FAILED(__super::Render()))
-		return E_FAIL;
-
-	if (FAILED(SetUp_ShaderResources()))
 		return E_FAIL;
 
 	m_pShaderCom->Begin(m_iPassNum);

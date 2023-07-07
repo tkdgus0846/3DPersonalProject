@@ -11,7 +11,13 @@ CTask_FollowTarget::RESULT CTask_FollowTarget::Run(const _float& TimeDelta, vect
 	m_pBlackBoard->ChangeData("IsRun", false);
 
 	if (Pass_Decorator() == false)
+	{
+		//cout << "Follow_Task Failed" << endl;
 		return RESULT(FAIL);
+	}
+		
+	//m_pBlackBoard->ClearData();
+	//cout << "Follow_Task Running" << endl;
 
 	CGameObject* target = any_cast<CGameObject*>(m_pBlackBoard->FindData("Target"));
 

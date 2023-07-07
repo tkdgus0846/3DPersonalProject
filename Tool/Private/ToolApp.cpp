@@ -47,8 +47,9 @@ void CToolApp::Tick(_float TimeDelta)
 	if (nullptr == m_pGameInstance)
 		return;
 
-	m_pGameInstance->Tick_Engine(TimeDelta);
+	
 	IMGUI->Tick(TimeDelta);
+	m_pGameInstance->Tick_Engine(TimeDelta);
 }
 
 HRESULT CToolApp::Render()

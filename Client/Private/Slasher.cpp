@@ -43,9 +43,9 @@ void CSlasher::Tick(_float TimeDelta)
 	
 }
 
-void CSlasher::Late_Tick(_float TimeDelta)
+_int CSlasher::Late_Tick(_float TimeDelta)
 {
-	__super::Late_Tick(TimeDelta);
+	return __super::Late_Tick(TimeDelta);
 }
 
 HRESULT CSlasher::Render()

@@ -1,5 +1,9 @@
 
+attrib				-R			.\Reference\Headers\*.*
 xcopy				/y/s		.\Engine\Public\*.*					.\Reference\Headers\
+attrib				+R			.\Reference\Headers\*.*
+
+
 xcopy				/y/s		.\Engine\ThirdPartyLib\*.*			.\Reference\Librarys\
 xcopy				/y/s		.\Client\Bin\ShaderFiles\*.*		.\Tool\Bin\ShaderFiles\
 xcopy				/y/s		.\Engine\Bin\ShaderFiles\*.*		.\Client\Bin\ShaderFiles\

@@ -27,7 +27,7 @@ public:
 	virtual HRESULT Initialize_Prototype() override;
 	virtual HRESULT Initialize(void* pArg) override;
 	virtual void Tick(_float TimeDelta) override;
-	virtual void Late_Tick(_float TimeDelta) override;
+	virtual _int Late_Tick(_float TimeDelta) override;
 	virtual HRESULT Render() override;
 
 	virtual void OnCollisionEnter(const Collision* collision) { cout << "Cube Object Enter!" << endl; }
@@ -43,8 +43,8 @@ private:
 	CCollider*				m_pColliderCom = { nullptr };
 
 public:
-	HRESULT Add_Components();
-	HRESULT SetUp_ShaderResources();
+	virtual HRESULT Add_Components() override;
+	virtual HRESULT SetUp_ShaderResources() override;
 
 public:
 	/* 원형을 생성한다. */
