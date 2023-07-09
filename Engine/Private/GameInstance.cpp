@@ -344,13 +344,13 @@ HRESULT CGameInstance::Save_CurLevel(const _tchar* curLevelName)
 	return S_OK;
 }
 
-HRESULT CGameInstance::Load_CurLevel(const _tchar* curLevelName, _bool bIsTool)
+HRESULT CGameInstance::Load_CurLevel(const _tchar* curLevelName, _bool bIsTool, _int row, _int col)
 {
 	if (nullptr == m_pObject_Manager)
 		return E_FAIL;
 
 
-	LevelParsingData* levelData = new LevelParsingData(curLevelName);
+	LevelParsingData* levelData = new LevelParsingData(curLevelName, row, col);
 
 	if (bIsTool == false)
 		m_pObject_Manager->Load_Data(0, levelData);
@@ -358,6 +358,14 @@ HRESULT CGameInstance::Load_CurLevel(const _tchar* curLevelName, _bool bIsTool)
 		m_pObject_Manager->Load_Tool_Objects(levelData);
 	Safe_Delete(levelData);
 	return S_OK;
+}
+
+unordered_map<wstring, vector<ObjectParsingData*>>* CGameInstance::Get_LoadedObjectData(_int row, _int col)
+{
+	if (nullptr == m_pObject_Manager)
+		return nullptr;
+
+	return m_pObject_Manager->Get_LoadedObjectData(row,col);
 }
 
 list<CGameObject*> CGameInstance::Get_All_Objects()

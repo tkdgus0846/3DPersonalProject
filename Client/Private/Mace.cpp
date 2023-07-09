@@ -141,7 +141,10 @@ void CMace::Free()
 
 void CMace::Skill_Q(const _float& TimeDelta)
 {
-	if (m_bMaceDashFinished == true) return;
+	if (m_bMaceDashFinished == true)
+	{
+		return;
+	}
 
 	m_MaceDashTimeAcc += TimeDelta;
 	if ((m_MaceDashInitSpeed + (m_MaceDashAccel * m_MaceDashTimeAcc)) >= 0.f)
@@ -169,6 +172,7 @@ void CMace::Skill_Q(const _float& TimeDelta)
 		m_pPlayer->m_bClimbNavMesh = true;
 		m_bMaceDashFinished = true;
 		m_pPlayer->Collider_Off(CPlayer::COLLIDER_MACE_E);
+		m_pPlayer->Collider_On(CPlayer::COLLIDER_MACE_Q);
 	}
 }
 
@@ -210,7 +214,7 @@ void CMace::Skill_E_Setting()
 
 _bool CMace::Skill_Q_End()
 {
-	m_pPlayer->Collider_Off(CPlayer::COLLIDER_MACE_E);
+	m_pPlayer->All_Collider_Off();
 	_bool bResult = false;
 	if (m_bMaceDashFinished == true)
 	{
@@ -295,6 +299,14 @@ void CMace::Standing_Attack_Animation()
 
 void CMace::SkillQ_Collision_Enter(const Collision* collision)
 {
+	CMonster* monster = dynamic_cast<CMonster*>(collision->OtherGameObject);
+	CCollider* collider = m_pPlayer->m_pColliderCom[CPlayer::COLLIDER_MACE_Q];
+
+	if (monster != nullptr && collider == collision->MyCollider)
+	{
+		monster->Set_AirBorne();
+		monster->Get_Damaged(m_QDamage);
+	}
 }
 
 void CMace::SkillQ_Collision_Stay(const Collision* collision)

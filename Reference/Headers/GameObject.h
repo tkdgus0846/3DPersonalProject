@@ -6,6 +6,11 @@ BEGIN(Engine)
 
 class ENGINE_DLL CGameObject abstract : public CComposite, public ISerializable
 {
+	typedef struct GameObjectLoadDesc
+	{
+		_float4x4 WorldMatrix;
+	}OBJECTLOADDESC;
+
 protected:
 	CGameObject(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	CGameObject(const CGameObject& rhs);
@@ -35,9 +40,9 @@ protected:
 	virtual HRESULT SetUp_ShaderResources() { return S_OK; }
 
 protected:
-	_uint		m_iPassNum = { 0 };
-	_uint		m_eRenderGroup;
-	_bool		m_bDead = { false };
+	_uint					m_iPassNum = { 0 };
+	_uint					m_eRenderGroup;
+	_bool					m_bDead = { false };
 };
 
 END

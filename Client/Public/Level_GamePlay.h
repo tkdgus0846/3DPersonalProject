@@ -3,6 +3,10 @@
 #include "Client_Defines.h"
 #include "Level.h"
 
+BEGIN(Engine)
+class CGameObject;
+END
+
 BEGIN(Client)
 
 class CLevel_GamePlay final : public CLevel
@@ -27,6 +31,10 @@ public:
 public:
 	static CLevel_GamePlay* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	virtual void Free() override;
+
+private:
+	HRESULT			Ready_Parsed_Objects(_int row, _int col);
+	wstring			PrototypeName_By_ParsedName(const wstring& name);
 };
 
 END

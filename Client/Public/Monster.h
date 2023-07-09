@@ -30,6 +30,7 @@ public:
 		STATE_STUN,
 		STATE_IDLE,
 		STATE_DEATH,
+		STATE_AIRBORNE,
 		STATE_END
 	};
 
@@ -56,10 +57,21 @@ protected:
 	virtual _int	Late_Tick(_float TimeDelta) override;
 	virtual void	Select_AnimationKey() final {}; // 몬스터에선 이 함수 안쓸거임.
 
+	virtual void	OnCollisionStay(const Collision* collision) override;
+
 	virtual _bool	GetDead() override;
+	
 
 	/* 패트롤, 따라오기, 공격, 그리고 거리 멀어지면 대쉬로 따라오기*/
 	CSelector* PaladinAI(const _float& MoveTime, const _float& WaitTime, _int AttackNums);
+	CSelector* KnightAI(const _float& MoveTime, const _float& WaitTime, _int AttackNums);
+	
+	/* 패트롤, 따라오기, 공격*/
+	CSelector* BasicAI(const _float& MoveTime, const _float& WaitTime, _int AttackNums);
+
+	/* 적이 감지되면 그저 따라와서 때리기*/
+	CSelector* SkeletonAI(_int AttackNums);
+
 	/* AttackNums 랑 몬스터의 변수를 맞춰줘야한다. */
 	CSelector* Patrol_Follow_AttackAI(const _float& PatrolMoveTime, const _float& WaitTime, _int AttackNums);
 
@@ -97,6 +109,7 @@ protected:		// 몬스터가 공통으로 당하거나 하는것들 ex) 넉백, 에어본 등등
 	virtual void	Walk(const _float& TimeDelta) {}
 	virtual void	Run(const _float& TimeDelta) {}
 	virtual void	KnockBack(const _float& TimeDelta) {}
+	virtual void	AirBorne(const _float& TimeDelta);
 	virtual void	Stun(const _float& TimeDelta) {}
 	virtual void	Idle(const _float& TimeDelta) {}
 	virtual void	Death(const _float& TimeDelta) {}
@@ -147,17 +160,31 @@ protected:
 	// 피격과 슈퍼아머 변수들
 	_float					m_DamagedStunTimeAcc = { 0.f };
 	_float					m_SuperArmorTimeAcc = { 0.f };
-	const _float			m_DamagedStunTime = { 0.5f }; // 스턴걸리는 시간 설정
-	const _float			m_SuperArmorTime = { 4.f }; // 슈퍼아머 유지시간 설정
+	_float					m_DamagedStunTime = { 0.5f }; // 스턴걸리는 시간 설정
+	_float					m_SuperArmorTime = { 4.f }; // 슈퍼아머 유지시간 설정
 
 
 	// 이동 관련 변수들
-	const _float			m_WalkSpeed = { 2.0f };
-	const _float			m_RunSpeed = { 5.0f };
+	_float					m_WalkSpeed = { 2.0f };
+	_float					m_RunSpeed = { 5.0f };
 
 	// 넉백 관련 변수들
 	_bool					m_bKnockBack = { false };
-	const _float			m_KnockBackTime = { 2.f };
+	_float					m_KnockBackTime = { 2.f };
+
+	// 에어본 관련 변수들
+	_float					m_AirborneSpeed = { 7.0f };
+	_float					m_AirborneGravity = { 10.5f };
+	_float					m_AirborneOriginHeight = { 0.0f };
+	_float					m_AirborneTimeAcc = { 0.f };
+
+	_bool					m_bAirborneStarted = { false };
+	_bool					m_bAirborneFinished = { false };
+	_bool					m_bAirborne = { false };
+
+public:
+	void					Set_AirBorne() { m_bAirborne = true; }
+	virtual void			Get_Damaged(_int Damage) override;
 };
 END
 

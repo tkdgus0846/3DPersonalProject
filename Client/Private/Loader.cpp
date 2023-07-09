@@ -16,6 +16,8 @@
 #include "Horse.h"
 #include "Paladin.h"
 #include "Sword.h"
+#include "Knight.h"
+#include "SkeletonWarrior.h"
 
 CLoader::CLoader(ID3D11Device * pDevice, ID3D11DeviceContext * pContext)
 	: m_pDevice(pDevice)
@@ -153,6 +155,14 @@ HRESULT CLoader::Loading_For_GamePlay()
 
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Paladin"),
 		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/AnimModels/NPCPaladin_Standard_LOD00_rig/NPCPaladin_Standard_LOD00_rig.dat", PivotMatrix))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Knight"),
+		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/AnimModels/NPCKnight_Standard_LOD00_rig/NPCKnight_Standard_LOD00_rig.dat", PivotMatrix))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_SkeletonWarrior"),
+		CModel::Create(m_pDevice, m_pContext, "../../ExtractModels/AnimModels/NPCLittleGuy_Skeleton_LOD00_rig/NPCLittleGuy_Skeleton_LOD00_rig.dat", PivotMatrix))))
 		return E_FAIL;
 
 	if (FAILED(m_pGameInstance->Add_Prototype(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Player"),
@@ -334,6 +344,14 @@ HRESULT CLoader::Loading_For_GamePlay()
 
 	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Paladin"),
 		CPaladin::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_Knight"),
+		CKnight::Create(m_pDevice, m_pContext))))
+		return E_FAIL;
+
+	if (FAILED(m_pGameInstance->Add_Prototype(TEXT("Prototype_GameObject_SkeletonWarrior"),
+		CSkeletonWarrior::Create(m_pDevice, m_pContext))))
 		return E_FAIL;
 
 	lstrcpy(m_szLoading, TEXT("로딩 완료."));

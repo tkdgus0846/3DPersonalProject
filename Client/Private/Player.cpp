@@ -58,6 +58,8 @@ void CPlayer::Tick(_float TimeDelta)
 {
  	__super::Tick(TimeDelta);
 
+	cout << "HI" << endl;
+
 	if (m_pCameraCom->Is_On_Camera() == true)
 	{
 #ifdef _DEBUG
@@ -1425,8 +1427,8 @@ HRESULT CPlayer::Add_Components()
 	CBounding_OBB::BOUNDINGBOX AttackColliderDesc;
 
 	AttackColliderDesc.eColGroup = COL_PLAYERWEAPON;
-	AttackColliderDesc.vExtents = _float3(0.3f, 0.3f, 0.9f);
-	AttackColliderDesc.vPosition = _float3(0.f, 0.4f, 1.4f);
+	AttackColliderDesc.vExtents = _float3(0.9f, 0.3f, 0.9f);
+	AttackColliderDesc.vPosition = _float3(0.f, 0.9f, 1.4f);
 	AttackColliderDesc.vRotation = _float3(0.f, XMConvertToRadians(0.0f), 0.f);
 
 	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Collider_OBB"),

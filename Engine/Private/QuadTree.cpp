@@ -85,22 +85,21 @@ HRESULT CQuadTree::Make_Neighbors()
 	return S_OK;
 }
 
-void CQuadTree::Culling(CFrustum * pFrustum, const _float3 * pVerticesPos, _ulong * pIndices, _uint * pNumIndices)
+void CQuadTree::Culling(CFrustum * pFrustum, const _float3 * pVerticesPos, _ulong * pIndices, _uint * pNumIndices, _bool bLOD)
 {
-	/* 가장 작은 쿼드트리만 들어와. || 
-	내가 잡아놓은 조건을 만족하면 바로 들어와서 그려. */
-	if (nullptr == m_pChilds[CHILD_LT] || 
+
+	if (nullptr == m_pChilds[CHILD_LT] ||
 		true == isDraw(pVerticesPos))
 	{
 		_bool		isDraw[NEIGHBOR_END] = { true, true, true, true };
-		
+
 		for (size_t i = 0; i < NEIGHBOR_END; i++)
 		{
 			if (nullptr != m_pNeighbors[i])
 				isDraw[i] = m_pNeighbors[i]->isDraw(pVerticesPos);
 		}
-		
-		
+
+
 		_uint		iIndices[4] = {
 			m_iCorners[CORNER_LT],
 			m_iCorners[CORNER_RT],
@@ -119,8 +118,7 @@ void CQuadTree::Culling(CFrustum * pFrustum, const _float3 * pVerticesPos, _ulon
 			true == isDraw[NEIGHBOR_TOP] &&
 			true == isDraw[NEIGHBOR_RIGHT] &&
 			true == isDraw[NEIGHBOR_BOTTOM])
-		{		
-			/* 오른쪽 위 삼각형을 구성하는 정점 중, 최소 하나라도 절두체 안에 있다. */
+		{
 			if (true == isIn[0] ||
 				true == isIn[1] ||
 				true == isIn[2])
@@ -130,7 +128,6 @@ void CQuadTree::Culling(CFrustum * pFrustum, const _float3 * pVerticesPos, _ulon
 				pIndices[(*pNumIndices)++] = iIndices[2];
 			}
 
-			/* 왼쪽 아래 삼각형을 구성하는 정점 중, 최소 하나라도 절두체 안에 있다. */
 			if (true == isIn[0] ||
 				true == isIn[2] ||
 				true == isIn[3])
@@ -232,7 +229,7 @@ void CQuadTree::Culling(CFrustum * pFrustum, const _float3 * pVerticesPos, _ulon
 			}
 		}
 
-		return;	
+		return;
 	}
 
 	_float		fRadius = XMVectorGetX(XMVector3Length(XMLoadFloat3(&pVerticesPos[m_iCorners[CORNER_LT]]) - XMLoadFloat3(&pVerticesPos[m_iCenter])));

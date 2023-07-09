@@ -29,6 +29,28 @@ HRESULT CGameObject::Initialize(void* pArg)
 
 	if (FAILED(Add_Components()))
 		return E_FAIL;
+	
+	if (pArg != nullptr)
+	{
+		ObjectParsingData* objectParsingData = (ObjectParsingData*)pArg;
+
+		TransformParsingData* transformParsingData = (TransformParsingData*)&objectParsingData->TransformData;
+
+		CTransform* pTransform = (CTransform*)Get_Component(TRANSFORM_W);
+
+		if (pTransform != nullptr)
+		{
+			_float4x4 WorldMatrix = transformParsingData->WorldMatrix;
+			//XMStoreFloat4x4(&WorldMatrix, XMMatrixIdentity());
+			/*memcpy(&WorldMatrix.m[0], &transformParsingData->WorldMatrix.m[0], sizeof _float4);
+			memcpy(&WorldMatrix.m[1], &transformParsingData->WorldMatrix.m[1], sizeof _float4);
+			memcpy(&WorldMatrix.m[2], &transformParsingData->WorldMatrix.m[2], sizeof _float4);
+			memcpy(&WorldMatrix.m[3], &transformParsingData->WorldMatrix.m[3], sizeof _float4);*/
+			//WorldMatrix.m[0] = transformParsingData->WorldMatrix.m[0];
+			pTransform->Set_WorldFloat4x4(WorldMatrix);
+		}
+	}
+	
 
 	m_iPassNum = 0;
 	m_eRenderGroup = CRenderer::RENDER_NONBLEND;

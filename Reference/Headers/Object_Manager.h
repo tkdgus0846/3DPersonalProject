@@ -11,6 +11,13 @@ BEGIN(Engine)
 class CObject_Manager final : public CBase, public ISerializable
 {
 	DECLARE_SINGLETON(CObject_Manager)
+public:
+	enum TerrainGrid
+	{
+		GRID_SIZE = 2,
+		GRID_TOTAL_SIZE = GRID_SIZE*GRID_SIZE
+	};
+
 private:
 	CObject_Manager();
 	virtual ~CObject_Manager() = default;
@@ -51,14 +58,16 @@ public:/*실제 사용할 레벨의 갯수만큼 미리 공간을 할당하낟. */
 
 	void Clear_ObjectNums() { m_ObjectsNums.clear(); }
 
+	unordered_map<wstring, vector<ObjectParsingData*>>* Get_LoadedObjectData(_int row, _int col);
+
 public:
 	unordered_map<wstring, class CLayer*>* Get_LayersMapPtr() { return m_pLayers; }
 
 private:	/* 키와 객체수를 바탕으로 네이밍을 하기위함.*/
 	unordered_map<wstring, _uint> m_ObjectsNums;
 
-	/* 키와 로딩에서 불러온 데이터들을 가지고 있기위함. 현재 레벨의 것만 들고 있는것.*/
-	unordered_map<wstring, vector<ObjectParsingData*>>  m_LoadedObjectDatas;
+	/* 키와 로딩에서 불러온 데이터들을 가지고 있기위함. 터레인 별로 들고 있는것.*/
+	unordered_map<wstring, vector<ObjectParsingData*>>  m_LoadedObjectDatas[GRID_TOTAL_SIZE];
 
 private: /* 원형객체들을 생성하여 보관하고 있는다. */
 	unordered_map<const _tchar*, class CGameObject*>	m_Prototypes;

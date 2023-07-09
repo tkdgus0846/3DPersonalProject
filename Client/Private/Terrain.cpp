@@ -37,7 +37,7 @@ void CTerrain::Tick(_float TimeDelta)
 {
 	__super::Tick(TimeDelta);
 
-	m_pVIBufferCom->Culling(m_pTransformCom->Get_WorldMatrix());
+	//m_pVIBufferCom->Culling(m_pTransformCom->Get_WorldMatrix());
 
 	if (nullptr != m_pRendererCom)
 		m_pRendererCom->Add_RenderGroup((CRenderer::RENDERGROUP)m_eRenderGroup, this);

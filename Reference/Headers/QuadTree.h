@@ -17,7 +17,7 @@ private:
 public:
 	HRESULT Initialize(_uint iLT, _uint iRT, _uint iRB, _uint iLB);
 	HRESULT Make_Neighbors();
-	void Culling(class CFrustum* pFrustum, const _float3* pVerticesPos, _ulong* pIndices, _uint* pNumIndices);
+	void Culling(class CFrustum* pFrustum, const _float3* pVerticesPos, _ulong* pIndices, _uint* pNumIndices, _bool bLOD = true);
 	_bool isDraw(const _float3* pVerticesPos);
 
 

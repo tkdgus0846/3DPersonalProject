@@ -15,12 +15,12 @@ END
 
 BEGIN(Client)
 
-class CPaladin final : public CMonster
+class CKnight final : public CMonster
 {
 protected:
-	CPaladin(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
-	CPaladin(const CPaladin& rhs);
-	virtual ~CPaladin() = default;
+	CKnight(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
+	CKnight(const CKnight& rhs);
+	virtual ~CKnight() = default;
 
 public:
 	virtual HRESULT Initialize_Prototype() override;
@@ -54,11 +54,8 @@ private:
 	// 블랙보드 변수들을 객체로 옮겨주는 작업을 한다.
 	virtual void State() override;
 
-
+	void			ComboAttack(const _float& TimeDelta);
 	void			DashAttack(const _float& TimeDelta);
-	void			SwingAttack(const _float& TimeDelta);
-	void			HammerDownAttack(const _float& TimeDelta);
-	void			ThunderAttack(const _float& TimeDelta);
 
 	
 
@@ -78,12 +75,10 @@ private:
 
 	// 대쉬 공격 변수들
 	_float						m_MaceDashTimeAcc = { 0.0f };
-	const _float				m_MaceDashAccel = { -0.01f };
-	const _float				m_MaceDashInitSpeed = { 0.2f };
+	const _float				m_MaceDashAccel = { 1.11f };
+	const _float				m_MaceDashInitSpeed = { -0.1f };
 	_bool						m_bMaceDashFinished = { false };
-	const _float				m_MaceDashJumpSpeed = { 6.0f };
-	const _float				m_MaceDashJumpGravity = { 4.5f };
-	_float						m_MaceDashJumpOriginHeight = { 0.0f };
+
 	_float3						m_MaceDashTargetPos = { -1.f, -1.f, -1.f };
 	_float3						m_MaceDashDir = { -1.f, -1.f, -1.f };
 
@@ -94,7 +89,7 @@ private:
 
 public:
 	/* 원형을 생성한다. */
-	static CPaladin* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
+	static CKnight* Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext);
 	/* 사본(실제 사용할 객체)을 생성한다. */
 	virtual CGameObject* Clone(void* pArg) override;
 	virtual void Free() override;

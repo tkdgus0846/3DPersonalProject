@@ -168,14 +168,19 @@ void CObject_Manager::Clear_LevelResources(_uint iLevelIndex)
 	}
 	m_pLayers[iLevelIndex].clear();
 
-	for (auto& Pair : m_LoadedObjectDatas)
+	for (_int i = 0; i < GRID_TOTAL_SIZE; i++)
 	{
-		for (auto data : Pair.second)
+		for (auto& Pair : m_LoadedObjectDatas[i])
 		{
-			Safe_Delete(data);
+			for (auto data : Pair.second)
+			{
+				Safe_Delete(data);
+			}
 		}
+		m_LoadedObjectDatas[i].clear();
 	}
-	m_LoadedObjectDatas.clear();
+	
+	
 }
 
 void CObject_Manager::Tick(_float TimeDelta)
@@ -219,6 +224,11 @@ CGameObject* CObject_Manager::Copy_Object(_uint iLevelIndex, const wstring& laye
 	}
 
 	return resultObject;
+}
+
+unordered_map<wstring, vector<ObjectParsingData*>>* CObject_Manager::Get_LoadedObjectData(_int row, _int col)
+{
+	return &m_LoadedObjectDatas[row*GRID_SIZE+col];
 }
 
 CGameObject * CObject_Manager::Find_Prototype(const wstring& pPrototypeTag)
@@ -310,11 +320,14 @@ void CObject_Manager::Free()
 		Safe_Release(Pair.second);
 	}
 
-	for (auto& Pair : m_LoadedObjectDatas)
+	for (_int i = 0; i < GRID_TOTAL_SIZE; i++)
 	{
-		for (auto data : Pair.second)
+		for (auto& Pair : m_LoadedObjectDatas[i])
 		{
-			Safe_Delete(data);
+			for (auto data : Pair.second)
+			{
+				Safe_Delete(data);
+			}
 		}
 	}
 
@@ -350,7 +363,7 @@ ParsingData* CObject_Manager::Save_Data(HANDLE handle, ParsingData* data)
 	{
 		for (auto& object : *layer.second->Get_GameObjectsList())
 		{
-			// 툴에서 사용하는 카메라는 저장하지 않기 위함이다.
+			// 툴에서 사용하는 카메라의 위치는 저장하지 않기 위함이다.
 			if (object->GetName().compare(L"MainCamera") == 0)
 				continue;
 
@@ -361,6 +374,7 @@ ParsingData* CObject_Manager::Save_Data(HANDLE handle, ParsingData* data)
 	return nullptr;
 }
 
+// 클라이언트로 파싱해서 읽어오는 함수
 ParsingData* CObject_Manager::Load_Data(HANDLE handle, ParsingData* data)
 {
 	DWORD dwByte = { 0 };
@@ -370,6 +384,12 @@ ParsingData* CObject_Manager::Load_Data(HANDLE handle, ParsingData* data)
 	LevelParsingData* levelData = (LevelParsingData*)data;
 
 	wstring levelName = levelData->LevelName;
+	
+	_int row = levelData->row;
+	_int col = levelData->col;
+
+	levelName = levelName + to_wstring(row) + L"x" + to_wstring(col);
+
 	wstring fullPath = L"../../Levels/" + levelName;
 
 	fullPath = fullPath + L"/";
@@ -392,6 +412,14 @@ ParsingData* CObject_Manager::Load_Data(HANDLE handle, ParsingData* data)
 				return nullptr;
 			}
 
+			wstring curFileName = entry.path().filename().stem().wstring();
+			if (curFileName.compare(L"Terrain") == 0)
+			{
+				CloseHandle(hFile);
+				continue;
+			}
+			
+
 			DWORD dwByte = { 0 };
 
 			ObjectParsingData* myData = new ObjectParsingData;
@@ -399,8 +427,8 @@ ParsingData* CObject_Manager::Load_Data(HANDLE handle, ParsingData* data)
 
 			/* 트랜스폼 읽어오는 과정*/
 			/// 여기서 나의 생각은 트랜스폼만 읽어오고 나머지 정보는 무시해도 된다는 생각이다.
-			ReadFile(handle, compName, sizeof(compName), &dwByte, nullptr);
-			ReadFile(handle, &transformData.WorldMatrix, sizeof(transformData.WorldMatrix), &dwByte, nullptr);
+			ReadFile(hFile, compName, sizeof(compName), &dwByte, nullptr);
+			ReadFile(hFile, &transformData.WorldMatrix, sizeof(transformData.WorldMatrix), &dwByte, nullptr);
 			myData->TransformData = transformData;
 
 			// 파일 소멸
@@ -410,13 +438,13 @@ ParsingData* CObject_Manager::Load_Data(HANDLE handle, ParsingData* data)
 			vector<wstring> wstringVec = CConversion::SplitStringW(fileName, "_");
 			wstring key = wstringVec.front();
 
-			auto iter = m_LoadedObjectDatas.find(key);
+			auto iter = m_LoadedObjectDatas[row * GRID_SIZE + col].find(key);
 
-			if (iter == m_LoadedObjectDatas.end())
+			if (iter == m_LoadedObjectDatas[row * GRID_SIZE + col].end())
 			{
 				vector<ObjectParsingData*> vec;
 				vec.push_back(myData);
-				m_LoadedObjectDatas.emplace(key, vec);
+				m_LoadedObjectDatas[row * GRID_SIZE + col].emplace(key, vec);
 			}
 			else
 			{

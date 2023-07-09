@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "..\Public\Paladin.h"
+#include "..\Public\Knight.h"
 #include "GameInstance.h"
 #include "RootNode.h"
 #include "BlackBoard.h"
@@ -7,17 +7,17 @@
 #include "Camera_Player_Main.h"
 #include "Calculator.h"
 
-CPaladin::CPaladin(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
+CKnight::CKnight(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: CMonster(pDevice, pContext)
 {
 }
 
-CPaladin::CPaladin(const CPaladin& rhs)
+CKnight::CKnight(const CKnight& rhs)
 	: CMonster(rhs)
 {
 }
 
-HRESULT CPaladin::Initialize_Prototype()
+HRESULT CKnight::Initialize_Prototype()
 {
 	/* 서버로 부터 받아와야할 데이터를 셋팅하낟. */
 	/* 파일로부터  받아와야할 데이터를 셋팅하낟. */
@@ -27,7 +27,7 @@ HRESULT CPaladin::Initialize_Prototype()
 	return S_OK;
 }
 
-HRESULT CPaladin::Initialize(void* pArg)
+HRESULT CKnight::Initialize(void* pArg)
 {
 	/* 원형생성할 때 받아왔던 데이터 외의 추가적인 값들을 더 저장해주낟. */
 	if (FAILED(__super::Initialize(pArg)))
@@ -35,25 +35,29 @@ HRESULT CPaladin::Initialize(void* pArg)
 
 	m_pAnimInstance->Apply_Animation("Idle");
 
-	//m_pTransformCom->Set_Position({ 10.f,0.f,5.f,1.f });
+	//m_pTransformCom->Set_Position({ 1.f,0.f,10.f,1.f });
 	m_pTransformCom->Change_Speed(m_WalkSpeed);
 
 	m_pBehaviorTreeCom->ChangeData("StandardDistance", 12.f);
 
 	m_eRenderGroup = CRenderer::RENDER_NONBLEND;
 
-	Set_HP(100);
+	m_DamagedStunTime = 1.0f;
+	m_SuperArmorTime = 2.5f;
+	m_RunSpeed = 6.5f;
+
+	Set_HP(50);
 
 	return S_OK;
 }
 
-HRESULT CPaladin::Ready_BehaviorTree()
+HRESULT CKnight::Ready_BehaviorTree()
 {
 	////////////////////////// 비해비어 트리  ///////////////
 	CBehaviorTree::BTDesc btDesc(this);
 
 	// 블랙보드 정보를 추가하면 자동으로 데코레이터를 만들면 어떨까?
-	btDesc.pRootNode->AddNode((CBehavior*)PaladinAI(3.0f, 2.0f, 3));
+	btDesc.pRootNode->AddNode((CBehavior*)KnightAI(3.0f, 2.0f, 1));
 
 	if (FAILED(__super::Add_Component(LEVEL_STATIC, TEXT("Prototype_Component_BehaviorTree"), L"Behavior", (CComponent**)&m_pBehaviorTreeCom, &btDesc)))
 		return E_FAIL;
@@ -61,7 +65,7 @@ HRESULT CPaladin::Ready_BehaviorTree()
 	return S_OK;
 }
 
-void CPaladin::Tick(_float TimeDelta)
+void CKnight::Tick(_float TimeDelta)
 {
 	__super::Tick(TimeDelta);
 
@@ -70,7 +74,7 @@ void CPaladin::Tick(_float TimeDelta)
 	Navigation_CurIndex();
 }
 
-_int CPaladin::Late_Tick(_float TimeDelta)
+_int CKnight::Late_Tick(_float TimeDelta)
 {
 	__super::Late_Tick(TimeDelta);
 
@@ -99,7 +103,7 @@ _int CPaladin::Late_Tick(_float TimeDelta)
 	return OBJ_NOEVENT;
 }
 
-HRESULT CPaladin::Render()
+HRESULT CKnight::Render()
 {
 	if (FAILED(__super::Render()))
 		return E_FAIL;
@@ -121,7 +125,7 @@ HRESULT CPaladin::Render()
 	return S_OK;
 }
 
-void CPaladin::OnCollisionEnter(const Collision* collision)
+void CKnight::OnCollisionEnter(const Collision* collision)
 {
 
 	CPlayer* pPlayer = dynamic_cast<CPlayer*>(collision->OtherGameObject);
@@ -144,12 +148,12 @@ void CPaladin::OnCollisionEnter(const Collision* collision)
 	
 }
 
-void CPaladin::OnCollisionStay(const Collision* collision)
+void CKnight::OnCollisionStay(const Collision* collision)
 {	
 	__super::OnCollisionStay(collision);
 }
 
-void CPaladin::OnCollisionExit(const Collision* collision)
+void CKnight::OnCollisionExit(const Collision* collision)
 {
 	CPlayer* pPlayer = dynamic_cast<CPlayer*>(collision->OtherGameObject);
 	_bool bPlayerBodyCollider = pPlayer && (collision->OtherCollider->GetName().compare(L"BodyCollider") == 0);
@@ -182,83 +186,76 @@ void CPaladin::OnCollisionExit(const Collision* collision)
 	}
 }
 
-HRESULT CPaladin::Add_Animations()
+HRESULT CKnight::Add_Animations()
 {
 	AnimNode node;
 
 	////////////// 맨손 애니메이션들 //////////////
 	node.bLoop = true;
 
-	node.AnimIndices = { 67 };
+	node.AnimIndices = { 56 };
 	m_pAnimInstance->Push_Animation("Idle", node);
 
-	node.AnimIndices = { 74 };
+	node.AnimIndices = { 72 };
 	m_pAnimInstance->Push_Animation("Walk", node);
 
-	node.AnimIndices = { 68 };
+	node.AnimIndices = { 59 };
 	m_pAnimInstance->Push_Animation("Run", node);
 
 	node.bLoop = false;
 
-	node.AnimIndices = { 70, 71, 72 };
-	node.eraseLessTime = { 9999, 999, 0.04 };
-	m_pAnimInstance->Push_Animation("Smash", node);
-
-	node.AnimIndices = { 4, 5 };
+	node.AnimIndices = { 22 };
 	node.eraseLessTime = {  };
-	m_pAnimInstance->Push_Animation("LeftSwing", node, "RightSwing");
+	m_pAnimInstance->Push_Animation("StingAfterRun", node);
 
-	node.AnimIndices = { 8, 9, 10 };
+	node.AnimIndices = { 30, 31, 32, 33, 34 };
 	node.eraseLessTime = {  };
-	m_pAnimInstance->Push_Animation("RightSwing", node);
+	m_pAnimInstance->Push_Animation("AtackFullCombo", node);
 
-	node.AnimIndices = { 11, 12, 13 };
+	node.AnimIndices = { 18, 19 };
 	node.eraseLessTime = {  };
-	m_pAnimInstance->Push_Animation("LeftFullSwing", node);
+	m_pAnimInstance->Push_Animation("Sting", node);
 
-	node.AnimIndices = { 14, 15, 16 };
+	node.AnimIndices = { 2,3 };
 	node.eraseLessTime = {  };
-	m_pAnimInstance->Push_Animation("FullHammerDown", node);
+	m_pAnimInstance->Push_Animation("LeftSwing", node);
 
-	node.AnimIndices = { 17, 18 };
-	node.eraseLessTime = { 9999, 999 };
-	m_pAnimInstance->Push_Animation("Dash", node);
+	node.AnimIndices = { 23, 24};
+	node.eraseLessTime = {  };
+	m_pAnimInstance->Push_Animation("RollBack", node);
 
-	node.AnimIndices = { 19, 20, 21, 22, 23 };
-	node.eraseLessTime = { 9999, 999, 9999, 999, 9999 };
-	m_pAnimInstance->Push_Animation("FloorSkill", node);
+	node.AnimIndices = { 25, 26 };
+	node.eraseLessTime = {  };
+	m_pAnimInstance->Push_Animation("RollFront", node);
 
-	node.AnimIndices = { 24, 26, 27 };
-	node.eraseLessTime = { 9999, 999, 9999 };
-	m_pAnimInstance->Push_Animation("HammerDownAfterLaunch", node);
 
-	node.AnimIndices = { 28, 29, 30 };
-	node.eraseLessTime = { 9999, 999, 9999 };
-	m_pAnimInstance->Push_Animation("Joke", node);
+	node.AnimIndices = { 68 };
+	node.eraseLessTime = {  };
+	m_pAnimInstance->Push_Animation("EvasionBack", node);
 
-	node.AnimIndices = { 36, 37, 38 };
-	node.eraseLessTime = { 9999, 999, 9999 };
-	m_pAnimInstance->Push_Animation("ThunderSkill", node);
+	node.AnimIndices = { 69 };
+	node.eraseLessTime = {  };
+	m_pAnimInstance->Push_Animation("EvasionLeft", node);
 
-	node.AnimIndices = { 60 };
+	node.AnimIndices = { 70 };
+	node.eraseLessTime = {  };
+	m_pAnimInstance->Push_Animation("EvasionRight", node);
+
+	node.AnimIndices = { 55 };
 	node.eraseLessTime = {  };
 	m_pAnimInstance->Push_Animation("Damaged", node);
 
-	node.AnimIndices = { 40 };
-	node.eraseLessTime = {  };
-	m_pAnimInstance->Push_Animation("TargetLock", node);
-
-	node.AnimIndices = { 55 };
+	node.AnimIndices = { 50 };
 	node.eraseLessTime = {  };
 	m_pAnimInstance->Push_Animation("Death", node);
 
 	return S_OK;
 }
 
-void CPaladin::Attack(const _float& TimeDelta)
+void CKnight::Attack(const _float& TimeDelta)
 {
-	
-	if (m_IsAttack4)
+
+	if (m_IsAttack2)
 	{
 		//cout << "대쉬 인 !!!!!!!!!!!!!!!" << endl;
 		DashAttack(TimeDelta);
@@ -267,25 +264,13 @@ void CPaladin::Attack(const _float& TimeDelta)
 
 	if (m_IsAttack1)
 	{
-		HammerDownAttack(TimeDelta);
-		return;
-	}
-	
-	if (m_IsAttack2)
-	{
-		SwingAttack(TimeDelta);
-		return;
-	}
-
-	if (m_IsAttack3)
-	{
-		ThunderAttack(TimeDelta);
+		ComboAttack(TimeDelta);
 		return;
 	}
 		
 }
 
-void CPaladin::Damaged(const _float& TimeDelta)
+void CKnight::Damaged(const _float& TimeDelta)
 {
 	m_pAnimInstance->Apply_Animation("Damaged");
 
@@ -304,7 +289,7 @@ void CPaladin::Damaged(const _float& TimeDelta)
 }
 
 // 슈퍼 아머때 맞으면 지가 하던 애니메이션 실행하다가 데미지 받은 애니메이션을 실행한다.
-void CPaladin::SuperArmor(const _float& TimeDelta)
+void CKnight::SuperArmor(const _float& TimeDelta)
 {	
 	m_SuperArmorTimeAcc += TimeDelta;
 	if (m_SuperArmorTimeAcc >= m_SuperArmorTime)
@@ -316,32 +301,32 @@ void CPaladin::SuperArmor(const _float& TimeDelta)
 	m_isDamaged = false;
 }
 
-void CPaladin::Walk(const _float& TimeDelta)
+void CKnight::Walk(const _float& TimeDelta)
 {
 	m_pAnimInstance->Apply_Animation("Walk");
 	m_pTransformCom->Change_Speed(m_WalkSpeed);
 }
 
-void CPaladin::Run(const _float& TimeDelta)
+void CKnight::Run(const _float& TimeDelta)
 {
 	m_pAnimInstance->Apply_Animation("Run");
 	m_pTransformCom->Change_Speed(m_RunSpeed);
 }
 
-void CPaladin::KnockBack(const _float& TimeDelta)
+void CKnight::KnockBack(const _float& TimeDelta)
 {
 }
 
-void CPaladin::Stun(const _float& TimeDelta)
+void CKnight::Stun(const _float& TimeDelta)
 {
 }
 
-void CPaladin::Idle(const _float& TimeDelta)
+void CKnight::Idle(const _float& TimeDelta)
 {
 	m_pAnimInstance->Apply_Animation("Idle");
 }
 
-void CPaladin::Death(const _float& TimeDelta)
+void CKnight::Death(const _float& TimeDelta)
 {
 	m_pAnimInstance->Apply_Animation("Death");
 	m_pBehaviorTreeCom->Stop();
@@ -358,7 +343,7 @@ void CPaladin::Death(const _float& TimeDelta)
 	}
 }
 
-void CPaladin::State()
+void CKnight::State()
 {
 	m_isRun = any_cast<_bool>(m_pBehaviorTreeCom->GetData("IsRun"));
 	m_isWalk = any_cast<_bool>(m_pBehaviorTreeCom->GetData("IsWalk"));
@@ -366,15 +351,14 @@ void CPaladin::State()
 	m_IsAttack2 = any_cast<_bool>(m_pBehaviorTreeCom->GetData("IsAttack2"));
 	m_IsAttack3 = any_cast<_bool>(m_pBehaviorTreeCom->GetData("IsAttack3"));
 	m_IsAttack4 = any_cast<_bool>(m_pBehaviorTreeCom->GetData("IsAttack4"));
-	/*if (m_isRun == true) cout << " m_isRun !!" << endl;
-
-	if (m_IsAttack1 == true) cout << " m_IsAttack1 !!" << endl;
-	if (m_IsAttack2 == true) cout << " m_IsAttack2 !!" << endl;
-	if (m_IsAttack3 == true) cout << " m_IsAttack3 !!" << endl;*/
-
-	/*cout << any_cast<_bool>(m_pBehaviorTreeCom->GetData("IsAttacking")) << endl;*/
 
 	_int iPriority = 0;
+
+	if (m_bAirborne == true)
+	{
+		Add_State(STATE_AIRBORNE, iPriority++);
+		return;
+	}
 
 	if (m_isDeathReserve == true)
 	{
@@ -426,27 +410,50 @@ void CPaladin::State()
 	Add_State(STATE_IDLE, iPriority++);
 }
 
-void CPaladin::DashAttack(const _float& TimeDelta)
+void CKnight::ComboAttack(const _float& TimeDelta)
+{
+	if (m_pAnimInstance->Animation_Finished())
+	{
+		_bool bNext = m_pAnimInstance->Next_Animation();
+		if (bNext == false)
+		{
+			//cout << "IsAttack2Finished" << endl;
+			m_pBehaviorTreeCom->ChangeData("IsAttack1Finished", true);
+			m_pBehaviorTreeCom->ChangeData("IsAttacking", false);
+			m_IsAttack1Started = true;
+			return;
+		}
+	}
+
+	if (m_IsAttack1Started)
+	{
+		LookTarget();
+		m_pAnimInstance->Apply_Animation("AtackFullCombo");
+		m_IsAttack1Started = false;
+	}
+}
+
+void CKnight::DashAttack(const _float& TimeDelta)
 {
 	if (m_pAnimInstance->Animation_Finished() && m_bMaceDashFinished == true)
 	{
-		m_pBehaviorTreeCom->ChangeData("IsAttack4Finished", true);
+		m_pBehaviorTreeCom->ChangeData("IsAttack2Finished", true);
 		m_pBehaviorTreeCom->ChangeData("IsAttacking", false);
-		m_pBehaviorTreeCom->ChangeData("IsAttack4Started", true);
+		m_pBehaviorTreeCom->ChangeData("IsAttack2Started", true);
 		// 애니메이션이 끝났을때 IsAttacking을 false 로 만든다. IsAttacking이 false 일때 해당 공격동작 말고 다른 태스크를 이용하게 하기 위함이다.
-		m_IsAttack4Started = true;
+		m_IsAttack2Started = true;
 		return;
 	}
 
-	if (m_IsAttack4Started)
+	if (m_IsAttack2Started)
 	{
 		LookTarget();
-		m_pAnimInstance->Apply_Animation("HammerDownAfterLaunch");
-		m_IsAttack4Started = false;
-		m_pBehaviorTreeCom->ChangeData("IsAttack4Started", false);
+
+		m_pAnimInstance->Apply_Animation("Sting");
+		m_IsAttack2Started = false;
+		m_pBehaviorTreeCom->ChangeData("IsAttack2Started", false);
 		m_bMaceDashFinished = false;
 
-		m_MaceDashJumpOriginHeight = m_pTransformCom->Get_State(CTransform::STATE_POSITION).m128_f32[1];
 		m_MaceDashTimeAcc = 0.0f;
 		XMStoreFloat3(&m_MaceDashTargetPos, Compute_TargetPos());
 		XMStoreFloat3(&m_MaceDashDir, m_pTransformCom->Get_State(CTransform::STATE_LOOK));
@@ -459,104 +466,20 @@ void CPaladin::DashAttack(const _float& TimeDelta)
 
 		// x z 로만 거리를 재야한다.
 		
-		_float distanceDashPos = CCalculator::Distance_Vector_XZ((XMLoadFloat3(&m_MaceDashTargetPos)), m_pTransformCom->Get_State(CTransform::STATE_POSITION));
-
-		if (distanceDashPos > 0.5f && ((m_MaceDashInitSpeed + (m_MaceDashAccel * m_MaceDashTimeAcc)) >= 0.f))
+		_float distanceDashPosXZ = CCalculator::Distance_Vector_XZ(XMLoadFloat3(&m_MaceDashTargetPos), m_pTransformCom->Get_State(CTransform::STATE_POSITION));
+		
+		if (distanceDashPosXZ > 0.5f)
 		{
-			m_pTransformCom->Go_Dir(XMLoadFloat3(&m_MaceDashDir), m_MaceDashInitSpeed, m_MaceDashAccel, m_MaceDashTimeAcc, m_pNavigationCom);
-		}
-
-		_float height = m_MaceDashJumpOriginHeight + (m_MaceDashJumpSpeed * m_MaceDashTimeAcc) - (0.5 * m_MaceDashJumpGravity * m_MaceDashTimeAcc * m_MaceDashTimeAcc);
-
-		if (Compute_NavMesh_Height() <= height)
-		{
-			_vector myPos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
-
-			myPos.m128_f32[1] = height;
-			m_pTransformCom->Set_Position(myPos);
-
-			m_bClimbNavMesh = false;
+			m_pTransformCom->Go_Dir(m_pTransformCom->Get_State(CTransform::STATE_LOOK), m_MaceDashInitSpeed, m_MaceDashAccel, m_MaceDashTimeAcc, m_pNavigationCom);
 		}
 		else
 		{
-			CCamera_Player_Main::MAINCAMERASHAKE desc;
-			desc.fShakeMagnitude = 0.2f;
-			CGameInstance::GetInstance()->On_Shake(&desc);
-			m_bClimbNavMesh = true;
 			m_bMaceDashFinished = true;
 		}
 	}
 }
 
-void CPaladin::SwingAttack(const _float& TimeDelta)
-{
-	if (m_pAnimInstance->Animation_Finished())
-	{
-		_bool bNext = m_pAnimInstance->Next_Animation();
-		if (bNext == false)
-		{
-			//cout << "IsAttack2Finished" << endl;
-			m_pBehaviorTreeCom->ChangeData("IsAttack2Finished", true);
-			m_pBehaviorTreeCom->ChangeData("IsAttacking", false);
-			m_IsAttack2Started = true;
-			return;
-		}
-	}
-
-	if (m_IsAttack2Started)
-	{
-		//cout << "IsAttack2Start" << endl;
-		LookTarget();
-		m_pAnimInstance->Apply_Animation("LeftSwing");
-		m_IsAttack2Started = false;
-	}
-}
-
-void CPaladin::HammerDownAttack(const _float& TimeDelta)
-{
-	if (m_pAnimInstance->Animation_Finished())
-	{
-		m_pBehaviorTreeCom->ChangeData("IsAttack1Finished", true);
-		m_pBehaviorTreeCom->ChangeData("IsAttacking", false);
-		// 애니메이션이 끝났을때 IsAttacking을 false 로 만든다. IsAttacking이 false 일때 해당 공격동작 말고 다른 태스크를 이용하게 하기 위함이다.
-		m_IsAttack1Started = true;
-		return;
-	}
-
-	if (m_IsAttack1Started)
-	{
-		LookTarget();
-		m_pAnimInstance->Apply_Animation("Smash");
-		m_IsAttack1Started = false;
-	}
-
-	//cout << "IsAttack1Start" << endl;
-}
-
-void CPaladin::ThunderAttack(const _float& TimeDelta)
-{
-	if (m_pAnimInstance->Animation_Finished())
-	{
-		_bool bNext = m_pAnimInstance->Next_Animation();
-		if (bNext == false)
-		{
-			//cout << "IsAttack3Finished" << endl;
-			m_pBehaviorTreeCom->ChangeData("IsAttack3Finished", true);
-			m_pBehaviorTreeCom->ChangeData("IsAttacking", false);
-			m_IsAttack3Started = true;
-			return;
-		}
-	}
-
-	if (m_IsAttack3Started)
-	{
-		LookTarget();
-		m_pAnimInstance->Apply_Animation("ThunderSkill");
-		m_IsAttack3Started = false;
-	}
-}
-
-HRESULT CPaladin::Add_Components()
+HRESULT CKnight::Add_Components()
 {
 	/* For.Com_Renderer */
 	if (FAILED(__super::Add_Component(LEVEL_STATIC, TEXT("Prototype_Component_Renderer"),
@@ -569,7 +492,7 @@ HRESULT CPaladin::Add_Components()
 		return E_FAIL;
 
 	/* For.Com_Model */
-	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Paladin"),
+	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Model_Knight"),
 		MODEL_W, (CComponent**)&m_pModelCom)))
 		return E_FAIL;
 
@@ -605,7 +528,7 @@ HRESULT CPaladin::Add_Components()
 		return E_FAIL;
 
 	SphereDesc.eColGroup = COL_DETECTION;
-	SphereDesc.fRadius = 3.f;
+	SphereDesc.fRadius = 2.f;
 	SphereDesc.vPosition = _float3(0.f, 0.f, 0.f);
 
 	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Collider_Sphere"),
@@ -619,7 +542,7 @@ HRESULT CPaladin::Add_Components()
 	return S_OK;
 }
 
-HRESULT CPaladin::SetUp_ShaderResources()
+HRESULT CKnight::SetUp_ShaderResources()
 {
 	if (FAILED(m_pShaderCom->Bind_Matrix("g_WorldMatrix", &m_pTransformCom->Get_WorldFloat4x4())))
 		return E_FAIL;
@@ -644,32 +567,32 @@ HRESULT CPaladin::SetUp_ShaderResources()
 	return S_OK;
 }
 
-CPaladin* CPaladin::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
+CKnight* CKnight::Create(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 {
-	CPaladin* pInstance = new CPaladin(pDevice, pContext);
+	CKnight* pInstance = new CKnight(pDevice, pContext);
 
 	if (FAILED(pInstance->Initialize_Prototype()))
 	{
-		MSG_BOX("Failed to Created CPaladin");
+		MSG_BOX("Failed to Created CKnight");
 		Safe_Release(pInstance);
 	}
 	return pInstance;
 }
 
 
-CGameObject* CPaladin::Clone(void* pArg)
+CGameObject* CKnight::Clone(void* pArg)
 {
-	CPaladin* pInstance = new CPaladin(*this);
+	CKnight* pInstance = new CKnight(*this);
 
 	if (FAILED(pInstance->Initialize(pArg)))
 	{
-		MSG_BOX("Failed to Cloned CPaladin");
+		MSG_BOX("Failed to Cloned CKnight");
 		Safe_Release(pInstance);
 	}
 	return pInstance;
 }
 
-void CPaladin::Free()
+void CKnight::Free()
 {
 	__super::Free();
 	Safe_Release(m_pAttackRangeColliderCom);

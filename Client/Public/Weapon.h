@@ -62,7 +62,7 @@ protected:
 	_bool		m_bDashAttack = { false };
 	_float		m_AttackRate = { 0.5 };
 	_int		m_Damage = { 5 };
-	_int		m_QDamage = { 1 };
+	_int		m_QDamage = { 10 };
 	_int		m_EDamage = { 5 };
 
 	class CPlayer* m_pPlayer = { nullptr };

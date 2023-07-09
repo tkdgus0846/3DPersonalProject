@@ -77,7 +77,7 @@ private:
 	_bool						m_bSwordSpinFinished = { false };
 	const _float				m_SpinMoveSpeed = { 2.f };
 	
-	_float						m_SwordSpinTickTime = { 0.5f };
+	const _float				m_SwordSpinTickTime = { 0.5f };
 	_float						m_SwordSpinTickAcc = { 0.f };
 };
 

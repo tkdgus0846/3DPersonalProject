@@ -166,11 +166,14 @@ namespace Engine
 
 	struct LevelParsingData : public ParsingData
 	{
-		LevelParsingData(const wstring& levelName)
+		LevelParsingData(const wstring& levelName, _int _row = -1, _int _col = -1)
 		{
 			lstrcpy(LevelName, levelName.c_str());
+			row = _row;
+			col = _col;
 		}
 		_tchar				LevelName[MAX_PATH];
+		_int				row, col;
 		
 	};
 

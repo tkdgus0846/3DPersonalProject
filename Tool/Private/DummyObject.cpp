@@ -80,7 +80,7 @@ _int CDummyObject::Late_Tick(_float TimeDelta)
 
 	if (m_pName.compare(L"Terrain") == 0)
 	{
-		((CVIBuffer_Terrain*)m_pVIBufferCom)->Culling(m_pTransformCom->Get_WorldMatrix());
+		/*((CVIBuffer_Terrain*)m_pVIBufferCom)->Culling(m_pTransformCom->Get_WorldMatrix(), false);*/
 
 		if (nullptr != m_pRendererCom)
 			m_pRendererCom->Add_RenderGroup((CRenderer::RENDERGROUP)m_eRenderGroup, this);

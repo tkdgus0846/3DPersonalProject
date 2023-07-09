@@ -85,6 +85,12 @@
     <Filter Include="03.Components\Task\Wait">
       <UniqueIdentifier>{98fc5aba-86f8-4afc-acc2-1837841c42e5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="02.GameObjects\Creatures\Monster\Human">
+      <UniqueIdentifier>{42a1a5c3-c9bb-4231-b8b4-05e50d387075}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02.GameObjects\Creatures\Monster\Skeleton">
+      <UniqueIdentifier>{5ebb85df-dcd7-476e-88be-205850e667f5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -168,9 +174,6 @@
     <ClInclude Include="..\public\Monster.h">
       <Filter>02.GameObjects\Creatures\Monster</Filter>
     </ClInclude>
-    <ClInclude Include="..\Public\Paladin.h">
-      <Filter>02.GameObjects\Creatures\Monster</Filter>
-    </ClInclude>
     <ClInclude Include="..\Bin\ShaderFiles\Shader_Client_Defines.hpp">
       <Filter>97.ShaderFiles</Filter>
     </ClInclude>
@@ -194,6 +197,15 @@
     </ClInclude>
     <ClInclude Include="..\Public\Task_Wait.h">
       <Filter>03.Components\Task\Wait</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Knight.h">
+      <Filter>02.GameObjects\Creatures\Monster\Human</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\Paladin.h">
+      <Filter>02.GameObjects\Creatures\Monster\Human</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Public\SkeletonWarrior.h">
+      <Filter>02.GameObjects\Creatures\Monster\Skeleton</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -266,9 +278,6 @@
     <ClCompile Include="..\private\Monster.cpp">
       <Filter>02.GameObjects\Creatures\Monster</Filter>
     </ClCompile>
-    <ClCompile Include="..\Private\Paladin.cpp">
-      <Filter>02.GameObjects\Creatures\Monster</Filter>
-    </ClCompile>
     <ClCompile Include="..\Private\Sword.cpp">
       <Filter>02.GameObjects\Creatures\Player\Parts\Weapon</Filter>
     </ClCompile>
@@ -289,6 +298,15 @@
     </ClCompile>
     <ClCompile Include="..\Private\Task_Wait.cpp">
       <Filter>03.Components\Task\Wait</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Knight.cpp">
+      <Filter>02.GameObjects\Creatures\Monster\Human</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\Paladin.cpp">
+      <Filter>02.GameObjects\Creatures\Monster\Human</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Private\SkeletonWarrior.cpp">
+      <Filter>02.GameObjects\Creatures\Monster\Skeleton</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

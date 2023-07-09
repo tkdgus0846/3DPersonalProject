@@ -30,7 +30,7 @@ HRESULT CHorse::Initialize(void* pArg)
 
 	m_pAnimInstance[HORSE_NATURAL]->Apply_Animation("Idle");
 
-	m_pTransformCom->Set_Position({ 10.f,0.f,0.f,1.f });
+	//m_pTransformCom->Set_Position({ 10.f,0.f,0.f,1.f });
 
 	m_eRenderGroup = CRenderer::RENDER_NONBLEND;
 
@@ -154,7 +154,7 @@ HRESULT CHorse::Add_Components()
 	OBBDesc.vRotation = _float3(0.f, XMConvertToRadians(0.0f), 0.f);
 
 	if (FAILED(__super::Add_Component(LEVEL_GAMEPLAY, TEXT("Prototype_Component_Collider_OBB"),
-		COLLIDER_W, (CComponent**)&m_pColliderCom, &OBBDesc)))
+		L"BodyCollider", (CComponent**)&m_pColliderCom, &OBBDesc)))
 		return E_FAIL;
 
 	////////////////////////// 애님 인스턴스 ///////////////

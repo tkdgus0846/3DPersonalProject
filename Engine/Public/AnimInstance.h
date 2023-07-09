@@ -47,6 +47,8 @@ public:
 	void Apply_Animation(const string & name, ANIMTYPE eType = ANIM_ALLBODY);
 	_bool Next_Animation(ANIMTYPE eType = ANIM_ALLBODY);
 	const string& Get_CurAnimation_Name() const { return m_pCurAnimationName; }
+	void Stop_Animation() { m_bAnimationStopped = true; }
+	void Resume_Animation() { m_bAnimationStopped = false; }
 	
 	_bool Animation_Finished(_int iIndex = -1, ANIMTYPE eType = ANIM_ALLBODY);
 	const string& Get_NextNode_Name(ANIMTYPE eType = ANIM_ALLBODY);
@@ -101,6 +103,8 @@ private:
 	_bool							m_bUseAllBodyAnim = { false };
 	_bool							m_bUseUpperBodyAnim = { false };
 	_bool							m_bUseLowerBodyAnim = { false };
+
+	_bool							m_bAnimationStopped = { false };
 
 	
 

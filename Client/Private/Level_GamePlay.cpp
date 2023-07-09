@@ -24,13 +24,16 @@ HRESULT CLevel_GamePlay::Initialize()
 		return E_FAIL;
 	if (FAILED(Ready_Layer_Terrain(TEXT("Layer_Terrain"))))
 		return E_FAIL;
+	
+	if (FAILED(Ready_Parsed_Objects(0, 0)))
+		return E_FAIL;
 
 	return S_OK;
 }
 
 void CLevel_GamePlay::Tick(_float TimeDelta)
 {
-	__super::Tick(TimeDelta);
+	__super::Tick(TimeDelta);	
 }
 
 void CLevel_GamePlay::Late_Tick(_float TimeDelta)
@@ -123,14 +126,29 @@ HRESULT CLevel_GamePlay::Ready_Layer_Objects(const _tchar* pLayerTag)
 	objName = L"Cube";
 	if (pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_CubeObject"), pLayerTag, objName) == nullptr)
 		return E_FAIL;
+	
 
+	/*
 	objName = L"Horse";
 	if (pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Horse"), pLayerTag, objName) == nullptr)
 		return E_FAIL;
+	*/
 
-	objName = L"Paladin";
+	/*objName = L"Paladin";
 	if (pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Paladin"), pLayerTag, objName) == nullptr)
 		return E_FAIL;
+
+	objName = L"Knight";
+	if (pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_Knight"), pLayerTag, objName) == nullptr)
+		return E_FAIL;
+
+	objName = L"SkeletonWarrior";
+	if (pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, TEXT("Prototype_GameObject_SkeletonWarrior"), pLayerTag, objName) == nullptr)
+		return E_FAIL;*/
+
+
+
+
 
 	return S_OK;
 }
@@ -162,4 +180,39 @@ void CLevel_GamePlay::Free()
 {
 	__super::Free();
 
+}
+
+HRESULT CLevel_GamePlay::Ready_Parsed_Objects(_int row, _int col)
+{
+	CGameInstance* pGameInstance = CGameInstance::GetInstance();
+
+	if (FAILED(pGameInstance->Load_CurLevel(L"Terrain", false, row, col)))
+		return E_FAIL;
+
+	unordered_map<wstring, vector<ObjectParsingData*>>* objDatas = pGameInstance->Get_LoadedObjectData(row, col);
+
+	for (auto& data : *objDatas)
+	{
+		wstring protoName = PrototypeName_By_ParsedName(data.first);
+		wstring objName = data.first;
+
+		for (ObjectParsingData* parsingData : data.second)
+		{
+			//_float4x4 WorldMatrix = parsingData->TransformData.WorldMatrix;
+			//XMStoreFloat4x4(&WorldMatrix, XMMatrixTranslation(5.f,0.f,5.f));
+			pGameInstance->Add_GameObject(LEVEL_GAMEPLAY, protoName, L"Layer_Object", objName, parsingData);
+		}
+	}
+	
+
+
+
+	return S_OK;
+}
+
+wstring CLevel_GamePlay::PrototypeName_By_ParsedName(const wstring& name)
+{
+	wstring result = L"Prototype_GameObject_";
+	result = result + name;
+	return result;
 }

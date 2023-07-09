@@ -181,7 +181,7 @@ void CSword::SkillE_Collision_Stay(const Collision* collision)
 
 			// 데미지에 따라서 쉐이크 계수를 다르게 해보자. 
 			desc.fShakeMagnitude = 0.2f;
-			desc.fShakeDuration = 0.10f;
+			desc.fShakeDuration = 0.20f;
 
 			pGameInstance->On_Shake(&desc);
 		}

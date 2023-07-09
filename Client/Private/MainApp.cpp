@@ -45,6 +45,8 @@ void CMainApp::Tick(_float TimeDelta)
 	m_pGameInstance->Tick_Engine(TimeDelta);
 
 	m_pGameInstance->Check_Collision(COL_PLAYER, COL_ENEMY);
+	m_pGameInstance->Check_Collision(COL_ENEMY, COL_ENEMY);
+
 	m_pGameInstance->Check_Collision(COL_PLAYER, COL_DETECTION);
 	m_pGameInstance->Check_Collision(COL_PLAYERWEAPON, COL_ENEMY);
 

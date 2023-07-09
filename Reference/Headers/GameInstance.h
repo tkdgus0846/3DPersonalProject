@@ -74,7 +74,9 @@ public: /* For.Object_Manager */
 	CGameObject* Find_GameObject(const wstring & pLayerTag, const wstring & pObjName);
 
 	HRESULT Save_CurLevel(const _tchar* curLevelName);
-	HRESULT Load_CurLevel(const _tchar* curLevelName, _bool bIsTool = false);
+	HRESULT Load_CurLevel(const _tchar* curLevelName, _bool bIsTool = false, _int row = -1, _int col = -1);
+	unordered_map<wstring, vector<ObjectParsingData*>>* Get_LoadedObjectData(_int row, _int col);
+	// 여기다가 row, col 매개변수 받아서 처리하려고 했다.
 
 	list<class CGameObject*> Get_All_Objects();
 

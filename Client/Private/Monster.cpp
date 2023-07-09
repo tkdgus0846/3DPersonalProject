@@ -13,6 +13,7 @@
 #include "Task_RandomMove.h"
 #include "RandomChooser.h"
 #include "GameInstance.h"
+#include <Camera_Player_Main.h>
 
 CMonster::CMonster(ID3D11Device* pDevice, ID3D11DeviceContext* pContext)
 	: CCreature(pDevice, pContext)
@@ -49,11 +50,42 @@ _int CMonster::Late_Tick(_float TimeDelta)
 
 }
 
+void CMonster::OnCollisionStay(const Collision* collision)
+{
+	CGameObject* otherObject = collision->OtherGameObject;
+	CCollider* otherCollider = collision->OtherCollider;
+	CCollider* bodyCollider = (CCollider*)otherObject->Get_Component(L"BodyCollider");
+	CCollider* myCollider = collision->MyCollider;
+	CCollider* myBodyCollider = (CCollider*)Get_Component(L"BodyCollider");
+
+	if (bodyCollider == otherCollider && myBodyCollider == myCollider)
+	{
+		CTransform* myTransform = (CTransform*)Get_Component(TRANSFORM_W);
+		CTransform* otherTransform = (CTransform*)otherObject->Get_Component(TRANSFORM_W);
+
+		_vector otherPos = otherTransform->Get_State(CTransform::STATE_POSITION);
+		_vector myPos = myTransform->Get_State(CTransform::STATE_POSITION);
+
+		_vector reflectVec = myPos - otherPos;
+
+		CNavigation* myNavi = (CNavigation*)Get_Component(NAVIGATION_W);
+
+		myTransform->Go_Dir(reflectVec, 0.007f, myNavi);
+	}
+}
+
 _bool CMonster::GetDead()
 {
 	m_isDeathReserve = __super::GetDead();
 
 	return  m_isDeathFinished;
+}
+
+void CMonster::Get_Damaged(_int Damage)
+{
+	__super::Get_Damaged(Damage);
+
+	m_isDamaged = true;
 }
 
 CSequence* CMonster::Make_RandomPatrol_AI(const _float& MoveTime, const _float& WaitTime)
@@ -143,6 +175,8 @@ CSelector* CMonster::PaladinAI(const _float& MoveTime, const _float& WaitTime, _
 	CSelector* FollowRandomAttackSelector = Make_FollowTarget_And_RandomAttackAI(AttackNums);
 	CSequence* patrolSequence = Make_RandomPatrol_AI(MoveTime, WaitTime);
 
+	string DashStartedName = "IsAttack" + to_string(AttackNums + 1) + "Started";
+
 	DashAttack->Add_Decorator(CDecorator::Create
 	(
 		[&](CBlackBoard* pBlackBoard)->_bool
@@ -168,6 +202,60 @@ CSelector* CMonster::PaladinAI(const _float& MoveTime, const _float& WaitTime, _
 	PaladinSelector->AddNode(patrolSequence);
 
 	return PaladinSelector;
+}
+
+CSelector* CMonster::KnightAI(const _float& MoveTime, const _float& WaitTime, _int AttackNums)
+{
+	CSelector* PaladinSelector = CSelector::Create();
+
+	CTask_Attack* DashAttack = Make_Attack_AI(AttackNums + 1);
+	CSelector* FollowRandomAttackSelector = Make_FollowTarget_And_RandomAttackAI(AttackNums);
+	CSequence* patrolSequence = Make_RandomPatrol_AI(MoveTime, WaitTime);
+
+	string DashStartedName = "IsAttack" + to_string(AttackNums + 1) + "Started";
+
+	DashAttack->Add_Decorator(CDecorator::Create
+	(
+		[&](CBlackBoard* pBlackBoard)->_bool
+		{
+			_float TargetDistance = any_cast<_float>(pBlackBoard->FindData("TargetDistance"));
+			_float StandardDistance = any_cast<_float>(pBlackBoard->FindData("StandardDistance"));
+			_bool bIsAttackStarted = any_cast<_bool>(pBlackBoard->FindData("IsAttack2Started"));
+
+			/*cout << "TargetDistance: " << TargetDistance << " StandardDistance: " << StandardDistance << endl;*/
+			// 공격 중이 아니라면 true.
+			return (StandardDistance <= TargetDistance) || !bIsAttackStarted;
+		}
+	));
+
+	DashAttack->Add_Decorator(Decorator_IsNotAttackFinished(AttackNums + 1));
+	DashAttack->Add_Decorator(Decorator_TargetOn());
+	//DashAttack->Add_Decorator(Decorator_TargetDistance_Farther_Than_StandardDistance());
+
+	FollowRandomAttackSelector->Add_Decorator(Decorator_TargetDistance_Closer_Than_StandardDistance());
+
+	PaladinSelector->AddNode(DashAttack);
+	PaladinSelector->AddNode(FollowRandomAttackSelector);
+	PaladinSelector->AddNode(patrolSequence);
+
+	return PaladinSelector;
+}
+
+CSelector* CMonster::BasicAI(const _float& MoveTime, const _float& WaitTime, _int AttackNums)
+{
+	CSelector* Selector = CSelector::Create();
+
+	CSelector* FollowRandomAttackSelector = Make_FollowTarget_And_RandomAttackAI(AttackNums);
+	CSequence* patrolSequence = Make_RandomPatrol_AI(MoveTime, WaitTime);
+
+	return Selector;
+}
+
+CSelector* CMonster::SkeletonAI(_int AttackNums)
+{
+	CSelector* FollowRandomAttackSelector = Make_FollowTarget_And_RandomAttackAI(AttackNums);
+
+	return FollowRandomAttackSelector;
 }
 
 CSelector* CMonster::Patrol_Follow_AttackAI(const _float& PatrolMoveTime, const _float& WaitTime, _int AttackNums)
@@ -379,6 +467,44 @@ CDecorator* CMonster::Decorator_IsNotAttackFinished(_int iAttackNum)
 //////////////////////// 아래는 인공지능과는 별개의 공통된 동작들이다.
 ///////////////////////////////////////////////////////////////////////////
 
+void CMonster::AirBorne(const _float& TimeDelta)
+{
+	if (m_bAirborneStarted == true)
+	{
+		m_AirborneOriginHeight = m_pTransformCom->Get_State(CTransform::STATE_POSITION).m128_f32[1];
+		m_pBehaviorTreeCom->Stop();
+		CAnimInstance* AnimInstance = ((CAnimInstance*)Get_Component(L"AnimInstance"));
+		AnimInstance->Stop_Animation();
+
+		m_bAirborneStarted = false;
+		m_bAirborneFinished = false;
+	}
+
+	m_AirborneTimeAcc += TimeDelta;
+	_float height = m_AirborneOriginHeight + (m_AirborneSpeed * m_AirborneTimeAcc) - (0.5 * m_AirborneGravity * m_AirborneTimeAcc * m_AirborneTimeAcc);
+
+	if (Compute_NavMesh_Height() <= height)
+	{
+		_vector myPos = m_pTransformCom->Get_State(CTransform::STATE_POSITION);
+
+		myPos.m128_f32[1] = height;
+		m_pTransformCom->Set_Position(myPos);
+
+		m_bClimbNavMesh = false;
+	}
+	else
+	{
+		m_bClimbNavMesh = true;
+		m_bAirborne = false;
+		m_bAirborneFinished = true;
+		m_bAirborneStarted = true;
+		m_AirborneTimeAcc = 0.f;
+		m_pBehaviorTreeCom->Resume();
+		CAnimInstance* AnimInstance = ((CAnimInstance*)Get_Component(L"AnimInstance"));
+		AnimInstance->Resume_Animation();
+	}	
+}
+
 void CMonster::LookTarget()
 {
 	CGameObject* pTarget = any_cast<CGameObject*>(m_pBehaviorTreeCom->GetData("Target"));
@@ -461,6 +587,9 @@ void CMonster::Action_ByState(const _float& TimeDelta)
 			break;
 		case STATE_DEATH:
 			Death(TimeDelta);
+			break;
+		case STATE_AIRBORNE:
+			AirBorne(TimeDelta);
 			break;
 		default:
 			break;

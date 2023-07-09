@@ -21,7 +21,7 @@ public:
 	HRESULT Initialize_Prototype(const _uint & sizeX, const _uint & sizeZ, const _float& fInterval, TYPE eType);
 	HRESULT Initialize_Prototype(const wstring& pCustomHeightMap, TYPE eType);
 
-	void			Culling(_fmatrix WorldMatrix);
+	void			Culling(_fmatrix WorldMatrix, _bool bLOD = true);
 
 	virtual HRESULT Initialize(void* pArg) override;
 	vector<Triangle>* Get_VerticesPos() { return &m_VerticesPos; }

@@ -232,6 +232,33 @@ _int CCalculator::Picking_Sphere(HWND hWnd, _uint winSizeX, _uint winSizeY, cons
 	return resultIndex;
 }
 
+_float CCalculator::Distance_Vector_X(_fvector AVector, _fvector BVector)
+{
+	_vector AClipVec = _vector({ AVector.m128_f32[0], 0.f, 0.f });
+	_vector BClipVec = _vector({ BVector.m128_f32[0], 0.f, 0.f});
+
+	_vector subVec = AClipVec - BClipVec;
+	return XMVector3Length(subVec).m128_f32[0];
+}
+
+_float CCalculator::Distance_Vector_Y(_fvector AVector, _fvector BVector)
+{
+	_vector AClipVec = _vector({ 0.f, AVector.m128_f32[1], 0.f });
+	_vector BClipVec = _vector({ 0.f, BVector.m128_f32[1], 0.f });
+
+	_vector subVec = AClipVec - BClipVec;
+	return XMVector3Length(subVec).m128_f32[0];
+}
+
+_float CCalculator::Distance_Vector_Z(_fvector AVector, _fvector BVector)
+{
+	_vector AClipVec = _vector({ 0.f, 0.f, AVector.m128_f32[2] });
+	_vector BClipVec = _vector({ 0.f, 0.f, AVector.m128_f32[2] });
+
+	_vector subVec = AClipVec - BClipVec;
+	return XMVector3Length(subVec).m128_f32[0];
+}
+
 _float CCalculator::Distance_Vector_XZ(_fvector AVector, _fvector BVector)
 {
 	_vector AClipVec = _vector({ AVector.m128_f32[0],0.f,AVector.m128_f32[2] });

@@ -508,7 +508,7 @@ HRESULT CVIBuffer_Terrain::Initialize_Prototype(const wstring& pCustomHeightMap,
 	return S_OK;
 }
 
-void CVIBuffer_Terrain::Culling(_fmatrix WorldMatrix)
+void CVIBuffer_Terrain::Culling(_fmatrix WorldMatrix, _bool bLOD)
 {
 	CFrustum* pFrustum = CFrustum::GetInstance();
 	Safe_AddRef(pFrustum);
@@ -517,7 +517,8 @@ void CVIBuffer_Terrain::Culling(_fmatrix WorldMatrix)
 
 	_uint		iNumIndices = { 0 };
 
-	m_pQuadTree->Culling(pFrustum, m_pVerticesPos, m_pIndices, &iNumIndices);
+	
+	m_pQuadTree->Culling(pFrustum, m_pVerticesPos, m_pIndices, &iNumIndices, bLOD);
 
 	//for (_uint i = 0; i < m_iNumVerticesZ - 1; ++i)
 	//{

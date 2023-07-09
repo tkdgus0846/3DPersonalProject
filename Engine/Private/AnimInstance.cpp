@@ -32,6 +32,8 @@ void CAnimInstance::Tick(_float TimeDelta)
 
 	__super::Tick(TimeDelta);
 
+	if (m_bAnimationStopped == true) return;
+
 	if (m_pCurUpperAnimNode && m_pCurLowerAnimNode)
 	{
 		Play_UpperBody_Animation(TimeDelta, m_pCurUpperAnimNode);
@@ -43,6 +45,7 @@ void CAnimInstance::Tick(_float TimeDelta)
 	}		
 }
 
+// 애님 등록
 void CAnimInstance::Push_Animation(const string& name, const AnimNode& animNode, string nextAnimNode, string retAnimNode)
 {
 	// 애니메이션 루프를 어떻게 할것인지?
@@ -75,6 +78,7 @@ void CAnimInstance::Proceed_Animation()
 void CAnimInstance::Apply_Animation(const string& name, ANIMTYPE eType)
 {
 	
+	Resume_Animation();
 
 	if (eType == ANIM_ALLBODY)
 	{
